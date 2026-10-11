@@ -19,12 +19,18 @@ service contract from example conversations or import endpoints/fields from anot
 Use only the explicitly supplied mock base URL for servers. Do not contact a service.
 The mock base URL is deployment configuration, not a source of bank policy. If the documents
 do not define a necessary contract detail, put it in unresolved rather than inventing it.
-Unresolved is for a missing detail that prevents a faithful supported operation, such as an
-undefined endpoint, required input or response field the workflow needs. Merely unspecified
+Unresolved is scoped to a missing HTTP contract detail that prevents faithfully specifying a
+documented operation, such as an undefined endpoint, required input schema or response field.
+This stage specifies the available API; it does not prove that every business requirement can
+be implemented by that API. Keep workflow-level decisions, unavailable business state and
+platform integration questions in notes for the later policy/workflow stages. A choice among
+documented request values is a workflow decision, not an undefined HTTP schema. These notes
+must preserve the limitation; they do not authorize inventing fields, values or business rules.
+Merely unspecified
 optional constraints are notes: response examples do not imply exhaustive enums, and an absent
 invalid-input response does not prevent sending a documented valid request. Preserve such
 uncertainties in notes without inventing restrictions. Do not remove a genuinely missing
-required dependency just to pass a validation retry; new source evidence is required for it.
+required HTTP contract detail just to pass a validation retry; new source evidence is required.
 The evidence source must be a supplied document ID and the quote must occur literally in it.
 Record whether request fields are strings, numbers, dates or enums exactly as documented.
 This stage describes the API; it must not encode business rules as API defaults or customer

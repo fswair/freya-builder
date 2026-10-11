@@ -264,10 +264,12 @@ def load_inputs(
         limit = 20_000_000 if office else 1_000_000
         if not data or len(data) > limit:
             raise ValueError(f"Input must be nonempty and at most {limit} bytes: {path.name}")
-        manifest.append(
-            {"source": source, "path": str(path), "sha256": hashlib.sha256(data).hexdigest()}
-        )
-        return decode_document(path, data)
+        decoded = decode_document(path, data)
+        entry = {"source": source, "path": str(path), "sha256": hashlib.sha256(data).hexdigest()}
+        if path.suffix.lower() == ".json" and decoded != data.decode("utf-8-sig"):
+            entry["representation"] = "json-whitespace-compacted"
+        manifest.append(entry)
+        return decoded
 
     for index, path in enumerate(expand_briefs(briefs), 1):
         sources[f"brief-{index}"] = read(path, f"brief-{index}")

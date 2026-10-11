@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+import re
 from pathlib import Path
 
 from freya_hackathon.office_documents import extract_office_document
@@ -59,6 +61,22 @@ def expand_briefs(paths: list[Path]) -> list[Path]:
     return result
 
 
+def compact_json(text: str) -> str:
+    """Remove only insignificant whitespace, preserving every original JSON token."""
+    try:
+        json.loads(text)
+    except (ValueError, RecursionError):
+        # Nonstandard JSON can still be a supplied document; preserve it verbatim.
+        return text
+    # Do not deserialize/reserialize: that could round numbers, rewrite escapes or
+    # discard duplicate keys. Strings (including their whitespace) stay byte-exact.
+    return re.sub(
+        r'"(?:[^"\\]|\\.)*"|[ \t\r\n]+',
+        lambda match: match[0] if match[0].startswith('"') else "",
+        text,
+    )
+
+
 def decode_document(path: Path, data: bytes) -> str:
     """Do not silently omit or misdecode an unsupported policy attachment."""
     if path.suffix.lower() in {".pdf", ".docx", ".xlsx", ".xlsm"}:
@@ -74,9 +92,10 @@ def decode_document(path: Path, data: bytes) -> str:
             "and supply it as a brief or --additional-brief. No document was skipped."
         )
     try:
-        return data.decode("utf-8-sig")
+        text = data.decode("utf-8-sig")
     except UnicodeDecodeError as exc:
         raise ValueError(
             f"Document {path.name} is not UTF-8 text; convert it to UTF-8 "
             "before building. No document was skipped."
         ) from exc
+    return compact_json(text) if path.suffix.lower() == ".json" else text

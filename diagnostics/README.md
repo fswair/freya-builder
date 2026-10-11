@@ -8,6 +8,12 @@ diagnostic output paths. Those artifacts are not bundled or silently substituted
 General entry points include:
 
 - `finalize_submission.py`: fresh generation, validation, publication and export.
+- `run_custom_simulation.py`: evaluate an existing export using supplied synthetic
+  personas in chat mode, without changing or redeploying the workflow. Cases are a
+  JSON list with `id`, `title`, `script`, `checks` and `variables`. Omit `--execute`
+  to validate the cases without contacting Freya. Results include two independent
+  server snapshots, transcript evidence, runtime health and an Autobench record;
+  these are diagnostic results, not the official competition score.
 - `import_dataset.py`: import train/validation while leaving holdout sealed.
 - `prepare_priority_dataset.py`: derive the predefined priority training subset.
 - `audit_recordings.py`: check supplied local Autobench records without API calls.
@@ -32,3 +38,8 @@ Autobench development traces, raw conversations, dashboard captures and private
 notes stay local. The final entry separately needs the exact generated workflow
 and its matching sanitized builder trace, committed with the builder source.
 See [the entry instructions](final-submission-instructions.txt).
+
+JSON inputs use a compact text representation to reduce model context size.
+Only whitespace outside strings is removed; numeric literals, escaping, repeated
+keys and key order remain intact. The manifest hashes the original input bytes
+and records when this representation was used. Original input files are not edited.

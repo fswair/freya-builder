@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from freya_hackathon.builder import KIT, load_inputs
-from freya_hackathon.input_documents import expand_briefs
+from freya_hackathon.input_documents import compact_json, decode_document, expand_briefs
 
 
 def test_directory_sources_are_complete_ordered_deduplicated_and_hashed(tmp_path: Path):
@@ -67,3 +67,37 @@ def test_directory_link_is_not_followed_into_another_input_tree(tmp_path):
     (material / "linked.txt").symlink_to(other)
     with pytest.raises(ValueError, match="not links"):
         expand_briefs([material])
+
+
+def test_json_compaction_preserves_numbers_duplicate_keys_and_string_tokens():
+    source = r""" {
+      "decimal": 1.2300,
+      "exponent": 1e-06,
+      "big": 123456789012345678901234567890,
+      "duplicate": 1, "duplicate": 2,
+      "text": "x y\n\"z\\w", "unicode": "İ / \u0130"
+    } """
+    expected = (
+        r'{"decimal":1.2300,"exponent":1e-06,"big":123456789012345678901234567890,'
+        r'"duplicate":1,"duplicate":2,"text":"x y\n\"z\\w","unicode":"İ / \u0130"}'
+    )
+    assert compact_json(source) == expected
+    assert compact_json(expected) == expected
+
+
+def test_json_compaction_preserves_nonstandard_documents_and_plain_text():
+    nonstandard = '{ "x": 1, } // supplied annotation\n'
+    assert decode_document(Path("attachment.json"), nonstandard.encode()) == nonstandard
+    plain = '{ "x": 1 }\n'
+    assert decode_document(Path("note.txt"), plain.encode()) == plain
+
+
+def test_json_manifest_hashes_original_bytes_and_records_representation(tmp_path):
+    source = tmp_path / "records.json"
+    data = b' { "items": [1.2300, 2] }\n'
+    source.write_bytes(data)
+    inputs = load_inputs([source], KIT / "tools/openapi.json")
+    assert inputs.sources["brief-1"] == '{"items":[1.2300,2]}'
+    assert inputs.manifest[0]["sha256"] == hashlib.sha256(data).hexdigest()
+    assert inputs.manifest[0]["representation"] == "json-whitespace-compacted"
+    assert source.read_bytes() == data
