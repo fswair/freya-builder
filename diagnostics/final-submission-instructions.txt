@@ -1,4 +1,4 @@
-Official entry preparation, verified against the Submit page on 2026-10-11 at16:22UTC.
+Official entry preparation, verified against the Submit page on 2026-10-11 at16:58UTC.
 Source: https://www.freyavoice.ai/hackathon#submit
 
 The generated RUN/submission.json is an internal export/provenance report. It is
@@ -27,9 +27,16 @@ The template is unfinished and must not be sent as an entry.
    workflow path, trace path and live mock URL. Paths are relative to the repo.
    The command above is a root-repo example; align guidance/path names with the
    submitted commit. A fresh checkout must contain every required source file.
-7. Official submission is an explicit user action/approval: send final submission.json
-   to the address in the kit email before20UTC (23:00Istanbul). Do not send the
-   internal RUN/submission.json. Keep the mock running until results are announced.
+7. Official submission is an explicit user action/approval: before20UTC (23:00Istanbul),
+   email three files to yavuz@freyavoice.ai: the official submission.json, the exact
+   exported workflow, and its matching trace. Keep the same files at the declared
+   repository commit. Do not send the internal RUN/submission.json as the entry form.
+   Keep the mock running until results are announced.
+
+The final-generation trace is required but not scored. If the builder runs a coding
+agent, provide that agent's full session log for the run. Separate coding-agent logs
+used to develop the builder are optional. Our Python/Pydantic AI builder records
+its own generation calls; preserve its matching events and model-message artifacts.
 
 Fill all placeholders from the actual team, repository commit and deployed mock.
 The repository is private until its owner grants organizer access or changes visibility.
