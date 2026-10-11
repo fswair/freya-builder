@@ -94,4 +94,8 @@ test("requests remain independent and cannot send another customer's card", asyn
   data.cardNumber = ownCard;
   const responses = await Promise.all(Array.from({ length: 10 }, () => bankFetch(request("statement.pdf.send", data))));
   for (const response of responses) assert.deepEqual(await response.json(), customer.services["statement.pdf.send"].response);
+  for (const aiFlow of [undefined, "", "another-flow", null]) {
+    const response = await bankFetch(request("cards.list", { customerNo: customer.customerNo, aiFlow }));
+    assert.deepEqual(await response.json(), customer.services["cards.list"].response);
+  }
 });

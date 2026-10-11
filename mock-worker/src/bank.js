@@ -8,7 +8,7 @@ export const bankHeaders = {
 };
 
 const required = {
-  "cards.list": ["customerNo", "aiFlow"],
+  "cards.list": ["customerNo"],
   "cards.balance": ["cardNumber"],
   "statement.week.get": ["cardNumber"],
   "statement.week.decide": ["cardNumber", "newStatementWeek", "statementDay"],
