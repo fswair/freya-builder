@@ -4,8 +4,8 @@ The three entry files are `submission.json`, `final.workflow.json`, and
 `final.trace.jsonl`. The workflow is an unchanged `freya.export_workflow` export;
 the trace comes from the same builder run. No workflow was edited by hand.
 
-The `commit` field names the fixed Git tag `freya-final-20261011`. Resolve its full
-commit hash with `git rev-parse freya-final-20261011^{commit}`. The tag points to the
+The `commit` field names the fixed Git tag `freya-final-20261011-v2`. Resolve its full
+commit hash with `git rev-parse freya-final-20261011-v2^{commit}`. The tag points to the
 commit containing these exact files. Using a tag avoids embedding a commit's own
 hash inside its contents. The resolved hash is also supplied in the entry email.
 

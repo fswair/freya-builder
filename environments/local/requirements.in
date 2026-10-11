@@ -1,9 +1,0 @@
-# Run uv pip compile/install from the repository root.
-# Editable sources deliberately include the current local, uncommitted changes.
--e .
--e ../autobench/workspace/autobench[httpx,openai,pydantic-ai,pydantic-gepa]
--e ../autobench/workspace/pydantic-gepa[integrations]
-gepa @ git+https://github.com/gepa-ai/gepa.git@81dbae904bed94f5f3b8b4c704c0a81c7510b986
-pytest>=8,<10
-ruff>=0.15,<0.16
-ty>=0.0.1

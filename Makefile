@@ -3,7 +3,7 @@ ifndef RECORD
 RECORD := runs/smoke-$(shell date -u +%Y%m%dT%H%M%SZ)
 endif
 
-.PHONY: sync check doctor smoke live replay-live replay report sync-local lock-local check-local doctor-local smoke-local
+.PHONY: sync check doctor smoke live replay-live replay report
 
 sync:
 	$(UV) sync --locked
@@ -34,24 +34,3 @@ replay:
 
 report:
 	$(UV) run --locked autobench report "$(RECORD)"
-
-lock-local:
-	$(UV) pip compile --no-config --no-sources --python-version 3.13 environments/local/requirements.in -o environments/local/requirements.txt
-
-sync-local:
-	$(UV) venv --python 3.13 --allow-existing .venv-local
-	$(UV) pip sync --no-config --no-sources --python .venv-local/bin/python environments/local/requirements.txt
-
-check-local:
-	.venv-local/bin/ruff check .
-	.venv-local/bin/ruff format --check .
-	.venv-local/bin/ty check --python .venv-local/bin/python src tests
-	.venv-local/bin/pytest
-
-doctor-local:
-	.venv-local/bin/autobench instrumentation doctor
-
-smoke-local:
-	.venv-local/bin/autobench validate benchmarks/smoke.yaml
-	.venv-local/bin/autobench run benchmarks/smoke.yaml --record "$(RECORD)"
-	.venv-local/bin/autobench replay "$(RECORD)"

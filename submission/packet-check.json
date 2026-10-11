@@ -1,7 +1,7 @@
 {
   "source_run": "runs/final-006",
   "builder_source_commit": "018c4a355e67b477a638d54a48c63863c4dfe162",
-  "named_delivery_commit": "freya-final-20261011",
+  "named_delivery_commit": "freya-final-20261011-v2",
   "workflow_sha256": "8a9dc76f2b19c4df116e13b5fb0411be6d24b98a40e1e4a22446f777365a130a",
   "trace_sha256": "fdb765746ac93b7e9ff24a78bea696312cf2e97e450ff79f2c8146977f9af8a4",
   "hand_edits": false,

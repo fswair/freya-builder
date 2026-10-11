@@ -36,10 +36,6 @@ For Freya validation, publication, export or synthetic practice, copy
 `FREYA_BANK_TEAM_KEY` or let the practice client create and reuse the ignored
 `.freya-team-key` file. Do not commit credentials.
 
-`environments/local/` and the `*-local` Make targets are optional package-development
-tools. They require the sibling checkouts listed in their requirements file and
-are not used by the standard installation or final builder command.
-
 ## Final case: folder + mock URL
 
 The [official hackathon page](https://www.freyavoice.ai/hackathon#submit) is the
@@ -50,9 +46,9 @@ the supplied bank-service contract as a separate Cloudflare Worker and deploys i
 before running the builder. Final case rules, values and names remain runtime
 inputs rather than additions to builder source or fixed prompts.
 
-The [mock-worker scaffold](mock-worker/README.txt) is not a working bank mock yet.
-Implement the released contract, test its customer records, deploy it, and keep
-the service available through the organizers' evaluation.
+The [bank-service mock](mock-worker/README.txt) implements the released contract
+and is deployed at the URL recorded in `submission/submission.json`. Keep the
+service available through the organizers' evaluation.
 
 ```bash
 uv run --locked python diagnostics/finalize_submission.py \
