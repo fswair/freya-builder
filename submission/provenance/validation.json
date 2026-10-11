@@ -1,0 +1,16 @@
+{
+  "status": "locally_validated",
+  "scope": "structure, source references and declared API destinations",
+  "node_count": 26,
+  "tool_count": 23,
+  "rule_count": 84,
+  "unresolved_policy_count": 6,
+  "freya_validation": "not_run",
+  "behavioral_evaluation": "not_run",
+  "limitations": [
+    "Rule coverage is declared by the model; semantic completeness is not proven.",
+    "Python snippets are syntax-checked, not executed or security-sandboxed here.",
+    "Official platform validation and customer simulations are still required.",
+    "Unresolved policy boundaries are declared, not proof of complete business support."
+  ]
+}

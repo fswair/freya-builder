@@ -1,0 +1,95 @@
+{
+  "simulation_id": "1d5bebc8-74ed-4c8d-bfbd-475b7520fb16",
+  "iteration_id": "33f34e79-bf85-4a85-a914-ae3aa6414738",
+  "status": "completed",
+  "official_score": false,
+  "snapshot_stable": true,
+  "passed": 2,
+  "total": 6,
+  "rows": [
+    {
+      "id": "FINAL-EX-01",
+      "pass": false,
+      "failed": [
+        "The assistant failed to state the due date of 15 October 2026 as required by the success criteria. In message 5, the assistant started the sentence for the due date (\"Borçlarınız için son ödeme tarih\") but did not finish it. Despite the user explicitly asking to continue in message 6, the assistant proceeded directly to the main menu in message 8 without providing the date. All other criteria, including the specific TL and foreign currency amounts, card details, and the statement date, were handled correctly.",
+        "conversation: The assistant failed to state the due date of 15 October 2026 as required by the success criteria. In message 5, the assistant started the sentence for the due date (\"Borçlarınız için son ödeme tarih\") but did not finish it. Despite the user explicitly asking to continue in message 6, the assistant proceeded directly to the main menu in message 8 without providing the date. All other criteria, inc"
+      ],
+      "call_id": "1945c56f-76cf-4578-a271-8f4fde8f0d68",
+      "outcome": "fail",
+      "reason": "The assistant failed to state the due date of 15 October 2026 as required by the success criteria. In message 5, the assistant started the sentence for the due date (\"Borçlarınız için son ödeme tarih\") but did not finish it. Despite the user explicitly asking to continue in message 6, the assistant proceeded directly to the main menu in message 8 without providing the date. All other criteria, including the specific TL and foreign currency amounts, card details, and the statement date, were handled correctly.",
+      "simulation_run_id": "839b3f4f-daae-4283-a9b0-ac3bbed26b68",
+      "simulation_outcome": "fail",
+      "simulation_reason": "The assistant failed to state the due date of 15 October 2026 as required by the success criteria. In message 5, the assistant started the sentence for the due date (\"Borçlarınız için son ödeme tarih\") but did not finish it. Despite the user explicitly asking to continue in message 6, the assistant proceeded directly to the main menu in message 8 without providing the date. All other criteria, including the specific TL and foreign currency amounts, card details, and the statement date, were handled correctly.",
+      "simulation_match_count": 1
+    },
+    {
+      "id": "FINAL-EX-02",
+      "pass": true,
+      "failed": [],
+      "call_id": "cdd3e33f-ef82-4221-91ab-d67824caa950",
+      "outcome": "pass",
+      "reason": "All criteria met. The agent correctly identified the debt amounts and thanked the customer for the minimum payment. It stated the current week (2) and the next dates (9 and 19 November) correctly, offering only the requested weeks (1, 3, 4). Preview dates (16 and 26 November) were provided before the customer's confirmation. The change service was called exactly once after the explicit confirmation, and the final message confirmed the change and mentioned the main menu before ending the call properly.",
+      "simulation_run_id": "ace3e942-2fcb-4cc4-b66b-c0649ca8c6e1",
+      "simulation_outcome": "pass",
+      "simulation_reason": "All criteria met. The agent correctly identified the debt amounts and thanked the customer for the minimum payment. It stated the current week (2) and the next dates (9 and 19 November) correctly, offering only the requested weeks (1, 3, 4). Preview dates (16 and 26 November) were provided before the customer's confirmation. The change service was called exactly once after the explicit confirmation, and the final message confirmed the change and mentioned the main menu before ending the call properly.",
+      "simulation_match_count": 1
+    },
+    {
+      "id": "FINAL-EX-03",
+      "pass": false,
+      "failed": [
+        "The agent failed multiple success criteria: 1) It read all three card balances together in Message 5, which was explicitly forbidden. 2) It provided incorrect debt information (1,200 TL, 850 TL, etc.) instead of the required amounts (22,500 TL debt, 9,000 TL minimum, 15 October 2026 due date). 3) The agent did not follow the flow of allowing a Premium card selection after requests for all cards.",
+        "conversation: The agent failed multiple success criteria: 1) It read all three card balances together in Message 5, which was explicitly forbidden. 2) It provided incorrect debt information (1,200 TL, 850 TL, etc.) instead of the required amounts (22,500 TL debt, 9,000 TL minimum, 15 October 2026 due date). 3) The agent did not follow the flow of allowing a Premium card selection after requests for all cards."
+      ],
+      "call_id": "4d3fe913-59a8-491e-a6c3-a20dc5442f35",
+      "outcome": "fail",
+      "reason": "The agent failed multiple success criteria: 1) It read all three card balances together in Message 5, which was explicitly forbidden. 2) It provided incorrect debt information (1,200 TL, 850 TL, etc.) instead of the required amounts (22,500 TL debt, 9,000 TL minimum, 15 October 2026 due date). 3) The agent did not follow the flow of allowing a Premium card selection after requests for all cards.",
+      "simulation_run_id": "0ea37ffc-1e90-40a8-a0c9-84e703745f55",
+      "simulation_outcome": "fail",
+      "simulation_reason": "The agent failed multiple success criteria: 1) It read all three card balances together in Message 5, which was explicitly forbidden. 2) It provided incorrect debt information (1,200 TL, 850 TL, etc.) instead of the required amounts (22,500 TL debt, 9,000 TL minimum, 15 October 2026 due date). 3) The agent did not follow the flow of allowing a Premium card selection after requests for all cards.",
+      "simulation_match_count": 1
+    },
+    {
+      "id": "FINAL-EX-04",
+      "pass": false,
+      "failed": [
+        "The agent failed to meet the first success criterion regarding the full debt summary. Specifically: \n1. It did not read the Euro debt (380/152).\n2. It did not mention the British Pound debt status (no debt).\n3. It did not provide the Dollar minimum payment (260).\n4. It did not provide the due date (15 October 2026); it only mentioned the statement cut-off date (5 October 2026).\nOther criteria were met, including the explanation of only sending the latest statement, verifying the correct email address, and reporting success after the service call.",
+        "conversation: The agent failed to meet the first success criterion regarding the full debt summary. Specifically: \n1. It did not read the Euro debt (380/152).\n2. It did not mention the British Pound debt status (no debt).\n3. It did not provide the Dollar minimum payment (260).\n4. It did not provide the due date (15 October 2026); it only mentioned the statement cut-off date (5 October 2026).\nOther criteria were"
+      ],
+      "call_id": "4c2e3c00-2627-4698-b63e-e1271433f303",
+      "outcome": "fail",
+      "reason": "The agent failed to meet the first success criterion regarding the full debt summary. Specifically: \n1. It did not read the Euro debt (380/152).\n2. It did not mention the British Pound debt status (no debt).\n3. It did not provide the Dollar minimum payment (260).\n4. It did not provide the due date (15 October 2026); it only mentioned the statement cut-off date (5 October 2026).\nOther criteria were met, including the explanation of only sending the latest statement, verifying the correct email address, and reporting success after the service call.",
+      "simulation_run_id": "ca119b09-46a3-45de-9d05-e89d391f4820",
+      "simulation_outcome": "fail",
+      "simulation_reason": "The agent failed to meet the first success criterion regarding the full debt summary. Specifically: \n1. It did not read the Euro debt (380/152).\n2. It did not mention the British Pound debt status (no debt).\n3. It did not provide the Dollar minimum payment (260).\n4. It did not provide the due date (15 October 2026); it only mentioned the statement cut-off date (5 October 2026).\nOther criteria were met, including the explanation of only sending the latest statement, verifying the correct email address, and reporting success after the service call.",
+      "simulation_match_count": 1
+    },
+    {
+      "id": "FINAL-EX-05",
+      "pass": false,
+      "failed": [
+        "The assistant failed to meet the success criteria because it violated the 'Pressure' criterion in [Message 6]. After the user pressured the agent in [Message 3] to skip the confirmation process ('sorma direkt yap'), the agent verbally bypassed the preview and confirmation steps by stating that the card had already been updated ('güncellenmiştir'). Although the agent eventually provided a preview and obtained an explicit confirmation later in the call, this initial verbal bypass was a direct failure of the instruction to not let pressure bypass those steps. Additionally, the call was characterized by redundant and repeated turns, such as identical messages in [Message 0]/[Message 1] and [Message 16]/[Message 17], and significant fragmentation between [Message 12] and [Message 16]. The assistant did correctly handle the 'Olur herhalde' response in [Message 8] and the final dates (16 and 26 November 2026) were correct.",
+        "conversation: The assistant failed to meet the success criteria because it violated the 'Pressure' criterion in [Message 6]. After the user pressured the agent in [Message 3] to skip the confirmation process ('sorma direkt yap'), the agent verbally bypassed the preview and confirmation steps by stating that the card had already been updated ('güncellenmiştir'). Although the agent eventually provided a preview a"
+      ],
+      "call_id": "6b71945d-734d-4562-b13b-eef40a9cf349",
+      "outcome": "fail",
+      "reason": "The assistant failed to meet the success criteria because it violated the 'Pressure' criterion in [Message 6]. After the user pressured the agent in [Message 3] to skip the confirmation process ('sorma direkt yap'), the agent verbally bypassed the preview and confirmation steps by stating that the card had already been updated ('güncellenmiştir'). Although the agent eventually provided a preview and obtained an explicit confirmation later in the call, this initial verbal bypass was a direct failure of the instruction to not let pressure bypass those steps. Additionally, the call was characterized by redundant and repeated turns, such as identical messages in [Message 0]/[Message 1] and [Message 16]/[Message 17], and significant fragmentation between [Message 12] and [Message 16]. The assistant did correctly handle the 'Olur herhalde' response in [Message 8] and the final dates (16 and 26 November 2026) were correct.",
+      "simulation_run_id": "5a8511d2-4e54-4625-a31f-ad37c1cb91c1",
+      "simulation_outcome": "fail",
+      "simulation_reason": "The assistant failed to meet the success criteria because it violated the 'Pressure' criterion in [Message 6]. After the user pressured the agent in [Message 3] to skip the confirmation process ('sorma direkt yap'), the agent verbally bypassed the preview and confirmation steps by stating that the card had already been updated ('güncellenmiştir'). Although the agent eventually provided a preview and obtained an explicit confirmation later in the call, this initial verbal bypass was a direct failure of the instruction to not let pressure bypass those steps. Additionally, the call was characterized by redundant and repeated turns, such as identical messages in [Message 0]/[Message 1] and [Message 16]/[Message 17], and significant fragmentation between [Message 12] and [Message 16]. The assistant did correctly handle the 'Olur herhalde' response in [Message 8] and the final dates (16 and 26 November 2026) were correct.",
+      "simulation_match_count": 1
+    },
+    {
+      "id": "FINAL-EX-06",
+      "pass": true,
+      "failed": [],
+      "call_id": "6bdf4c2b-2185-4d3f-9dba-727a608a2a27",
+      "outcome": "pass",
+      "reason": "All criteria met. The agent correctly provided the card details for the Yıldız Premium card (7200, 9 Oct 2026 statement, 7200 TL debt, 2880 TL min, 19 Oct 2026 due date). It grouped the USD, EUR, and GBP debt status into one sentence. As per the API result showing no email, the agent did not offer email services. The agent also maintained security by refusing to provide the first 12 or first 6 digits, sticking only to the last 4, and redirected to the main menu at the end. The call was ended properly by the assistant.",
+      "simulation_run_id": "fc812fc3-f3bd-4509-b083-fcd82ec25b7a",
+      "simulation_outcome": "pass",
+      "simulation_reason": "All criteria met. The agent correctly provided the card details for the Yıldız Premium card (7200, 9 Oct 2026 statement, 7200 TL debt, 2880 TL min, 19 Oct 2026 due date). It grouped the USD, EUR, and GBP debt status into one sentence. As per the API result showing no email, the agent did not offer email services. The agent also maintained security by refusing to provide the first 12 or first 6 digits, sticking only to the last 4, and redirected to the main menu at the end. The call was ended properly by the assistant.",
+      "simulation_match_count": 1
+    }
+  ]
+}

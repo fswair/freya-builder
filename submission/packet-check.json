@@ -1,0 +1,14 @@
+{
+  "source_run": "runs/final-006",
+  "builder_source_commit": "018c4a355e67b477a638d54a48c63863c4dfe162",
+  "named_delivery_commit": "freya-final-20261011",
+  "workflow_sha256": "8a9dc76f2b19c4df116e13b5fb0411be6d24b98a40e1e4a22446f777365a130a",
+  "trace_sha256": "fdb765746ac93b7e9ff24a78bea696312cf2e97e450ff79f2c8146977f9af8a4",
+  "hand_edits": false,
+  "official_submission_sent": false,
+  "behavioral_quality_accepted": false,
+  "model_calls": 3,
+  "supporting_files": 14,
+  "reproduction_command": "uv run --locked python diagnostics/finalize_submission.py {case_folder} --mock-url {mock_url} --guidance benchmarks/builder-guidance-v3.txt --slot final --model gpt-6-astra --reasoning high --seconds 1800 --build-seconds 1750 --call-seconds 900 --out runs/final-reproduction",
+  "delivery_commit_note": "The named Git tag must resolve to the commit containing these exact files before delivery."
+}

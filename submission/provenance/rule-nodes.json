@@ -1,0 +1,451 @@
+{
+  "deployment-01": [
+    "cards_list",
+    "balance",
+    "contact",
+    "week_get",
+    "preview",
+    "change",
+    "send"
+  ],
+  "deployment-02": [
+    "initialize",
+    "cards_list",
+    "balance",
+    "technical_end"
+  ],
+  "deployment-03": [
+    "result",
+    "engine",
+    "no_cards_end",
+    "technical_end"
+  ],
+  "deployment-04": [
+    "initialize",
+    "scope_dialogue"
+  ],
+  "deployment-05": [
+    "initialize",
+    "scope_dialogue"
+  ],
+  "context-01": [
+    "initialize",
+    "engine",
+    "dialogue"
+  ],
+  "legacy-auth": [
+    "initialize",
+    "cards_list"
+  ],
+  "auth-01": [
+    "initialize",
+    "cards_list"
+  ],
+  "card-01": [
+    "engine",
+    "dialogue",
+    "balance"
+  ],
+  "card-02": [
+    "cards_list",
+    "engine",
+    "no_cards_end"
+  ],
+  "card-03": [
+    "engine",
+    "dialogue",
+    "no_cards_end"
+  ],
+  "card-04": [
+    "engine",
+    "dialogue",
+    "tries_end"
+  ],
+  "legacy-card-disambiguation": [
+    "engine",
+    "dialogue",
+    "limitation_boundary"
+  ],
+  "card-05": [
+    "engine",
+    "dialogue",
+    "limitation_boundary"
+  ],
+  "card-06": [
+    "engine",
+    "dialogue",
+    "tries_end"
+  ],
+  "card-07": [
+    "engine",
+    "dialogue"
+  ],
+  "legacy-masking": [
+    "engine",
+    "dialogue"
+  ],
+  "security-01": [
+    "engine",
+    "dialogue"
+  ],
+  "security-02": [
+    "engine",
+    "login_end"
+  ],
+  "security-03": [
+    "engine",
+    "dialogue"
+  ],
+  "security-04": [
+    "engine",
+    "dialogue",
+    "scope_dialogue"
+  ],
+  "reading-01": [
+    "balance",
+    "engine",
+    "dialogue"
+  ],
+  "reading-02": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-03": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-04": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-05": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-06": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-07": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-08": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-09": [
+    "engine",
+    "dialogue"
+  ],
+  "legacy-no-debt": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-10": [
+    "engine",
+    "dialogue",
+    "menu_end"
+  ],
+  "reading-11": [
+    "engine",
+    "dialogue",
+    "menu_end"
+  ],
+  "reading-12": [
+    "engine",
+    "dialogue"
+  ],
+  "reading-13": [
+    "engine",
+    "dialogue"
+  ],
+  "legacy-speech": [
+    "engine",
+    "dialogue"
+  ],
+  "speech-01": [
+    "engine",
+    "dialogue"
+  ],
+  "speech-02": [
+    "engine",
+    "dialogue"
+  ],
+  "followup-01": [
+    "engine",
+    "dialogue"
+  ],
+  "followup-02": [
+    "contact",
+    "engine",
+    "dialogue",
+    "limitation_boundary"
+  ],
+  "followup-03": [
+    "engine",
+    "dialogue",
+    "contact"
+  ],
+  "legacy-email-address": [
+    "engine",
+    "dialogue",
+    "send"
+  ],
+  "email-01": [
+    "contact",
+    "engine",
+    "dialogue",
+    "send"
+  ],
+  "email-02": [
+    "engine",
+    "dialogue",
+    "send"
+  ],
+  "email-03": [
+    "engine",
+    "limitation_boundary",
+    "menu_end"
+  ],
+  "email-04": [
+    "engine",
+    "dialogue",
+    "menu_end"
+  ],
+  "email-05": [
+    "engine",
+    "send",
+    "dialogue",
+    "technical_end",
+    "menu_end"
+  ],
+  "legacy-week-limit": [
+    "engine",
+    "dialogue",
+    "limitation_boundary"
+  ],
+  "week-01": [
+    "engine",
+    "dialogue",
+    "change",
+    "limitation_boundary"
+  ],
+  "week-02": [
+    "engine",
+    "dialogue",
+    "week_get",
+    "preview",
+    "change"
+  ],
+  "week-03": [
+    "week_get",
+    "engine",
+    "dialogue"
+  ],
+  "week-04": [
+    "engine",
+    "dialogue",
+    "preview"
+  ],
+  "week-05": [
+    "engine",
+    "preview"
+  ],
+  "legacy-joint-confirmation": [
+    "engine",
+    "dialogue"
+  ],
+  "week-06": [
+    "week_get",
+    "engine",
+    "dialogue",
+    "change"
+  ],
+  "week-07": [
+    "engine",
+    "dialogue",
+    "tries_end"
+  ],
+  "week-08": [
+    "engine",
+    "change",
+    "dialogue",
+    "menu_end"
+  ],
+  "week-09": [
+    "engine",
+    "dialogue"
+  ],
+  "legacy-week-failure": [
+    "week_error_end"
+  ],
+  "week-10": [
+    "engine",
+    "week_error_end"
+  ],
+  "dialogue-01": [
+    "engine",
+    "dialogue",
+    "scope_dialogue",
+    "tries_end"
+  ],
+  "legacy-silence": [
+    "engine",
+    "silence_end"
+  ],
+  "dialogue-02": [
+    "engine",
+    "dialogue",
+    "scope_dialogue",
+    "silence_end"
+  ],
+  "legacy-out-of-scope": [
+    "engine",
+    "scope_dialogue"
+  ],
+  "dialogue-03": [
+    "engine",
+    "scope_dialogue",
+    "menu_end"
+  ],
+  "dialogue-04": [
+    "engine",
+    "dialogue",
+    "menu_end"
+  ],
+  "dialogue-05": [
+    "engine",
+    "language_end"
+  ],
+  "agent-01": [
+    "engine",
+    "agent_end"
+  ],
+  "legacy-payment-guidance": [
+    "engine",
+    "payment_end"
+  ],
+  "agent-02": [
+    "engine",
+    "payment_end"
+  ],
+  "agent-03": [
+    "engine",
+    "dispute_end"
+  ],
+  "legacy-calming-one": [
+    "engine",
+    "dialogue",
+    "agent_end"
+  ],
+  "legacy-calming-two": [
+    "engine",
+    "dialogue",
+    "agent_end"
+  ],
+  "agent-04": [
+    "engine",
+    "dialogue",
+    "agent_end"
+  ],
+  "agent-05": [
+    "result",
+    "engine",
+    "technical_end",
+    "week_error_end",
+    "no_cards_end"
+  ],
+  "service-01": [
+    "cards_list",
+    "balance",
+    "week_get",
+    "preview",
+    "technical_end"
+  ],
+  "service-02": [
+    "cards_list",
+    "balance",
+    "contact",
+    "week_get",
+    "preview",
+    "change",
+    "send",
+    "result",
+    "engine"
+  ],
+  "service-03": [
+    "engine",
+    "balance",
+    "week_get",
+    "preview",
+    "change",
+    "send"
+  ],
+  "service-04": [
+    "engine",
+    "cards_list",
+    "contact",
+    "send"
+  ],
+  "service-05": [
+    "balance",
+    "engine",
+    "dialogue"
+  ],
+  "service-06": [
+    "initialize",
+    "technical_end"
+  ],
+  "service-07": [
+    "initialize",
+    "cards_list",
+    "balance",
+    "contact",
+    "week_get",
+    "preview",
+    "change",
+    "send"
+  ],
+  "service-08": [
+    "result",
+    "engine",
+    "no_cards_end",
+    "technical_end",
+    "week_error_end"
+  ],
+  "acceptance-01": [
+    "week_get",
+    "engine",
+    "dialogue",
+    "preview",
+    "change",
+    "menu_end"
+  ],
+  "unresolved-1": [
+    "dialogue",
+    "limitation_boundary",
+    "menu_end"
+  ],
+  "unresolved-2": [
+    "limitation_boundary",
+    "tries_end",
+    "menu_end"
+  ],
+  "unresolved-3": [
+    "login_end"
+  ],
+  "unresolved-4": [
+    "scope_dialogue",
+    "menu_end"
+  ],
+  "unresolved-5": [
+    "scope_dialogue",
+    "limitation_boundary",
+    "menu_end"
+  ],
+  "unresolved-6": [
+    "scope_dialogue",
+    "menu_end"
+  ]
+}

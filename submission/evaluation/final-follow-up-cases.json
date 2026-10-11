@@ -1,0 +1,42 @@
+[
+  {
+    "id": "FINAL-FU-01",
+    "title": "New card without a cut statement",
+    "variables": {"customerNumber": "97631186", "now": "2026-10-12T10:30:00+03:00"},
+    "script": "You called to learn your new card's statement debt. Listen to the answer. If asked about another action, say 'Teşekkür ederim, başka bir işlem istemiyorum.' Do not request other services.",
+    "checks": [
+      "The assistant selects the single Yıldız Genç card ending in 2020 without requesting identity or card selection.",
+      "It explains that there is no statement debt because no statement has been cut yet, without inventing a past statement date or a payment due date.",
+      "If it mentions the first cut date, it uses exactly 5 November 2026 from nextStatementDate; it does not present this future date as an existing statement date.",
+      "It does not misrepresent 860.40 of current total spending as debt on an already issued statement.",
+      "It accepts thanks and the refusal of further service without repeated offers."
+    ]
+  },
+  {
+    "id": "FINAL-FU-02",
+    "title": "Statement cut day uses total debt",
+    "variables": {"customerNumber": "95004361", "now": "2026-10-05T10:30:00+03:00"},
+    "script": "You called to learn your single card's debt. Listen to the amounts and dates. When asked about anything else, say 'Hayır, teşekkür ederim.' Do not ask for any transaction.",
+    "checks": [
+      "The agent uses the supplied now variable as the date and recognizes the statement cut day.",
+      "It reads total debt of 9500 Türk Lirası and 85.20 Euro, instead of treating the old 12000 statementDebt as today's total.",
+      "The preferred opening explains the statement cuts today at 00.00. The 10 October follow-up explicitly also accepts the due-date opening; do not fail solely for that alternate opening when the total-debt reading is correct.",
+      "The clear currencies are grouped as Dolar ve İngiliz Sterlini. No spoken currency code or shortened Sterlin replaces the required full names.",
+      "It accepts the refusal of further service."
+    ]
+  },
+  {
+    "id": "FINAL-FU-03",
+    "title": "Other card question precedes transaction offers",
+    "variables": {"customerNumber": "97526380", "now": "2026-10-12T10:30:00+03:00"},
+    "script": "Start by saying 'Premium kartımın borcunu öğrenmek istiyorum.' After its debt is read, wait for the assistant's next question. If asked whether you want another card's debt, say 'Evet, Fly kartımı da öğrenmek istiyorum.' After Fly is read, decline any more card readings with 'Hayır, diğer kartı istemiyorum.' If a transaction is offered, decline with 'Başka işlem istemiyorum, teşekkürler.' If the assistant skips the other-card question and offers transactions early, answer 'Önce Fly kartımı da söyler misiniz?' and continue naturally.",
+    "checks": [
+      "The unique Premium request selects card 1101 without asking a redundant card-choice question.",
+      "Premium is read with 22500 Türk Lirası statement debt, 9000 minimum and due date 15 October 2026.",
+      "Before offering email or statement-week changes, the assistant asks Başka bir kartınızın borcunu öğrenmek ister misiniz? because unread eligible cards remain.",
+      "The Fly request selects card 1102, reads statement debt 8400, remaining debt 3100 Türk Lirası, thanks for the minimum payment, and reads Euro debt 275.30 with minimum 110.12 and due date 19 October 2026.",
+      "Only after the user declines the remaining card does the assistant proceed to transaction offers.",
+      "Dolar and İngiliz Sterlini are pronounced as names, never codes; no claim is made about a card without its own service response."
+    ]
+  }
+]

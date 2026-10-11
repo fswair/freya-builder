@@ -1,0 +1,1563 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Freya Bank statement and debt services",
+    "version": "2026-10-01",
+    "description": "Seven JSON bank services and the documented production token operation. The server is the explicitly supplied mock deployment. Production uses an integration-owned OAuth2 client-credentials bearer token; test/mock does not check tokens, headers or call metadata. All seven service requests and responses use UTF-8 JSON. Customer fixtures and workflow policy are not API defaults."
+  },
+  "servers": [
+    {
+      "url": "https://freya-hackathon-mock.swair.workers.dev"
+    }
+  ],
+  "security": [],
+  "x-production-security": [
+    {
+      "BankOAuth": [
+        "voice.statement"
+      ]
+    }
+  ],
+  "x-service-headers": {
+    "production": {
+      "Authorization": "Bearer <token>",
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    "test": "Token and headers are not checked. The source recommends sending the production headers anyway; no credentials are invented or required for the mock."
+  },
+  "paths": {
+    "/oauth2/token": {
+      "post": {
+        "operationId": "getAccessToken",
+        "summary": "Obtain an integration bearer token",
+        "description": "Production gateway dependency, not caller authentication. Credentials are supplied separately through a secure channel. Cache the token and refresh when it expires rather than fetching it per call. The token operation is documented here for completeness; its implementation on the mock is not specified and it is not a prerequisite for mock service calls.",
+        "x-deployment-applicability": {
+          "production": "Documented token operation",
+          "testMock": "Not required; token validation is exempt and mock implementation is not specified"
+        },
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "grant_type",
+                  "client_id",
+                  "client_secret",
+                  "scope"
+                ],
+                "properties": {
+                  "grant_type": {
+                    "type": "string",
+                    "enum": [
+                      "client_credentials"
+                    ]
+                  },
+                  "client_id": {
+                    "type": "string"
+                  },
+                  "client_secret": {
+                    "type": "string",
+                    "writeOnly": true
+                  },
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "voice.statement"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "2XX": {
+            "description": "Documented token answer; exact successful HTTP status is not specified.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "access_token",
+                    "token_type",
+                    "expires_in"
+                  ],
+                  "properties": {
+                    "access_token": {
+                      "type": "string"
+                    },
+                    "token_type": {
+                      "type": "string",
+                      "description": "The documented token type is Bearer."
+                    },
+                    "expires_in": {
+                      "type": "number",
+                      "description": "The documented answer shows 1800 seconds; this is not encoded as a default or exhaustive allowed value."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/voice/v1/cards.list": {
+      "post": {
+        "operationId": "cardsList",
+        "summary": "List the customer's cards",
+        "description": "Returns active cards, including cards whose isMainCard is false. Use returned cardNumber values exactly in subsequent requests. Product names are free text and last-four digits are not unique.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestEnvelope"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "object",
+                        "required": [
+                          "customerNo",
+                          "aiFlow"
+                        ],
+                        "properties": {
+                          "customerNo": {
+                            "$ref": "#/components/schemas/CustomerNo"
+                          },
+                          "aiFlow": {
+                            "type": "string",
+                            "description": "Use-case identifier: CardOps for this use case. Not validated in test.",
+                            "x-documented-use-case-value": "CardOps"
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success with result.returnCode equal to \"1\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "cards",
+                            "validCardsCount",
+                            "exitState"
+                          ],
+                          "properties": {
+                            "cards": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Card"
+                              }
+                            },
+                            "validCardsCount": {
+                              "type": "number"
+                            },
+                            "exitState": {
+                              "type": "string",
+                              "enum": [
+                                "1_CARD",
+                                "MULTI_CARD"
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NoValidCard"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/cards.balance": {
+      "post": {
+        "operationId": "cardsBalance",
+        "summary": "Get statement dates and debt per currency for one card",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CardRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "Success with result.returnCode equal to \"1\". A currency block may be absent; absence is not zero debt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/BalanceData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/BalanceCardNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/statement.week.get": {
+      "post": {
+        "operationId": "statementWeekGet",
+        "summary": "Get current statement week, day, dates and shared-statement information",
+        "description": "Does not return a flag indicating whether the yearly statement-week change right remains available. M and C describe the main and linked cards of a shared statement; changing either moves both cards' shared statement.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/CardRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "Success with result.returnCode equal to \"1\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/WeekData"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/WeekCardNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/statement.week.decide": {
+      "post": {
+        "operationId": "statementWeekDecide",
+        "summary": "Preview dates for a requested statement week",
+        "description": "Read-only preview; does not change the card. Send the current statementDay from statement.week.get. Asking for the existing week produces an error; the precise response for that condition is not separately specified.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/WeekRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "Success with result.returnCode equal to \"1\"; data.responseCode 0 means the preview is fine.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "statementDate",
+                            "statementDueDate",
+                            "statementDay",
+                            "responseCode",
+                            "responseMessage"
+                          ],
+                          "properties": {
+                            "statementDate": {
+                              "allOf": [
+                                {
+                                  "$ref": "#/components/schemas/BankDate"
+                                }
+                              ],
+                              "description": "First statement date under the requested week."
+                            },
+                            "statementDueDate": {
+                              "allOf": [
+                                {
+                                  "$ref": "#/components/schemas/BankDate"
+                                }
+                              ],
+                              "description": "First due date under the requested week; field name differs from lastPayDate."
+                            },
+                            "statementDay": {
+                              "type": "number"
+                            },
+                            "responseCode": {
+                              "type": "number",
+                              "description": "0 = fine; an exhaustive enum is not documented."
+                            },
+                            "responseMessage": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/statement.week.change": {
+      "post": {
+        "operationId": "statementWeekChange",
+        "summary": "Change the statement week",
+        "description": "Side-effecting operation. The source requires caller agreement to the preview dates before this call. Send the current statementDay even though the backend recalculates it. The response does not return the new dates; those are in statement.week.decide.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/WeekRequest"
+        },
+        "responses": {
+          "200": {
+            "description": "Envelope success requires result.returnCode \"1\". Change success additionally requires data.exitState \"OK\" and data.responseCode 0.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "responseCode",
+                            "responseMessage",
+                            "statementWeek",
+                            "statementDay",
+                            "exitState"
+                          ],
+                          "properties": {
+                            "responseCode": {
+                              "type": "number",
+                              "description": "0 indicates successful change when exitState is OK."
+                            },
+                            "responseMessage": {
+                              "type": "string"
+                            },
+                            "statementWeek": {
+                              "type": "string",
+                              "description": "Week returned as a string, unlike statement.week.get."
+                            },
+                            "statementDay": {
+                              "type": "string",
+                              "description": "Recalculated day returned as a string. The source says to use the preview dates rather than this field for the caller's dates."
+                            },
+                            "exitState": {
+                              "type": "string",
+                              "description": "OK indicates successful change with responseCode 0; no exhaustive enum is documented."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/contact.email.get": {
+      "post": {
+        "operationId": "contactEmailGet",
+        "summary": "Get registered email and/or phone information",
+        "description": "intAddressInfoType selects email, phone or both in the documented service. Test returns the same answer regardless of this selector. ibanEmail is the registered email; ttsEmail is its speech-prepared form. The iban prefix is historical, not an IBAN.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestEnvelope"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "object",
+                        "required": [
+                          "customerNo",
+                          "intAddressInfoType"
+                        ],
+                        "properties": {
+                          "customerNo": {
+                            "$ref": "#/components/schemas/CustomerNo"
+                          },
+                          "intAddressInfoType": {
+                            "type": "string",
+                            "enum": [
+                              "E",
+                              "P",
+                              "B"
+                            ],
+                            "description": "E = email, P = phone, B = both. Empty produces HTTP 400."
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success with result.returnCode equal to \"1\". No registered email is represented by communicationType Phone and/or empty ibanEmail.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "communicationType",
+                            "ibanCountryCode",
+                            "ibanAreaCode",
+                            "ibanPhoneNum",
+                            "ibanEmail",
+                            "ttsEmail",
+                            "commGramType",
+                            "exitState"
+                          ],
+                          "properties": {
+                            "communicationType": {
+                              "type": "string",
+                              "description": "Documented examples: Both and Phone. These are not declared to be an exhaustive enum."
+                            },
+                            "ibanCountryCode": {
+                              "type": "string"
+                            },
+                            "ibanAreaCode": {
+                              "type": "string"
+                            },
+                            "ibanPhoneNum": {
+                              "type": "string"
+                            },
+                            "ibanEmail": {
+                              "type": "string",
+                              "description": "Registered email address; may be empty."
+                            },
+                            "ttsEmail": {
+                              "type": "string",
+                              "description": "Address prepared for reading aloud; currently identical in practice to ibanEmail. May be empty."
+                            },
+                            "commGramType": {
+                              "type": "string",
+                              "description": "The response examples show A; no exhaustive enum is documented."
+                            },
+                            "exitState": {
+                              "type": "string",
+                              "description": "The response examples show Done; no exhaustive enum is documented."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    },
+    "/voice/v1/statement.pdf.send": {
+      "post": {
+        "operationId": "statementPdfSend",
+        "summary": "Send a statement PDF by email",
+        "description": "Sends to emailAddress in the request; the backend does not check that it equals the registered address. The source identifies statementDate as the issued statementDate from cards.balance. Registered-address-only and confirmation requirements belong to workflow policy, not extra HTTP fields.",
+        "x-deployment-applicability": [
+          "production",
+          "testMock"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/RequestEnvelope"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "data": {
+                        "type": "object",
+                        "required": [
+                          "customerNo",
+                          "cardNumber",
+                          "currencyType",
+                          "statementDate",
+                          "emailAddress"
+                        ],
+                        "properties": {
+                          "customerNo": {
+                            "$ref": "#/components/schemas/CustomerNo"
+                          },
+                          "cardNumber": {
+                            "$ref": "#/components/schemas/RequestCardNumber"
+                          },
+                          "currencyType": {
+                            "type": "string",
+                            "enum": [
+                              "TL",
+                              "USD",
+                              "EUR",
+                              "GBP"
+                            ]
+                          },
+                          "statementDate": {
+                            "allOf": [
+                              {
+                                "$ref": "#/components/schemas/BankDate"
+                              }
+                            ],
+                            "description": "Issued statementDate from cards.balance."
+                          },
+                          "emailAddress": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Destination address. Backend does not compare it with the registered address."
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful send: result.returnCode \"1\" and data.exitState \"DONE\".",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/SuccessEnvelope"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "required": [
+                            "exitState"
+                          ],
+                          "properties": {
+                            "exitState": {
+                              "type": "string",
+                              "description": "A successful send returns DONE."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/InvalidArguments"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/PdfNotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/TechnicalError"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BankOAuth": {
+        "type": "oauth2",
+        "description": "Production integration service-account OAuth2 client credentials. Use access_token in Authorization: Bearer <token>. Test/mock does not check authentication; this scheme is retained as the production contract, not imposed on the supplied mock.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "/oauth2/token",
+            "scopes": {
+              "voice.statement": "Statement and debt services"
+            }
+          }
+        }
+      }
+    },
+    "requestBodies": {
+      "CardRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/RequestEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "cardNumber"
+                      ],
+                      "properties": {
+                        "cardNumber": {
+                          "$ref": "#/components/schemas/RequestCardNumber"
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "WeekRequest": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/RequestEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "cardNumber",
+                        "newStatementWeek",
+                        "statementDay"
+                      ],
+                      "properties": {
+                        "cardNumber": {
+                          "$ref": "#/components/schemas/RequestCardNumber"
+                        },
+                        "newStatementWeek": {
+                          "oneOf": [
+                            {
+                              "type": "number",
+                              "enum": [
+                                1,
+                                2,
+                                3,
+                                4
+                              ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "1",
+                                "2",
+                                "3",
+                                "4"
+                              ]
+                            }
+                          ],
+                          "description": "Requested week; number or string accepted."
+                        },
+                        "statementDay": {
+                          "type": "number",
+                          "description": "Current statementDay from statement.week.get, not the preview's new day. Required for change even though the backend recalculates it."
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "CustomerNo": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1
+          },
+          {
+            "type": "number"
+          }
+        ],
+        "description": "Customer number supplied by IVR. String and number are accepted explicitly for cards.list and across the test environment. The production examples use a number for contact.email.get and a string for statement.pdf.send."
+      },
+      "RequestCardNumber": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Send exactly the cardNumber returned by cards.list. Do not reconstruct it from caller-provided digits or use the differently masked cards.balance response."
+      },
+      "BankDate": {
+        "type": "string",
+        "pattern": "^[0-9]{2}\\.[0-9]{2}\\.[0-9]{4}$",
+        "description": "Date string in dd.MM.yyyy, not ISO date format."
+      },
+      "IssuedDate": {
+        "type": "string",
+        "pattern": "^([0-9]{2}\\.[0-9]{2}\\.[0-9]{4})?$",
+        "description": "Issued statement or due date in dd.MM.yyyy; empty string is documented in test when no statement has been issued."
+      },
+      "CallMetadata": {
+        "type": "object",
+        "description": "Logged call metadata, ignored by test. Its presence and individual fields' requiredness are not explicitly specified. The documented envelope includes ani and lang.",
+        "properties": {
+          "ani": {
+            "type": "string",
+            "description": "Caller's telephone number."
+          },
+          "lang": {
+            "type": "string",
+            "description": "The documented requests use tr. No exhaustive language enum is specified."
+          }
+        }
+      },
+      "RequestEnvelope": {
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "properties": {
+          "data": {
+            "type": "object"
+          },
+          "call": {
+            "$ref": "#/components/schemas/CallMetadata"
+          }
+        },
+        "description": "Documented data/call request envelope. Service inputs are in data. No invented call metadata is needed for test, which ignores call."
+      },
+      "ResultDetails": {
+        "type": "object",
+        "required": [
+          "guid",
+          "rootCause",
+          "errorOrigin"
+        ],
+        "properties": {
+          "guid": {
+            "type": "string"
+          },
+          "rootCause": {
+            "type": "string",
+            "nullable": true,
+            "description": "Diagnostic string in errors; null in the documented successful envelope."
+          },
+          "errorOrigin": {
+            "type": "string",
+            "nullable": true,
+            "description": "Diagnostic string in errors; null in the documented successful envelope."
+          }
+        }
+      },
+      "SuccessResult": {
+        "type": "object",
+        "required": [
+          "guid",
+          "returnCode",
+          "messageText",
+          "code",
+          "message",
+          "type",
+          "details"
+        ],
+        "properties": {
+          "guid": {
+            "type": "string",
+            "description": "Bank trace identifier; not constrained to UUID format."
+          },
+          "returnCode": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "messageText": {
+            "type": "string",
+            "description": "Success in the documented envelope; same value as message."
+          },
+          "code": {
+            "type": "string",
+            "enum": [
+              "1"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "description": "Same value as messageText."
+          },
+          "type": {
+            "type": "string",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "details": {
+            "$ref": "#/components/schemas/ResultDetails"
+          }
+        }
+      },
+      "SuccessEnvelope": {
+        "type": "object",
+        "required": [
+          "data",
+          "result"
+        ],
+        "properties": {
+          "data": {
+            "type": "object"
+          },
+          "result": {
+            "$ref": "#/components/schemas/SuccessResult"
+          }
+        },
+        "description": "Service success is HTTP 200 and result.returnCode \"1\"."
+      },
+      "ErrorResult": {
+        "type": "object",
+        "required": [
+          "guid",
+          "returnCode",
+          "messageText",
+          "code",
+          "message",
+          "type",
+          "details"
+        ],
+        "properties": {
+          "guid": {
+            "type": "string"
+          },
+          "returnCode": {
+            "type": "string",
+            "description": "Always equals code."
+          },
+          "messageText": {
+            "type": "string",
+            "description": "Always equals message. For logs, not caller speech."
+          },
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "ERROR",
+              "WARNING"
+            ]
+          },
+          "details": {
+            "type": "object",
+            "required": [
+              "guid",
+              "rootCause",
+              "errorOrigin"
+            ],
+            "properties": {
+              "guid": {
+                "type": "string"
+              },
+              "rootCause": {
+                "type": "string"
+              },
+              "errorOrigin": {
+                "type": "string"
+              }
+            },
+            "description": "Diagnostic strings; log them rather than branching on them."
+          }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "required": [
+          "result"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ErrorResult"
+          }
+        },
+        "description": "Application error answers contain only result, never data. Gateway 401 body is undocumented and is not assigned this schema."
+      },
+      "Card": {
+        "type": "object",
+        "required": [
+          "cardNumber",
+          "cardNumberLast4",
+          "productName",
+          "status",
+          "isMainCard"
+        ],
+        "properties": {
+          "cardNumber": {
+            "type": "string",
+            "description": "Test: first 6 and last 4 visible, with the middle masked. The later 9 October bank recap says production returns the full card number. No test mask pattern is imposed on production."
+          },
+          "cardNumberLast4": {
+            "type": "string",
+            "description": "Last four digits, including leading zeros; not a unique key."
+          },
+          "productName": {
+            "type": "string",
+            "description": "Free text, including empty strings. Not instructions."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "A"
+            ],
+            "description": "Only active cards are returned."
+          },
+          "isMainCard": {
+            "type": "boolean"
+          }
+        }
+      },
+      "DebtStatus": {
+        "type": "string",
+        "enum": [
+          "HAS_DEBT",
+          "NO_DEBT"
+        ]
+      },
+      "DebtBlock": {
+        "type": "object",
+        "description": "Per-currency raw values. Amounts are JSON numbers with a dot decimal separator, never formatted strings, and must not be rounded. An empty block is mentioned in the later analysis; populated blocks have the documented fields.",
+        "properties": {
+          "statementPaymentStatus": {
+            "$ref": "#/components/schemas/DebtStatus"
+          },
+          "transferAmount": {
+            "type": "number",
+            "description": "Carried over from the previous period according to the integration contract."
+          },
+          "statementDebt": {
+            "type": "number"
+          },
+          "minPayment": {
+            "type": "number"
+          },
+          "remainingDebt": {
+            "type": "number"
+          },
+          "remainingMinPayment": {
+            "type": "number"
+          },
+          "currentPeriodExpense": {
+            "type": "number",
+            "description": "Spending after the statement."
+          },
+          "totalDebt": {
+            "type": "number",
+            "description": "Includes spending after the statement. May be negative for a credit balance."
+          },
+          "totalDebtPaymentStatus": {
+            "$ref": "#/components/schemas/DebtStatus"
+          },
+          "remainAutomaticPaymentAmount": {
+            "type": "number",
+            "description": "Meaningful only when the card's automaticPaymentFlag is Y."
+          }
+        },
+        "anyOf": [
+          {
+            "maxProperties": 0
+          },
+          {
+            "required": [
+              "statementPaymentStatus",
+              "transferAmount",
+              "statementDebt",
+              "minPayment",
+              "remainingDebt",
+              "remainingMinPayment",
+              "currentPeriodExpense",
+              "totalDebt",
+              "totalDebtPaymentStatus",
+              "remainAutomaticPaymentAmount"
+            ]
+          }
+        ]
+      },
+      "BalanceData": {
+        "type": "object",
+        "required": [
+          "cardNumber",
+          "cardNumberLast4",
+          "productName",
+          "statementDate",
+          "lastPayDate",
+          "nextStatementDate",
+          "nextLastPayDate",
+          "statementPaymentStatus",
+          "totalDebtPaymentStatus",
+          "automaticPaymentFlag"
+        ],
+        "properties": {
+          "cardNumber": {
+            "type": "string",
+            "description": "Masked differently from cards.list: first 4 and last 4 visible. Retain the original request cardNumber for subsequent calls."
+          },
+          "cardNumberLast4": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "statementDate": {
+            "$ref": "#/components/schemas/IssuedDate"
+          },
+          "lastPayDate": {
+            "$ref": "#/components/schemas/IssuedDate"
+          },
+          "nextStatementDate": {
+            "$ref": "#/components/schemas/BankDate"
+          },
+          "nextLastPayDate": {
+            "$ref": "#/components/schemas/BankDate"
+          },
+          "debtTL": {
+            "$ref": "#/components/schemas/DebtBlock"
+          },
+          "debtUSD": {
+            "$ref": "#/components/schemas/DebtBlock"
+          },
+          "debtEUR": {
+            "$ref": "#/components/schemas/DebtBlock"
+          },
+          "debtGBP": {
+            "$ref": "#/components/schemas/DebtBlock"
+          },
+          "statementPaymentStatus": {
+            "$ref": "#/components/schemas/DebtStatus"
+          },
+          "totalDebtPaymentStatus": {
+            "$ref": "#/components/schemas/DebtStatus"
+          },
+          "automaticPaymentFlag": {
+            "type": "string",
+            "enum": [
+              "Y",
+              "N"
+            ]
+          }
+        }
+      },
+      "WeekData": {
+        "type": "object",
+        "required": [
+          "cardNumber",
+          "cardNumberLast4",
+          "productName",
+          "statementWeek",
+          "statementDay",
+          "statementDate",
+          "lastPayDate",
+          "nextStatementDate",
+          "nextLastPayDate",
+          "relationType",
+          "relatedCardNumber",
+          "relatedCardProductName"
+        ],
+        "properties": {
+          "cardNumber": {
+            "type": "string"
+          },
+          "cardNumberLast4": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "statementWeek": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Week of the month when the statement is cut."
+          },
+          "statementDay": {
+            "type": "number",
+            "description": "Day of the month."
+          },
+          "statementDate": {
+            "$ref": "#/components/schemas/IssuedDate"
+          },
+          "lastPayDate": {
+            "$ref": "#/components/schemas/IssuedDate"
+          },
+          "nextStatementDate": {
+            "$ref": "#/components/schemas/BankDate"
+          },
+          "nextLastPayDate": {
+            "$ref": "#/components/schemas/BankDate"
+          },
+          "relationType": {
+            "type": "string",
+            "enum": [
+              "",
+              "M",
+              "C"
+            ],
+            "description": "Empty = own statement; M = main card of a shared pair; C = linked card."
+          },
+          "relatedCardNumber": {
+            "type": "string",
+            "description": "Other card in the shared pair; empty otherwise."
+          },
+          "relatedCardProductName": {
+            "type": "string",
+            "description": "Other card's product name; empty otherwise."
+          }
+        }
+      }
+    },
+    "responses": {
+      "InvalidArguments": {
+        "description": "Required field missing or empty: code and returnCode INVALID_ARGUMENTS_ERROR, type ERROR. Message names the field. In test, also used for missing customer/card/week records for services without a documented 404.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_ARGUMENTS_ERROR"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "INVALID_ARGUMENTS_ERROR"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ERROR"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Production gateway: token missing or expired. Get a new token and retry once. Body is undocumented. Tokens are not checked in test/mock."
+      },
+      "TechnicalError": {
+        "description": "Bank technical error: code and returnCode FBE00099, type ERROR; messageText and message are \"Teknik hata: ABORTED: \".",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "FBE00099"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "FBE00099"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "ERROR"
+                          ]
+                        },
+                        "messageText": {
+                          "type": "string",
+                          "enum": [
+                            "Teknik hata: ABORTED: "
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Teknik hata: ABORTED: "
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "NoValidCard": {
+        "description": "No valid card for this customer, not a technical failure. FB_IVR_CHANNEL_102, WARNING.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_102"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_102"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WARNING"
+                          ]
+                        },
+                        "messageText": {
+                          "type": "string",
+                          "enum": [
+                            "Müşteriye ait geçerli kart bilgisi bulunamadı."
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Müşteriye ait geçerli kart bilgisi bulunamadı."
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "BalanceCardNotFound": {
+        "description": "Card not found: FB_IVR_CHANNEL_120, WARNING. Example message text is not normative.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_120"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_120"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WARNING"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "WeekCardNotFound": {
+        "description": "Card not found: FB_IVR_CHANNEL_121, WARNING.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_121"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_121"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WARNING"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      },
+      "PdfNotFound": {
+        "description": "No statement PDF to send: FB_IVR_CHANNEL_107, WARNING.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "returnCode": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_107"
+                          ]
+                        },
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "FB_IVR_CHANNEL_107"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "WARNING"
+                          ]
+                        },
+                        "messageText": {
+                          "type": "string",
+                          "enum": [
+                            "Pdf dokümanı bulunamadı"
+                          ]
+                        },
+                        "message": {
+                          "type": "string",
+                          "enum": [
+                            "Pdf dokümanı bulunamadı"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "official_passed": 2,
+  "official_total": 6,
+  "infrastructure_affected_cases": [],
+  "unresolved_runtime_error_cases": [],
+  "simulator_error_cases": [],
+  "incomplete_evidence_cases": [],
+  "usable_as_clean_model_comparison": true,
+  "evidence_issues": [],
+  "without_observed_snekbox_error": {
+    "passed": 2,
+    "total": 6
+  },
+  "interpretation": "Official score is unchanged. Error presence does not establish cause. Sandbox parse failures have unresolved provenance, not proven infrastructure fault. Terminal simulator errors and incomplete evidence block clean comparison. The subset without observed Snekbox errors is not an adjusted score or clean subset.",
+  "cases": [
+    {
+      "id": "FINAL-EX-01",
+      "transcript_available": true,
+      "official_pass": false,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "fail",
+      "incomplete_evidence": []
+    },
+    {
+      "id": "FINAL-EX-02",
+      "transcript_available": true,
+      "official_pass": true,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "pass",
+      "incomplete_evidence": []
+    },
+    {
+      "id": "FINAL-EX-03",
+      "transcript_available": true,
+      "official_pass": false,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "fail",
+      "incomplete_evidence": []
+    },
+    {
+      "id": "FINAL-EX-04",
+      "transcript_available": true,
+      "official_pass": false,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "fail",
+      "incomplete_evidence": []
+    },
+    {
+      "id": "FINAL-EX-05",
+      "transcript_available": true,
+      "official_pass": false,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "fail",
+      "incomplete_evidence": []
+    },
+    {
+      "id": "FINAL-EX-06",
+      "transcript_available": true,
+      "official_pass": true,
+      "infrastructure_errors": [],
+      "unresolved_runtime_errors": [],
+      "simulator_errors": [],
+      "simulation_outcome": "pass",
+      "incomplete_evidence": []
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+[
+  {
+    "source": "brief-1",
+    "path": "runs/final-case-008/input/BRIEF.md",
+    "sha256": "b81506df0cb43ab5ce023b3e3880d6f477021da81bc4ed3c8b5d0aab61e42da9"
+  },
+  {
+    "source": "brief-2",
+    "path": "runs/final-case-008/input/README.md",
+    "sha256": "476f99af2e66739de8ed4a192b04c003cc6ab5d31a9bce6825af4d9608852cc6"
+  },
+  {
+    "source": "brief-3",
+    "path": "runs/final-case-008/input/cloudflare-mock/README.md",
+    "sha256": "6e50898b1bcc91ca76646b557786d722888bb8ae96aa719f20b659daa23abd6a"
+  },
+  {
+    "source": "brief-4",
+    "path": "runs/final-case-008/input/cloudflare-mock/example/example-response.json",
+    "sha256": "0deeee4de065d3fdbd78818ba270547c5d9601ab8398b1e4d5596603196401a9",
+    "representation": "json-whitespace-compacted"
+  },
+  {
+    "source": "brief-5",
+    "path": "runs/final-case-008/input/cloudflare-mock/example/worker.js",
+    "sha256": "0fb2a47300c8e131a47e6e265ff33350733e0bdb19c17097aab4168dc6901d24"
+  },
+  {
+    "source": "brief-6",
+    "path": "runs/final-case-008/input/cloudflare-mock/example/wrangler.toml",
+    "sha256": "a7a80f867f971916c521ef2133d405ce8698423b4db19f93f734f03f987ea60b"
+  },
+  {
+    "source": "brief-7",
+    "path": "runs/final-case-008/input/example-scenarios.md",
+    "sha256": "c7534cb5d591d6399a72c3c717f35d75c81ff2d07c1587ba5ab90245d283d989"
+  },
+  {
+    "source": "brief-8",
+    "path": "runs/final-case-008/input/sources/documents/2025-08-14-cards-faq.md",
+    "sha256": "bb26e035f72da6d5add21d62271dc798106c1a859deb00fa9a9878dc8f6d8f26"
+  },
+  {
+    "source": "brief-9",
+    "path": "runs/final-case-008/input/sources/documents/2026-09-10-ivr-prompt-sheet.md",
+    "sha256": "dfb0d352d57dc22466c0b11ee557b4af1ba0f266be48b455aabae140a64dd463"
+  },
+  {
+    "source": "brief-10",
+    "path": "runs/final-case-008/input/sources/documents/2026-10-01-service-contract.md",
+    "sha256": "692414a06036911509072d602b6c85bf38cbf2c791d26488d53d28be1cf35470"
+  },
+  {
+    "source": "brief-11",
+    "path": "runs/final-case-008/input/sources/emails/2026-09-24-kickoff-questions.txt",
+    "sha256": "d19e44e8098850f378fd6816892f7b9196ec6f469ccd6dc8dea76566b850be74"
+  },
+  {
+    "source": "brief-12",
+    "path": "runs/final-case-008/input/sources/emails/2026-10-09-decisions-recap.txt",
+    "sha256": "709f18f3d73c4e9398a3ed9dc7249a54b7ca48dcdde8ce7aa7ebbbcdef1b0732"
+  },
+  {
+    "source": "brief-13",
+    "path": "runs/final-case-008/input/sources/emails/attachments/2026-09-02-statement-debt-analysis.md",
+    "sha256": "16915b44652e16afeea64d5f3ecf6d09b9bcce54d7d39b132ff8237369c507a2"
+  },
+  {
+    "source": "brief-14",
+    "path": "runs/final-case-008/input/sources/emails/attachments/2026-10-08-statement-debt-analysis.md",
+    "sha256": "c33b5640a06f6be6e6d3cc7f86189ab75bf4ffb4e935874b3ee3b48b03ff1094"
+  },
+  {
+    "source": "brief-15",
+    "path": "runs/final-case-008/input/sources/meetings/2026-10-07-analysis-session-transcript.txt",
+    "sha256": "6e75d0013cf6c653f4a25a6ce0c2f6e0a96b4472474e530d6ab4bebf8b21b20d"
+  },
+  {
+    "source": "brief-16",
+    "path": "runs/final-case-008/input/sources/meetings/2026-10-10-follow-up-session-transcript.txt",
+    "sha256": "860e3a0249492482535af48c2103430e7de4abc351efe53e6d872b4db837137b"
+  },
+  {
+    "source": "brief-17",
+    "path": "runs/final-case-008/input/statement-debt-call-flow.pdf",
+    "sha256": "1092fe84329911c89477e794ed874f8216aeb31cc4c825931c4e017374eb69ca"
+  },
+  {
+    "source": "brief-18",
+    "path": "runs/final-case-008/input/test-environment/test-customers.json",
+    "sha256": "d6ce155638f61ab17910d53ea993a2b0d68cf4e10d6b9db2fb8e4a7add0ef44d",
+    "representation": "json-whitespace-compacted"
+  },
+  {
+    "source": "brief-19",
+    "path": "runs/final-case-008/input/test-environment/test-customers.md",
+    "sha256": "f0c6607e8ad2c874608dc39d8ab13fbb11f5f1f2975c08fe871a378c32815375"
+  },
+  {
+    "source": "docs/workflow-format.md",
+    "path": "/Users/mert/Desktop/freya-hackathon/vendor/freya-v3/docs/workflow-format.md",
+    "sha256": "4ff70b5a37b647122e6a6f3ca1a523b207dbcdf6afb32058de8451a8c7d1dcfc"
+  },
+  {
+    "source": "docs/tools-and-code.md",
+    "path": "/Users/mert/Desktop/freya-hackathon/vendor/freya-v3/docs/tools-and-code.md",
+    "sha256": "56be9c87fbfddf5855c25fe83d4633bafd885d7cba5677133c15d211eb21b711"
+  },
+  {
+    "source": "examples/base-agent.json",
+    "path": "/Users/mert/Desktop/freya-hackathon/vendor/freya-v3/examples/base-agent.json",
+    "sha256": "db254e2065cbf415c14b60846e2fe5c1ddf2ffdebd6a8bd262617b676af04d5a",
+    "representation": "json-whitespace-compacted"
+  }
+]

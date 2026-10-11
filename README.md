@@ -6,6 +6,10 @@ the workflow; a compiler and validators check the result. Autobench records mode
 calls, HTTP activity and evaluation evidence. Pydantic GEPA optimizes general
 builder guidance during development.
 
+The final entry files and matching generation evidence are in
+[`submission/`](submission/README.md). The [candidate review](submission/REVIEW.md)
+records the separate synthetic checks and their limitations.
+
 Python 3.13 and [uv](https://docs.astral.sh/uv/) are required. The main environment
 uses published packages: Autobench 0.4.0, pydantic-gepa 0.1.1 and GEPA 0.1.4.
 It does not require sibling repositories or editable package installations.
