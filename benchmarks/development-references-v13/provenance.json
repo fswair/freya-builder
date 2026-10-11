@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-11T13:44:21.379639+00:00",
+  "scope": "experimental public/train development references; not promoted",
+  "official_submission": false,
+  "holdout_opened": false,
+  "sources": {
+    "single-product.json": {
+      "path": "runs/v13-a-security-repair-002/A/workflow.json",
+      "sha256": "371ade112e84a96f39cbdb587b47928b427d1cb2fb73d3112cf6f1b0be63076b",
+      "bytes": 134357
+    },
+    "multi-product.json": {
+      "path": "runs/v13-b-security-repair-002/B/workflow.json",
+      "sha256": "455fa4bed87f0b25de315e0a67c05204e4fcc5928780c8805310abbfeb7ef7b6",
+      "bytes": 149609
+    }
+  }
+}

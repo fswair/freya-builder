@@ -1,0 +1,46 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/vcoderun/autobench/415c2e6100e85b5671f9f045ca6dc4e4c78f081c/schemas/0.3.0/benchmark_schema.json
+benchmark:
+  codex-live-smoke:
+    description: Real Codex model evaluations and reflection; an integration check, not a quality benchmark.
+    cases:
+      - id: live-instruction-injection
+        input: {}
+        expected:
+          score: 1.0
+          held_out_output: ready
+          baseline_after_optimization: unknown
+        tags: [live, integration]
+    run:
+      python: freya_hackathon.live:run
+    variants:
+      codex:
+        factors:
+          model.name: gpt-6-luna
+    instrumentation:
+      pydantic_gepa:
+        detail: full
+        assets:
+          discover: true
+          representations: [definition, effective]
+      pydantic_ai: {}
+      openai: {}
+    score:
+      optimized_score:
+        exact:
+          actual: output.score
+          expected: case.expected.score
+        semantic: quality.correctness
+        goal: maximize
+        role: objective
+      held_out:
+        exact:
+          actual: output.held_out_output
+          expected: case.expected.held_out_output
+        semantic: quality.correctness
+        goal: maximize
+      injection_isolation:
+        exact:
+          actual: output.baseline_after_optimization
+          expected: case.expected.baseline_after_optimization
+        semantic: quality.correctness
+        goal: maximize

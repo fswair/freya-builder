@@ -1,0 +1,21 @@
+{
+  "now": "2026-10-14T11:00",
+  "title": "Mr",
+  "last_name": "Ortiz",
+  "call_state": "{\"stage\": \"negotiate\", \"name_asks\": 1, \"verified\": true, \"dob_pass\": true, \"phone_pass\": true, \"wrong\": 0, \"security_declines\": 0, \"talk_declines\": 0, \"callback_invalid\": 0, \"human_offered\": false, \"human_pending\": false, \"hardship\": false, \"products\": {\"p1\": {\"product_id\": \"p1\", \"type\": \"personal_loan\", \"card_last4\": \"\", \"label\": \"personal loan\", \"past_due\": 540.0, \"floor\": 180.0, \"days_late\": 5, \"deadline\": \"2026-11-02\", \"budget\": 1, \"attempts\": 0, \"floor_offered\": false, \"full_too_much\": false, \"amount\": 540.0, \"date\": \"2026-10-14\", \"recorded\": false, \"confirmed\": \"\", \"readback\": \"\", \"create_attempts\": 0, \"refused_offers\": [], \"need_exact\": false, \"terms_unresolved\": true, \"held_date_words\": \"the week after next\", \"unprocessed\": {\"raw\": \"I cannot pay today. I can pay the week after next.\", \"amount\": \"\", \"date_words\": \"the week after next\", \"amount_reference\": \"none\"}, \"unresolved_slot\": \"amount\"}}, \"pending\": \"\", \"terminal_selected\": false, \"carry_prefix\": \"\", \"caller_status\": \"customer_claimed\", \"callback_proposed_date\": \"\", \"callback_proposed_time\": \"\", \"prompt\": \"Ask for clarification of the amount the customer just proposed, retaining the date and other understood facts. Do not ask how much they can afford or replace their proposal with the earlier minimum.\", \"security_field\": \"phone_last4\", \"product_id\": \"p1\"}",
+  "turn_intent": "proposal",
+  "turn_decision": "none",
+  "turn_amount": "540.0",
+  "turn_amount_reference": "full",
+  "turn_full_unaffordable": "no",
+  "turn_question": "none",
+  "turn_hardship": "no",
+  "turn_human": "no",
+  "turn_no_talk": "no",
+  "turn_plan": "no",
+  "turn_caller": "unknown",
+  "turn_raw": "I will pay the five hundred and forty dollars.",
+  "turn_coverage": "complete",
+  "turn_missing": "none",
+  "customer_id": "synthetic-customer"
+}

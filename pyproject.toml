@@ -1,0 +1,45 @@
+[project]
+name = "freya-hackathon"
+version = "0.1.0"
+description = "Freya Build the Builder hackathon workspace"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "autobench[httpx,openai,pydantic-ai,pydantic-gepa]==0.4.0",
+    "codex-auth-helper==1.10.1",
+    "gepa==0.1.4",
+    "httpx>=0.28,<1",
+    "openpyxl>=3.1.5,<4",
+    "pydantic>=2.7,<3",
+    "pydantic-ai>=2.22,<2.37",
+    "pydantic-gepa[integrations]==0.1.1",
+    "pypdf>=6.1,<7",
+    "python-docx>=1.2,<2",
+    "python-dotenv>=1,<2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.15,<0.16", "ty>=0.0.1"]
+
+[project.scripts]
+freya-builder = "freya_hackathon.builder:main"
+freya-optimize = "freya_hackathon.optimization:main"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["vendor"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q --strict-markers"
+
+[tool.ty.environment]
+python-version = "3.13"

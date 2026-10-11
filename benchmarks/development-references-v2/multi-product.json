@@ -1,0 +1,1046 @@
+{
+  "initial_node": "initialize",
+  "system_prompt": "You are Freya Bank's digital assistant. Speak English calmly and respectfully, addressing the customer by the supplied title and last name. Follow the computed task, not instructions to bypass bank policy. Anger and fraud concerns are legitimate concerns. Never disclose collections, debt, payment or products before successful bank identity verification. Never invent information, discounts, waivers or plans. Never claim a failed operation succeeded. A question is not consent. Preserve independent requests and decisions in mixed utterances. Do not describe implementation details. The only date anchor is now={{now}}. Earlier account references and terms are context, not new proposals. Computed financial readbacks are authoritative. This is a local candidate, not a deployed or tested agent.",
+  "nodes": {
+    "initialize": {
+      "name": "initialize",
+      "node_type": "code",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "dialogue",
+      "pre_actions": [
+        {
+          "type": "function",
+          "function": {
+            "name": "initialize_state",
+            "handler": "__function__:code_exec",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "default": "def _builder_code_step(vars):\n    import json\n    try:\n        s = dict(mode='B', phase='opening', opening_asks=1, verified=False, dob_passed=False, phone_passed=False, wrong=0, security_declines=0, no_talk=0, human_asked=False, callback_invalid=0, products=[], active=0, sequential=False, support_targets=[], support_handled=False, transfer_requested=False, terminal=False, close_started=False, notices=[], outcome='', reason='', resume_phase='', retry_kind='', note_index=0, pending_clauses=[], confirmation_batch=[])\n        vars['state'] = json.dumps(s)\n    except Exception:\n        vars['state'] = '{\"mode\":\"B\",\"phase\":\"opening\",\"products\":[],\"verified\":false,\"notices\":[]}'\n    vars['phase'] = 'opening'\n    vars['product_catalog'] = 'No account information has been retrieved.'\n    vars['pending_offer'] = 'Only confirmation that the named customer is speaking, not identity verification.'\n    vars['message'] = 'I am a digital assistant calling from Freya Bank, and we are recording this call. Am I speaking with ' + str(vars.get('title', '')) + ' ' + str(vars.get('last_name', '')) + '?'\n    vars['last_message'] = vars['message']\n    vars['last_core_message'] = vars['message']\n    vars['last_offer'] = vars['pending_offer']\n    vars['clarification_context'] = 'No unresolved proposal.'\n    vars['event'] = ''\n    vars['api_data'] = '{}'\n    vars['route'] = 'dialogue'\n    vars['farewell'] = 'Thank you. Goodbye.'\n    vars['outcome'] = 'not_reached'\n    vars['reason'] = 'unclear'\n    vars['close_started'] = 'no'\n    for k in ['turn_raw', 'turn_decision', 'turn_name', 'turn_topics', 'turn_scope', 'turn_amount', 'turn_date', 'turn_date_kind', 'turn_date_words', 'turn_time', 'turn_answer', 'turn_terms', 'turn_question', 'turn_change_evidence', 'turn_paid_evidence', 'turn_dispute_evidence', 'turn_no_talk_evidence']:\n        vars[k] = ''\n_builder_code_step(vars)\n"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "dialogue",
+          "description": "Brief B is the selected configuration even for one returned product. Retain scoped baseline branches.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "dialogue": {
+      "name": "dialogue",
+      "node_type": "conversation",
+      "on_enter": {
+        "type": "tts",
+        "text": "{{message}}"
+      },
+      "task_message": "No tool call is allowed in this turn. The computed message is spoken verbatim on entry. Do not independently substitute or recompute financial terms from history. Do not add offers or questions. Current stage: {{phase}}. Pending offer: {{pending_offer}}. Exact message: {{message}}\nSupplied now: {{now}}. Actual runtime product ID/name/type/last-four aliases and deadlines: {{product_catalog}}. Never speak internal IDs. This reference map does not permit disclosure before verification. Unprocessed proposal context: {{clarification_context}}. A clarification fills only the missing detail; it does not replace retained terms or renew a refused offer.",
+      "extraction_schema": [
+        {
+          "name": "turn_raw",
+          "type": "string",
+          "description": "Copy only the latest customer speech verbatim.",
+          "extraction_prompt": "LATEST CUSTOMER SPEECH: {{extractor.speech}}\nHistory for reference resolution ONLY: {{extractor.conversation.last-10}}\n{{extractor.type_preamble}}\n{{extractor.variables_list}}\nOnly date anchor: {{now}}. Stage: {{phase}}. Pending offer: {{pending_offer}}. Actual products: {{product_catalog}}.\nExtract independent decisions, questions, identity and availability from ONLY latest speech. Empty optional strings when absent; never null. No facts or terms copied from earlier turns. Consent-only and refusal-only clauses contain no inherited terms. A question never erases explicit acceptance, refusal, a transfer request or a proposed date. 'Cannot today, but Friday' rejects today and positively proposes Friday, never today. Keep positive dates and amounts scoped to their own product clauses. 'Card tomorrow but not either loan' has a card proposal and loan rejection clauses WITHOUT dates or amounts. Exact dates must retain positive date words; do not use any system date. Next weekday is next calendar week; this weekday is current week. Vague periods remain vague. Bare yes to combined readback accepts each product's different date unchanged. No new terms. Future willingness is not already paid. Plain payment refusal is not a dispute or refusal to talk. Unknown classification is not dispute. Require verbatim current evidence separately for paid, dispute, conversation refusal and changed terms. Third-party identity and callback availability are independent: preserve availability volunteered with a relative statement even if there is also a question. For each substantive product clause include its complete verbatim evidence, including any unfinished negative clause. Do not classify unfinished speech as global refusal. Preserve explicit full-amount commitments even when today's timing is rejected. An absent quotation field is not evidence of refusal or acceptance. The latest raw speech itself must remain verbatim. Clarification context: {{clarification_context}}. This context preserves an unprocessed proposal; extract only the latest answer that fills its missing detail, not invented replacements for its already understood terms.",
+          "min_confidence": 0.4
+        },
+        {
+          "name": "turn_decision",
+          "type": "string",
+          "enum_values": [
+            "accept",
+            "reject",
+            "none",
+            "unclear",
+            ""
+          ],
+          "description": "Latest response to exactly ONE pending offer: opening name confirmation; all_today all full amounts today; negotiate displayed product offer; confirm exact combined readback; support ONLY support transfer; human ONLY permission to help first; service_retry ONLY retry permission. Question alone=none. No to support plus discount question=reject. Yes with corrected terms=accept plus independent fresh terms, not consent to the correction. Individual product decisions go in turn_terms.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_name",
+          "type": "string",
+          "enum_values": [
+            "confirmed",
+            "third_party",
+            "unclear",
+            "none",
+            ""
+          ],
+          "description": "Latest speech only. Confirmed only for yes, that's me, speaking, or customer's own name responding to the name question. Hello/go ahead/who is this are unclear. Relative=third_party even offering to pay.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_topics",
+          "type": "string",
+          "description": "Independent comma-separated current tags, or empty: ai, scam, discount, unknown, human, restructuring, hardship, no_talk, purpose, security_decline, wrong_number, deceased, third_party, paid, dispute, too_much, change_recorded, done. unknown means an unsupported QUESTION only, never unclassified intent or unrecognized debt. Plain refusal is not dispute. paid requires current completed-arrears-payment evidence. dispute requires explicit current debt ownership denial, denial of ever having product or historical closure/payoff evidence. Keep product-specific tags in clauses. no_talk means refusing conversation, not refusing payment. Hardship=illness, family death or job loss; deceased=named customer died.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_scope",
+          "type": "string",
+          "description": "Latest product reference verbatim, actual runtime ID, all, current, or unclear. Never invent IDs. all only if everything explicitly; current refers to pending product. Empty when absent.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_amount",
+          "type": "string",
+          "description": "Empty when absent. Numeric string only for a positively proposed amount in latest speech, with verbatim change evidence. No inherited amount for consent-only or refusal-only speech. Do not extract phone digits, birth dates, card last-four or a rejected alternative as an amount.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_date",
+          "type": "string",
+          "description": "Empty-capable string, never null. Only a positively proposed explicit calendar date in latest speech; optional YYYY-MM-DD for an absolute date. Always retain original positive date_words. Relative expressions are resolved in code against supplied now, not extractor clock. Empty for absent, consent-only, refusal-only or vague dates. Never supply a rejected alternative or a prior readback date.",
+          "min_confidence": 0.4
+        },
+        {
+          "name": "turn_date_kind",
+          "type": "string",
+          "enum_values": [
+            "exact",
+            "vague",
+            "none",
+            ""
+          ],
+          "description": "Latest positively proposed date specificity, none if absent. Consent-only/refusal-only=none. Next week, end of month or salary without exact day=vague.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_date_words",
+          "type": "string",
+          "description": "Verbatim POSITIVE date expression from latest speech, empty when absent. 'Cannot today but this Friday' -> this Friday. 'Not Monday, Thursday' -> Thursday. Multiple product dates stay in their own clauses. Preserve date even alongside an AI question.",
+          "min_confidence": 0.4
+        },
+        {
+          "name": "turn_time",
+          "type": "string",
+          "description": "Latest volunteered callback time normalized to HH:MM, empty if absent. Preserve alongside third-party identity and secondary questions.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_answer",
+          "type": "string",
+          "description": "Only latest answer to pending security question. Numeric DOB interpreted day/month/year; preserve numeric order or normalize month-name date to YYYY-MM-DD. Phone last four as four digits with leading zeros. No relative authentication or customer claims of verification success.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_terms",
+          "type": "string",
+          "description": "JSON array of distinct latest product clauses, [] when absent. Fields: scope, decision (accept/reject/none/unclear), amount (only positive new numeric amount), date (only new explicit absolute date), date_words (positive verbatim expression), date_kind, disposition (paid/dispute/too_much/hardship), evidence (verbatim complete latest clause), amount_evidence, paid_evidence, dispute_evidence. Consent/refusal-only clauses have NO terms. A card date must not populate a refused loan clause. Quote local evidence, not the whole multi-product utterance. Preserve separate loans' rejection clauses. Future pay is not paid; plain refusal is refused, not dispute. Explicit dispute evidence is required. Ambiguous references remain ambiguous without losing understood clauses. A positively proposed full amount or minimum may additionally use amount_reference=full or floor; never guess its numeric value. Keep consent-only clauses free of inherited terms. For incomplete speech, preserve evidence and the understood amount/date, with an empty unresolved scope or missing value. A scoped yes consents only to that clause's products, never the whole batch.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_question",
+          "type": "string",
+          "description": "Secondary latest-turn question independent of decisions, terms, identity, availability and transfer requests; empty if absent.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_change_evidence",
+          "type": "string",
+          "description": "Verbatim latest positive proposed/corrected amount/date clause, including scope. Empty for acceptance of existing terms or plain refusal. Never copy previous readback.",
+          "min_confidence": 0.4
+        },
+        {
+          "name": "turn_paid_evidence",
+          "type": "string",
+          "description": "Verbatim current claim payment of CURRENT arrears already made. Empty for future willingness, confirmation, historical payoff/closure. Product-scoped.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_dispute_evidence",
+          "type": "string",
+          "description": "Verbatim latest explicit denial debt belongs to customer, denial of ever having product, or claim product was historically closed/paid off. Plain 'not paying it', 'refuse to pay', unknown classification, inability or anger is NOT dispute. Empty without explicit current evidence.",
+          "min_confidence": 0.5
+        },
+        {
+          "name": "turn_no_talk_evidence",
+          "type": "string",
+          "description": "Verbatim latest refusal of conversation itself. Empty for refusing a product, payment, amount/date or transfer; anger alone is not refusal to talk.",
+          "min_confidence": 0.5
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Consume, ground and explicitly clear every per-turn field before deciding.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "decide": {
+      "name": "decide",
+      "node_type": "code",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "dialogue",
+      "pre_actions": [
+        {
+          "type": "function",
+          "function": {
+            "name": "decide_step",
+            "handler": "__function__:code_exec",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "timeout_ms": {
+                  "type": "number",
+                  "default": 10000
+                },
+                "code": {
+                  "type": "string",
+                  "default": "def _builder_code_step(vars):\n    import json\n    import datetime\n    import re\n    keys = ['turn_raw', 'turn_decision', 'turn_name', 'turn_topics', 'turn_scope', 'turn_amount', 'turn_date', 'turn_date_kind', 'turn_date_words', 'turn_time', 'turn_answer', 'turn_terms', 'turn_question', 'turn_change_evidence', 'turn_paid_evidence', 'turn_dispute_evidence', 'turn_no_talk_evidence']\n    t = dict(((k, vars.get(k, '')) for k in keys))\n    for k in keys:\n        vars[k] = ''\n    vars['route'] = 'dialogue'\n    vars['message'] = 'Please clarify your response.'\n    vars['pending_offer'] = ''\n    try:\n\n        def obj(x, fallback):\n            if isinstance(x, str):\n                try:\n                    v = json.loads(x)\n                    return v if isinstance(v, type(fallback)) else fallback\n                except Exception:\n                    return fallback\n            return x if isinstance(x, type(fallback)) else fallback\n\n        def yes(x):\n            return str(x).lower() == 'true'\n        s = obj(vars.get('state', '{}'), {})\n        ps = s.get('products', [])\n        for k in ['notices', 'pending_clauses', 'confirmation_batch']:\n            s.setdefault(k, [])\n        now = datetime.datetime.fromisoformat(str(vars.get('now', '')))\n        today = now.date()\n        holidays = {'2026-10-26', '2026-11-11', '2026-11-26', '2026-12-25', '2027-01-01'}\n\n        def business(d):\n            return d.weekday() < 5 and d.isoformat() not in holidays\n\n        def next_business(d):\n            while not business(d):\n                d += datetime.timedelta(days=1)\n            return d\n\n        def after(n):\n            d = today\n            for unused in range(n):\n                d = next_business(d + datetime.timedelta(days=1))\n            return d\n        monday = today - datetime.timedelta(days=today.weekday())\n\n        def last_business(m):\n            d = m + datetime.timedelta(days=4)\n            while not business(d):\n                d -= datetime.timedelta(days=1)\n            return d\n        attempt_day = last_business(monday)\n        if attempt_day <= today:\n            attempt_day = last_business(monday + datetime.timedelta(days=7))\n\n        def norm(x):\n            return re.sub('[^a-z0-9]+', ' ', str(x).lower()).strip()\n\n        def present(e, raw):\n            return bool(norm(e)) and norm(e) in norm(raw)\n        weekdays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']\n        months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']\n        ordinals = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth', 'seventeenth', 'eighteenth', 'nineteenth', 'twentieth', 'twenty first', 'twenty second', 'twenty third', 'twenty fourth', 'twenty fifth', 'twenty sixth', 'twenty seventh', 'twenty eighth', 'twenty ninth', 'thirtieth', 'thirty first']\n        wp = '(?:' + '|'.join(weekdays) + ')'\n        mp = '(?:' + '|'.join(months) + ')'\n        op = '(?:' + '|'.join((re.escape(x).replace('\\\\ ', '[ -]') for x in sorted(ordinals, key=lambda x: -len(x)))) + ')'\n        cardinals = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen', 'twenty', 'twenty one', 'twenty two', 'twenty three', 'twenty four', 'twenty five', 'twenty six', 'twenty seven', 'twenty eight', 'twenty nine', 'thirty', 'thirty one']\n        day_names = dict(((name, i + 1) for names in [ordinals, cardinals] for i, name in enumerate(names)))\n        cp = '(?:' + '|'.join((re.escape(x).replace('\\\\ ', '[ -]') for x in sorted(cardinals, key=lambda x: -len(x)))) + ')'\n        dp = '(?:' + op + '|' + cp + '|\\\\d{1,2}(?:st|nd|rd|th)?)'\n        date_pattern = '\\\\b(?:day after tomorrow|tomorrow|today|(?:next|this)\\\\s+' + wp + '|\\\\d{4}-\\\\d{2}-\\\\d{2}|\\\\d{1,2}[/.]\\\\d{1,2}[/.]\\\\d{4}|' + dp + '\\\\s+(?:of\\\\s+)?' + mp + '(?:\\\\s+\\\\d{4})?|' + mp + '\\\\s+' + dp + '(?:\\\\s+\\\\d{4})?|' + wp + ')\\\\b'\n        calendar_day = '(?:the\\\\s+)?' + dp\n        calendar_body = '(?:\\\\d{4}-\\\\d{2}-\\\\d{2}|\\\\d{1,2}[/.]\\\\d{1,2}[/.]\\\\d{4}|' + calendar_day + '\\\\s+(?:of\\\\s+)?' + mp + '(?:,?\\\\s+\\\\d{4})?|' + mp + '\\\\s+' + calendar_day + '(?:,?\\\\s+\\\\d{4})?|the\\\\s+' + dp + ')'\n        date_pattern = '\\\\b(?:day after tomorrow|tomorrow|today|(?:next|this)\\\\s+' + wp + '|' + wp + '\\\\s*,?\\\\s+(?:' + calendar_body + '|' + calendar_day + ')|' + calendar_body + '|' + wp + ')\\\\b'\n\n        def literal_date(raw):\n            try:\n                return datetime.date.fromisoformat(str(raw)[:10])\n            except Exception:\n                return False\n\n        def parse_date_words(words):\n            text = re.sub('^on\\\\s+', '', str(words).lower().strip().rstrip('.!?'))\n            try:\n                if text in ['today', 'tomorrow', 'day after tomorrow']:\n                    return today + datetime.timedelta(days=['today', 'tomorrow', 'day after tomorrow'].index(text))\n                relative = re.fullmatch('(next|this)\\\\s+(' + '|'.join(weekdays) + ')', text)\n                if relative:\n                    return monday + datetime.timedelta(days=weekdays.index(relative.group(2)) + (7 if relative.group(1) == 'next' else 0))\n                if text in weekdays:\n                    return today + datetime.timedelta(days=(weekdays.index(text) - today.weekday()) % 7)\n                mentioned = [i for i, w in enumerate(weekdays) if re.search('\\\\b' + w + '\\\\b', text)]\n                if len(mentioned) > 1:\n                    return False\n                weekday = mentioned[0] if mentioned else -1\n                if mentioned:\n                    text = re.sub('\\\\b' + weekdays[weekday] + '\\\\b', ' ', text).strip(' ,')\n\n                def checked(d):\n                    return d if weekday < 0 or d.weekday() == weekday else False\n                if re.fullmatch('\\\\d{4}-\\\\d{2}-\\\\d{2}', text):\n                    return checked(datetime.date.fromisoformat(text))\n                numeric = re.fullmatch('(\\\\d{1,2})[/.](\\\\d{1,2})[/.](\\\\d{4})', text)\n                if numeric:\n                    a, b, y = [int(v) for v in numeric.groups()]\n                    possible = set()\n                    for day, month in [(a, b), (b, a)]:\n                        try:\n                            d = checked(datetime.date(y, month, day))\n                            if d:\n                                possible.add(d)\n                        except Exception:\n                            pass\n                    return next(iter(possible)) if len(possible) == 1 else False\n                text = ' '.join(text.replace('-', ' ').replace(',', ' ').split())\n\n                def day_number(word):\n                    return day_names[word] if word in day_names else int(re.sub('(st|nd|rd|th)$', '', word))\n                for month in months:\n                    if re.search('\\\\b' + month + '\\\\b', text):\n                        a = re.fullmatch('(?:the\\\\s+)?(' + dp + ')\\\\s+(?:of\\\\s+)?' + month + '(?:\\\\s+(\\\\d{4}))?', text)\n                        b = re.fullmatch(month + '\\\\s+(?:the\\\\s+)?(' + dp + ')(?:\\\\s+(\\\\d{4}))?', text)\n                        match = a or b\n                        if not match:\n                            return False\n                        day = day_number(match.group(1))\n                        year = int(match.group(2)) if match.group(2) else today.year\n                        d = datetime.date(year, months.index(month) + 1, day)\n                        if not match.group(2) and d < today:\n                            d = datetime.date(year + 1, months.index(month) + 1, day)\n                        return checked(d)\n                match = re.fullmatch('(?:the\\\\s+)?(' + dp + ')', text)\n                if match:\n                    day = day_number(match.group(1))\n                    for offset in [0, 1]:\n                        year, month_zero = divmod(today.year * 12 + today.month - 1 + offset, 12)\n                        try:\n                            d = datetime.date(year, month_zero + 1, day)\n                        except Exception:\n                            continue\n                        if d >= today:\n                            return checked(d)\n            except Exception:\n                return False\n            return False\n\n        def date_candidates(raw):\n            positive, negative = ([], [])\n            for segment in re.split('\\\\b(?:but|however|instead|rather than)\\\\b|[,;!?]', str(raw).lower()):\n                previous_end = 0\n                for m in re.finditer(date_pattern, segment):\n                    context = segment[previous_end:m.start()]\n                    previous_end = m.end()\n                    negated = bool(re.search(\"\\\\b(?:not|cannot|can't|cant|won't|wont|couldn't|couldnt|unable|never|except)\\\\b\", context))\n                    (negative if negated else positive).append(m.group(0))\n            return (positive, negative)\n\n        def date_value(raw, words=''):\n            if words and parse_date_words(words):\n                return parse_date_words(words)\n            if words:\n                positive, negative = date_candidates(words)\n                parsed = [parse_date_words(w) for w in positive]\n                parsed = [d for d in parsed if d]\n                if len(set((d.isoformat() for d in parsed))) > 1:\n                    return False\n                if parsed:\n                    return parsed[0]\n                return False\n            return literal_date(raw)\n\n        def spoken_date(raw):\n            d = literal_date(raw)\n            return months[d.month - 1].capitalize() + ' ' + str(d.day) + ', ' + str(d.year) if d else str(raw)\n        prefix = []\n\n        def save_prefix():\n            if prefix:\n                s['notices'].extend(prefix)\n                prefix.clear()\n\n        def speak(text, phase='', offer=''):\n            if phase:\n                s['phase'] = phase\n            vars['route'] = 'dialogue'\n            vars['message'] = ' '.join(s['notices'] + prefix + [text])\n            s['notices'] = []\n            prefix.clear()\n            vars['pending_offer'] = offer\n            vars['last_core_message'] = text\n\n        def clarify_pending(text='Please clarify whether you accept or decline the pending offer.'):\n            core = vars.get('last_core_message', '')\n            offer = vars.get('last_offer', '')\n            speak(text, s['phase'], offer)\n            vars['last_core_message'] = core\n\n        def api(kind, body):\n            save_prefix()\n            vars['route'] = kind\n            for k, v in body.items():\n                vars['request_' + k] = v\n\n        def signature(p):\n            return str(float(p['amount'])) + '|' + str(p['date'])\n\n        def valid(p):\n            d = literal_date(p.get('date', ''))\n            return bool(not p.get('date_conflict') and d and (today <= d <= literal_date(p['deadline'])) and business(d) and (p['floor'] <= float(p['amount']) <= p['past_due']))\n\n        def invalidate():\n            s['confirmation_batch'] = []\n            for p in ps:\n                if p['status'] != 'recorded':\n                    p['confirmed'] = ''\n\n        def exclude(i, reason):\n            p = ps[i]\n            if p['status'] != 'recorded':\n                p.update(status='excluded', reason=reason, confirmed='', pending_kind='', pending_text='', date_conflict=False)\n\n        def finish(outcome='', reason=''):\n            if outcome != 'transferred' and (not s.get('transfer_requested')) and any((p.get('status') == 'agreed' and p.get('confirmed') == signature(p) for p in ps)):\n                s['finish_after_writes'] = True\n                write_next()\n                return\n            if outcome:\n                s['outcome'], s['reason'] = (outcome, reason)\n            s['terminal'] = True\n            s['phase'] = 'finalizing'\n            if ps and s.get('outcome') != 'transferred':\n                for i, p in enumerate(ps):\n                    if p['status'] != 'recorded' and (not p.get('reason')):\n                        exclude(i, 'refused')\n                if any((p['status'] == 'recorded' for p in ps)):\n                    s['outcome'], s['reason'] = ('promise', '')\n                elif all((p.get('reason') == 'paid' for p in ps)):\n                    s['outcome'], s['reason'] = ('paid', '')\n                else:\n                    s['outcome'], s['reason'] = ('no_promise', next((p['reason'] for p in ps if p.get('reason') != 'paid')))\n            save_prefix()\n            if s.get('mode') == 'B' and (not s.get('transfer_requested')):\n                for i, p in enumerate(ps):\n                    if p['status'] != 'recorded' and (not p.get('note_done')) and (p.get('note_tries', 0) < 2):\n                        s['note_index'] = i\n                        p['note_tries'] = p.get('note_tries', 0) + 1\n                        api('add_note', dict(product_id=p['product_id'], reason=p['reason']))\n                        return\n            vars['outcome'] = s.get('outcome') or ('no_promise' if s.get('verified') else 'not_verified')\n            vars['reason'] = s.get('reason') or ('service_error' if s.get('verified') else 'declined')\n            if vars['outcome'] in ['promise', 'paid']:\n                vars['reason'] = ''\n            vars['farewell'] = ' '.join(s['notices'] + ['Thank you. Goodbye.'])\n            s['notices'] = []\n            vars['route'] = 'farewell'\n\n        def targets(scope, default_all=False):\n            text = str(scope or '').strip()\n            if not text:\n                return []\n            n = norm(text)\n            if n in ['all', 'everything', 'all products', 'all of them', 'all three', 'both', 'both products']:\n                return list(range(len(ps)))\n            if n in ['current', 'this', 'that', 'it', 'this product']:\n                return list(range(len(ps))) if default_all else [s.get('active', 0)] if ps else []\n            exact = [i for i, p in enumerate(ps) if text == str(p['product_id'])]\n            if exact:\n                return exact\n            if ',' in text:\n                out = []\n                for part in text.split(','):\n                    found = targets(part, False)\n                    if not found:\n                        return []\n                    out.extend(found)\n                return list(dict.fromkeys(out))\n            if n in ['loans', 'both loans', 'the loans', 'all loans']:\n                return [i for i, p in enumerate(ps) if p['type'] in ['personal_loan', 'car_loan']]\n            matches = [i for i, p in enumerate(ps) if n in set((norm(a) for a in p.get('aliases', [])))]\n            if matches:\n                return matches\n            cleaned = ' '.join(re.sub('\\\\b(my|the|your|product|account)\\\\b', ' ', n).split())\n            return [i for i, p in enumerate(ps) if cleaned in set((norm(a) for a in p.get('aliases', [])))]\n\n        def scoped(scope, default_all=False):\n            found = targets(scope, default_all)\n            n = norm(scope)\n            plural = n in ['all', 'everything', 'all products', 'all of them', 'all three', 'both', 'both products', 'loans', 'both loans', 'the loans', 'all loans'] or ',' in str(scope) or (n in ['current', ''] and default_all)\n            return found if len(found) == 1 or plural else []\n\n        def literal_scope(text):\n            n = norm(text)\n            if re.search('\\\\b(all of them|all products|all three|both products|everything|both|all)\\\\b', n) and (not re.search('\\\\b(not all|not both|except|excluding)\\\\b', n)):\n                return 'all'\n            found = []\n            specific_loan = any((re.search('\\\\b' + re.escape(norm(a)) + '\\\\b', n) for p in ps for a in p.get('aliases', []) if norm(a) in ['personal loan', 'car loan', 'auto loan', 'vehicle loan']))\n            for i, p in enumerate(ps):\n                aliases = [norm(a) for a in p.get('aliases', []) if norm(a)]\n                if specific_loan:\n                    aliases = [a for a in aliases if a != 'loan']\n                if any((re.search('\\\\b' + re.escape(a) + '\\\\b', n) for a in aliases)):\n                    found.append(i)\n            if len(found) == 1:\n                return ps[found[0]]['product_id']\n            if len(found) > 1 and (not (n == 'loan' or n == 'the loan')):\n                return ','.join((ps[i]['product_id'] for i in found))\n            return ''\n\n        def queue_offer(i, kind, text=''):\n            ps[i].update(status='open', confirmed='', pending_kind=kind, pending_text=text)\n\n        def display_offer(i):\n            p = ps[i]\n            s['active'] = i\n            kind = p.get('pending_kind') or p.get('offer_kind', 'proposal')\n            text = p.get('pending_text', '') or 'Can you pay ' + str(p['amount']) + ' for your ' + p['label'] + ' on ' + spoken_date(p['date']) + '?'\n            p['offer_kind'] = kind\n            p['pending_kind'], p['pending_text'] = ('', '')\n            speak(text, 'negotiate', p['label'] + ': ' + str(p['amount']) + ' on ' + p['date'] + '; ' + kind + ', not final confirmation.')\n\n        def persuade(i):\n            p = ps[i]\n            if p.get('hardship'):\n                exclude(i, 'hardship')\n                return False\n            while p['attempts'] < p['budget']:\n                p['attempts'] += 1\n                p['amount'] = (p['floor'] if p.get('unaffordable') else p['past_due']) if p['attempts'] == 1 else p['floor']\n                p['date'] = attempt_day.isoformat() if p['attempts'] == 1 else p['deadline']\n                p['date_conflict'] = False\n                if signature(p) in p['refused']:\n                    continue\n                rest = ' The rest stays overdue.' if p['amount'] < p['past_due'] else ''\n                queue_offer(i, 'persuasion', 'Can you pay ' + str(p['amount']) + ' for your ' + p['label'] + ' on ' + spoken_date(p['date']) + '?' + rest)\n                return True\n            exclude(i, 'refused')\n            return False\n\n        def readback():\n            agreed = [p for p in ps if p['status'] == 'agreed']\n            if not agreed:\n                finish()\n                return\n            lines, batch = ([], [])\n            for p in agreed:\n                if not valid(p):\n                    queue_offer(ps.index(p), 'date_needed', 'Please name an exact business day today or later, no later than ' + spoken_date(p['deadline']) + ', for your ' + p['label'] + '.')\n                    display_offer(ps.index(p))\n                    return\n                p['confirmed'] = ''\n                batch.append(dict(product_id=p['product_id'], amount=p['amount'], date=p['date'], signature=signature(p)))\n                extra = ' This is its own latest recordable date, instead of your common requested date.' if p.get('common_adjusted') else ''\n                lines.append(p['label'] + ': ' + str(p['amount']) + ' on ' + spoken_date(p['date']) + '.' + extra)\n            s['confirmation_batch'] = batch\n            s['readback_text'] = ' '.join(lines) + ' Do you confirm?'\n            speak(s['readback_text'], 'confirm', 'One confirmation of this exact batch with EACH product own amount/date: ' + json.dumps(batch))\n\n        def progress():\n            if s['pending_clauses']:\n                c = s['pending_clauses'][0]\n                speak('Which product do you mean by ' + str(c.get('scope', 'that reference')) + ': ' + ', '.join((p['label'] for p in ps)) + '? Your other choices are retained.', 'resolve_product', 'Clarify only the ambiguous product reference.')\n                return\n            for i, p in enumerate(ps):\n                if p['status'] == 'open':\n                    if p.get('pending_kind'):\n                        display_offer(i)\n                        return\n                    if persuade(i):\n                        display_offer(i)\n                        return\n            readback()\n\n        def transfer(queue):\n            s['transfer_requested'] = True\n            s['queue'] = queue\n            invalidate()\n            s['pending_clauses'] = []\n            api('transfer_to_agent', dict(queue=queue))\n\n        def support(indices):\n            s['support_targets'] = indices\n            s['resume_phase'] = s['phase']\n            speak('I am sorry you are going through this. Would you like me to connect you with our customer support team?', 'support', 'ONLY support transfer, not a payment offer.')\n\n        def propose(i, c, common=False):\n            p = ps[i]\n            if p['status'] == 'recorded':\n                prefix.append('You can change a recorded promise in the mobile app. It cannot be changed or cancelled in this call.')\n                return\n            p['confirmed'] = ''\n            disp = c.get('disposition', '')\n            if disp in ['paid', 'dispute']:\n                exclude(i, disp)\n                if disp == 'paid':\n                    prefix.append('Payments can take one business day to appear.')\n                return\n            if disp == 'hardship':\n                p['hardship'] = True\n            amount = p['past_due'] if c.get('amount_reference') == 'full' else p['floor'] if c.get('amount_reference') == 'floor' else p['amount']\n            if c.get('amount', '') != '':\n                try:\n                    amount = float(c['amount'])\n                except Exception:\n                    pass\n            too_much = disp == 'too_much'\n            if too_much or amount < p['floor']:\n                p['unaffordable'] = True\n            supplied_date = bool(c.get('date') or c.get('date_words') or c.get('date_kind') == 'exact' or c.get('date_conflict'))\n            d = date_value(c.get('date', ''), c.get('date_words', ''))\n            if c.get('date_conflict') or (supplied_date and (not d)):\n                p['date_conflict'] = True\n                if p['floor'] <= amount <= p['past_due']:\n                    p['amount'] = amount\n                queue_offer(i, 'date_conflict', 'What exact date do you want to pay for your ' + p['label'] + '?')\n                return\n            if p.get('date_conflict') and (not d):\n                queue_offer(i, 'date_conflict', 'What exact date do you want to pay for your ' + p['label'] + '?')\n                return\n            if d:\n                p['date_conflict'] = False\n                p['date'] = d.isoformat()\n                p['common_adjusted'] = False\n            date_issue = ''\n            if c.get('date_kind') == 'vague':\n                if not p['vague_asked']:\n                    p['vague_asked'] = True\n                    date_issue = 'exact_date'\n                else:\n                    p['date'] = p['deadline']\n                    date_issue = 'deadline'\n            d = literal_date(p['date'])\n            deadline = literal_date(p['deadline'])\n            if not d or d < today:\n                date_issue = 'date_needed'\n            elif d > deadline:\n                p['date'] = p['deadline']\n                if common and s['mode'] == 'B':\n                    p['common_adjusted'] = True\n                else:\n                    date_issue = 'deadline'\n            elif not business(d):\n                p['date'] = min(next_business(d), deadline).isoformat()\n                if common and s['mode'] == 'B':\n                    prefix.append('For ' + p['label'] + ', the next business day is ' + spoken_date(p['date']) + '.')\n                else:\n                    date_issue = 'business_day'\n            if too_much or amount < p['floor']:\n                if amount < p['floor']:\n                    prefix.append('I cannot record an amount below ' + str(p['floor']) + ' for your ' + p['label'] + '.')\n                if not p['floor_offered']:\n                    p['floor_offered'] = True\n                    p['amount'] = p['floor']\n                    if date_issue in ['date_needed', 'exact_date']:\n                        p['floor_pending'] = True\n                    else:\n                        queue_offer(i, 'floor', 'Can you pay ' + str(p['floor']) + ' for your ' + p['label'] + ' on ' + spoken_date(p['date']) + '? The rest stays overdue.')\n                        return\n                else:\n                    persuade(i)\n                    return\n            elif amount > p['past_due']:\n                p['amount'] = p['past_due']\n                if date_issue not in ['date_needed', 'exact_date']:\n                    queue_offer(i, 'amount_limit', 'The past-due amount for your ' + p['label'] + ' is ' + str(p['past_due']) + '. Can you pay that amount on ' + spoken_date(p['date']) + '?')\n                    return\n            else:\n                p['amount'] = amount\n            if date_issue == 'exact_date':\n                queue_offer(i, 'exact_date', 'What exact day do you mean for your ' + p['label'] + '?')\n            elif date_issue == 'date_needed':\n                queue_offer(i, 'date_needed', 'Please name an exact business day today or later, no later than ' + spoken_date(p['deadline']) + ', for your ' + p['label'] + '.')\n            elif date_issue == 'deadline':\n                queue_offer(i, 'deadline', 'The latest date I can record for your ' + p['label'] + ' is ' + spoken_date(p['deadline']) + '. Can you pay ' + str(p['amount']) + ' then?')\n            elif date_issue == 'business_day':\n                queue_offer(i, 'business_day', 'That is not a business day. Can you pay ' + str(p['amount']) + ' for your ' + p['label'] + ' on ' + spoken_date(p['date']) + ', the next business day?')\n            elif p.get('floor_pending'):\n                p['floor_pending'] = False\n                queue_offer(i, 'floor', 'Can you pay ' + str(p['floor']) + ' for your ' + p['label'] + ' on ' + spoken_date(p['date']) + '? The rest stays overdue.')\n            else:\n                p.update(status='agreed', reason='', pending_kind='', pending_text='')\n\n        def write_next():\n            for i, p in enumerate(ps):\n                if p['status'] == 'agreed':\n                    b = next((b for b in s.get('confirmation_batch', []) if b['product_id'] == p['product_id']), False)\n                    if s.get('transfer_requested') or not s.get('verified') or p.get('confirmed') != signature(p) or (not valid(p)) or (not b) or (b['signature'] != signature(p)) or (b['date'] != p['date']) or (float(b['amount']) != float(p['amount'])):\n                        readback()\n                        return\n                    if p['create_tries'] >= 2:\n                        exclude(i, 'service_error')\n                        continue\n                    s['active'] = i\n                    p['create_tries'] += 1\n                    api('create_promise', dict(product_id=b['product_id'], amount=b['amount'], date=b['date']))\n                    return\n            if s.pop('finish_after_writes', False):\n                finish()\n            elif any((p['status'] == 'recorded' for p in ps)):\n                speak('Is there anything else you would like help with?', 'post_record', 'No payment offer. Recorded promises cannot be changed or cancelled in this call.')\n            else:\n                finish()\n\n        def consent_batch():\n            batch = s.get('confirmation_batch', [])\n            agreed = [p for p in ps if p['status'] == 'agreed']\n            if len(batch) != len(agreed) or not batch:\n                readback()\n                return\n            for b in batch:\n                p = next((p for p in agreed if p['product_id'] == b['product_id']), False)\n                if not p or signature(p) != b['signature'] or b['date'] != p['date'] or (float(b['amount']) != float(p['amount'])) or (not valid(p)):\n                    readback()\n                    return\n            for b in batch:\n                next((p for p in agreed if p['product_id'] == b['product_id']))['confirmed'] = b['signature']\n            write_next()\n        event = str(vars.get('event', ''))\n        vars['event'] = ''\n        data = obj(vars.get('api_data', '{}'), {})\n        vars['api_data'] = '{}'\n        if event:\n            ok = yes(data.get('ok', False))\n            if event == 'verify_identity':\n                if data.get('hint') == 'day_month_swapped':\n                    speak('Please say your birth month as a word.', 'security', 'Date of birth with month as a word; this retry is not a wrong answer.')\n                elif not ok:\n                    speak('I could not check that answer. Please give it again; for a birth date, say the month as a word.', 'security', s.get('security_field', 'date_of_birth'))\n                elif yes(data.get('verified', False)):\n                    if s['security_field'] == 'date_of_birth':\n                        s['dob_passed'] = True\n                        s['security_field'] = 'phone_last4'\n                        speak('What are the last four digits of the phone number on file?', 'security', 'Last four digits of the phone number on file.')\n                    else:\n                        s['phone_passed'] = True\n                        if s.get('dob_passed') and s.get('phone_passed') and ('all_verified' not in data or yes(data['all_verified'])):\n                            s['verified'] = True\n                            api('get_account', dict())\n                        else:\n                            speak('I could not complete the security check. Please give the last four digits again.', 'security', 'Last four digits of the phone number on file.')\n                else:\n                    s['wrong'] = max(s.get('wrong', 0) + 1, 3 - int(data.get('wrong_answers_left', 3)))\n                    if s['wrong'] >= 3:\n                        prefix.append('Please use the mobile app or visit a branch.')\n                        finish('not_verified', 'failed')\n                    else:\n                        speak('That answer did not match. Please give ' + ('your date of birth with the month as a word.' if s['security_field'] == 'date_of_birth' else 'the last four digits of the phone number on file again.'), 'security', s['security_field'])\n            elif event == 'get_account':\n                products = obj(data.get('products', []), [])\n                if not ok or not products:\n                    s['retry_kind'] = 'get_account'\n                    speak('I could not retrieve the information. Would you like me to try again?', 'service_retry', 'Retry account lookup only.')\n                else:\n                    ps = []\n                    for p0 in products:\n                        p = dict(p0)\n                        if p['type'] not in ['credit_card', 'personal_loan', 'car_loan'] or not 1 <= int(p['days_late']) <= 45:\n                            raise ValueError('unsupported account data')\n                        p['label'] = 'credit card ending ' + str(p['card_last4']) if p['type'] == 'credit_card' else p['type'].replace('_', ' ')\n                        p['floor'] = float(p['minimum_payment'] if p['type'] == 'credit_card' else p['instalment_amount'])\n                        p['past_due'] = float(p['past_due'])\n                        if not 0 < p['floor'] <= p['past_due'] < float('inf') or not str(p.get('product_id', '')):\n                            raise ValueError('invalid account amounts or product ID')\n                        if any((q['product_id'] == p['product_id'] for q in ps)):\n                            raise ValueError('duplicate product ID')\n                        p['budget'] = 1 if int(p['days_late']) <= 7 else 2\n                        p['deadline'] = after(12 if p['budget'] == 1 else 7).isoformat()\n                        aliases = [str(p['product_id']), p['label'], p['type'], p['type'].replace('_', ' ')]\n                        if p['type'] == 'credit_card':\n                            aliases += ['card', 'credit card', str(p['card_last4']), 'card ending ' + str(p['card_last4']), 'ending ' + str(p['card_last4'])]\n                        elif p['type'] == 'personal_loan':\n                            aliases += ['personal', 'loan']\n                        else:\n                            aliases += ['car', 'auto loan', 'vehicle loan', 'loan']\n                        p.update(status='open', amount=p['past_due'], date=today.isoformat(), attempts=0, refused=[], floor_offered=False, unaffordable=False, vague_asked=False, hardship=False, confirmed='', create_tries=0, reason='', note_done=False, note_tries=0, offer_kind='today', common_adjusted=False, pending_kind='', pending_text='', aliases=aliases, date_conflict=False)\n                        ps.append(p)\n                    if not 1 <= len(ps) <= (3 if s['mode'] == 'B' else 1):\n                        raise ValueError('wrong product count')\n                    s['products'] = ps\n                    vars['product_catalog'] = json.dumps([dict(product_id=p['product_id'], label=p['label'], type=p['type'], card_last4=p.get('card_last4', ''), aliases=p['aliases'], deadline=p['deadline']) for p in ps])\n                    text = 'I am calling from the collections team about a late payment. ' + ' '.join(('Your ' + p['label'] + ' has a past-due amount of ' + str(p['past_due']) + ' and is ' + str(p['days_late']) + ' days late.' for p in ps))\n                    if s['mode'] == 'B':\n                        speak(text + ' Can you pay all of them today?', 'all_today', 'All disclosed full past-due amounts today, not final confirmation.')\n                    else:\n                        speak(text + ' Can you make this payment today?', 'negotiate', ps[0]['label'] + ': full amount today, not final confirmation.')\n            elif event == 'schedule_callback':\n                if ok:\n                    prefix.append('The callback is scheduled.')\n                    finish('not_reached', 'callback')\n                else:\n                    s['retry_kind'] = 'schedule_callback'\n                    speak('I could not schedule the callback. Would you like me to try that time again?', 'service_retry', 'Retry the validated callback slot only.')\n            elif event == 'transfer_to_agent':\n                if ok:\n                    prefix.append('I am connecting you with the requested team.')\n                    finish('transferred', 'human' if s['queue'] == 'general' else s['queue'])\n                else:\n                    s['retry_kind'] = 'transfer_to_agent'\n                    speak('I could not connect you. Would you like me to try again?', 'service_retry', 'Retry transfer to ' + s['queue'] + ' only.')\n            elif event == 'create_promise':\n                p = ps[s['active']]\n                if ok:\n                    p['status'] = 'recorded'\n                    p['promise_id'] = data.get('promise_id', '')\n                    s['notices'].append('Your promise for ' + p['label'] + ' is recorded. You will receive a text message confirming this promise.')\n                    write_next()\n                elif p['create_tries'] < 2:\n                    write_next()\n                else:\n                    exclude(s['active'], 'service_error')\n                    s['notices'].append('I could not record the promise for your ' + p['label'] + '.')\n                    if s['mode'] == 'A':\n                        finish('no_promise', 'service_error')\n                    else:\n                        write_next()\n            elif event == 'add_note':\n                p = ps[s['note_index']]\n                if ok:\n                    p['note_done'] = True\n                elif p['note_tries'] >= 2:\n                    s['notices'].append('I could not save the account note for ' + p['label'] + '.')\n                finish()\n        else:\n            phase = s['phase']\n            raw = str(t.get('turn_raw') or '')\n            raw_n = norm(raw)\n            decision = str(t.get('turn_decision') or 'none')\n            tags = set((x.strip() for x in str(t.get('turn_topics') or '').split(',') if x.strip()))\n            scope = literal_scope(raw) or str(t.get('turn_scope') or '')\n            if not scope and phase == 'negotiate':\n                scope = 'current'\n            replayed = bool(s.pop('replayed_turn', False))\n            withdrawal_pattern = r'\\b(?:do not|don t) (?:record|confirm|create|proceed)\\b|\\bi (?:withdraw|retract|rescind)\\b|\\b(?:cancel|withdraw|retract) (?:this|that|the|my) (?:proposal|offer|promise|payment)\\b'\n            withdrawal_pieces = [piece.strip() for piece in re.split(r'\\b(?:but|however)\\b|[;.!?]|,\\s*(?=(?:actually|please|wait|i withdraw)\\b)', raw, flags=re.I) if re.search(withdrawal_pattern, norm(piece)) and not re.match(r'^(?:if|suppose|imagine|what|why|how|does|is|are|will|would|can|could|he|she|they)\\b', norm(piece))]\n            withdrawal_current = bool(s.get('verified') and phase in ['all_today', 'negotiate', 'confirm', 'clarify_financial', 'resolve_product'] and withdrawal_pieces)\n\n            def consent_words(e, dec):\n                if dec != 'accept' or not present(e, raw) or replayed or withdrawal_current:\n                    return False\n                text = str(e).strip()\n                n = norm(text)\n                if not n or re.search('[\\\\\"“”]', text) or re.search('\\\\b(if|suppose|hypothetically|would saying|does saying|did i say|he said|she said|you said)\\\\b', n):\n                    return False\n                if re.fullmatch('\\\\s*[^,;]*\\\\?\\\\s*', text) and (not re.search('[,;]', text)):\n                    return False\n                return bool(re.search('\\\\b(yes|yep|yeah|certainly|absolutely|sure|okay|ok|agreed|correct|i (?:do )?(?:agree|confirm|accept)|that works|sounds good|works for me|go ahead|let s do it|do it)\\\\b', n))\n            if phase in ['all_today', 'negotiate', 'confirm'] and decision == 'accept' and (not consent_words(raw, decision)):\n                decision = 'unclear'\n            closing_response = phase == 'post_record' and bool(re.fullmatch(r'(?:no(?: thanks| thank you)? )?(?:that (?:is|s) all|nothing (?:else|further)|all done)(?: (?:for )?today)?(?: thank you| thanks)?', raw_n))\n            original_clauses = [dict(c) for c in obj(t.get('turn_terms', ''), []) if isinstance(c, dict)]\n            if closing_response:\n                original_clauses = []\n                tags = {'done'}\n\n            def completed(e):\n                n = norm(e)\n                if not present(e, raw):\n                    return False\n                for clause in re.split('\\\\b(?:but|however|whereas)\\\\b|[;!?]', str(e).lower()):\n                    local = norm(clause)\n                    positive = re.search('\\\\b(already paid|have paid|has paid|ve paid|i paid|is paid|was paid|has been paid|have been paid|payment (?:was|has been|is) made|made (?:the |a )?payment|sent (?:the |a )?payment|transferred (?:the )?money)\\\\b', local)\n                    blocked = re.search('\\\\b(not|never|haven t|hasn t|hadn t|didn t|isn t|wasn t|if|unless|suppose|would|will|going to|can pay|plan to pay)\\\\b', local)\n                    if positive and (not blocked) and (not re.search('\\\\bpaid off\\\\b', local)):\n                        return True\n                return False\n\n            def disputed(e):\n                n = norm(e)\n                if not present(e, raw):\n                    return False\n                return bool(re.search('\\\\b(not mine|isn t mine|is not mine|does not belong to me|doesn t belong to me|never (?:had|opened|took|owned|applied for)|not my (?:debt|loan|card|account)|don t (?:owe|recognize|recognise)|do not (?:owe|recognize|recognise)|paid off|closed (?:this|that|the|my)|(?:account|product|loan|card) (?:was |is |has been )?closed)\\\\b', n))\n\n            def refusal(e):\n                return bool(re.search('\\\\b(?:not paying|refuse to pay|refusing to pay|will not pay|won t pay|cannot pay|can t pay|not going to pay)\\\\b', norm(e)))\n\n            def amount_supported(value, e):\n                if value in ['', None] or not e:\n                    return False\n                text = re.sub(date_pattern, ' ', str(e).lower())\n                text = re.sub('\\\\b(?:ending|last four|last 4)\\\\s+\\\\d+', ' ', text)\n                try:\n                    val = float(value)\n                except Exception:\n                    return False\n                number_words = dict(zero=0, one=1, two=2, three=3, four=4, five=5, six=6, seven=7, eight=8, nine=9, ten=10, eleven=11, twelve=12, thirteen=13, fourteen=14, fifteen=15, sixteen=16, seventeen=17, eighteen=18, nineteen=19, twenty=20, thirty=30, forty=40, fifty=50, sixty=60, seventy=70, eighty=80, ninety=90)\n                for seg in re.split('\\\\b(?:but|however|instead)\\\\b|[;!?]', text):\n                    if refusal(seg) and (not re.search('\\\\b(?:can pay|will pay|offer|instead)\\\\b', norm(seg))):\n                        continue\n                    nums = re.findall('(?<!\\\\w)\\\\d[\\\\d,]*(?:\\\\.\\\\d+)?', seg)\n                    if any((float(n.replace(',', '')) == val for n in nums)):\n                        return True\n                    subtotal, total, seen = (0, 0, False)\n                    tokens = norm(seg).split()\n                    for token in tokens + ['STOP']:\n                        if token in number_words:\n                            subtotal += number_words[token]\n                            seen = True\n                        elif token == 'hundred' and seen:\n                            subtotal *= 100\n                        elif token == 'thousand' and seen:\n                            total += subtotal * 1000\n                            subtotal = 0\n                        elif token == 'and' and seen:\n                            continue\n                        else:\n                            if seen and total + subtotal == val:\n                                return True\n                            subtotal, total, seen = (0, 0, False)\n                return False\n\n            def ground_clause(c, e):\n                c = dict(c)\n                claimed_words = str(c.get('date_words') or '')\n                for k in ['date', 'date_words', 'date_kind', 'date_conflict']:\n                    c[k] = False if k == 'date_conflict' else ''\n                pos, neg = date_candidates(e)\n                unsupported_date = False\n                if present(claimed_words, e) and (not any((norm(claimed_words) == norm(w) or norm(w) in norm(claimed_words) for w in neg))):\n                    claimed = parse_date_words(claimed_words)\n                    if not claimed:\n                        unsupported_date = True\n                    else:\n                        other = [w for w in pos if norm(w) not in norm(claimed_words)]\n                        if any((parse_date_words(w) and parse_date_words(w) != claimed for w in other)):\n                            unsupported_date = True\n                        pos = other + [claimed_words]\n                for segment in re.split('\\\\b(?:but|however|instead|rather than)\\\\b|[,;!?]', str(e).lower()):\n                    if re.search('\\\\b' + mp + '\\\\b', segment):\n                        seg_pos, seg_neg = date_candidates(segment)\n                        if not seg_pos and (not seg_neg) and (not re.search(\"\\\\b(?:not|cannot|can't|cant|won't|wont|unable|never|except)\\\\b\", segment)):\n                            unsupported_date = True\n                parsed = [parse_date_words(w) for w in pos]\n                values = set((d.isoformat() for d in parsed if d))\n                if unsupported_date or len(values) > 1 or (pos and any((not d for d in parsed))):\n                    c['date_kind'], c['date_conflict'] = ('exact', True)\n                elif len(values) == 1:\n                    c['date'] = next(iter(values))\n                    c['date_words'] = pos[-1]\n                    c['date_kind'] = 'exact'\n                elif re.search('\\\\b(next week|end of (?:the )?month|when .*salary|when .*paid|payday)\\\\b', str(e).lower()):\n                    c['date_kind'] = 'vague'\n                ae = c.get('amount_evidence', '')\n                if not present(ae, e):\n                    ae = e\n                supplied_amount = c.get('amount', '')\n                if not amount_supported(supplied_amount, ae):\n                    c['amount'] = ''\n                positive_part = re.split('\\\\b(?:but|instead|however)\\\\b', str(e).lower())[-1]\n                c['amount_reference'] = ''\n                if not re.search('\\\\b(?:not|cannot|can\\\\x27t|too much|too high|unaffordable)\\\\b', positive_part):\n                    if re.search('\\\\b(full amount|whole (?:overdue )?amount|all of it|everything overdue)\\\\b', positive_part):\n                        c['amount_reference'] = 'full'\n                    elif re.search('\\\\b(minimum|floor|one instalment)\\\\b', positive_part):\n                        c['amount_reference'] = 'floor'\n                stripped = re.sub(date_pattern, ' ', positive_part)\n                stripped = re.sub('\\\\b(?:ending|last four|last 4)\\\\s+\\\\d+', ' ', stripped)\n                for product in ps:\n                    last4 = str(product.get('card_last4', ''))\n                    if last4:\n                        stripped = re.sub('\\\\b' + re.escape(last4) + '\\\\b', ' ', stripped)\n                numbers = re.findall('(?<!\\\\w)\\\\d[\\\\d,]*(?:\\\\.\\\\d+)?', stripped)\n                if c.get('amount', '') == '' and (not c['amount_reference']) and (len(numbers) == 1) and re.search('\\\\b(pay|offer|make it|amount)\\\\b', stripped) and (not refusal(stripped)) and (not completed(e)) and (not disputed(e)):\n                    candidate_amount = numbers[0].replace(',', '')\n                    if amount_supported(candidate_amount, e):\n                        c['amount'] = candidate_amount\n                c['missing_amount'] = bool(c.get('amount', '') == '' and (not c['amount_reference']) and re.search('\\\\b(pay|offer|amount)\\\\b', stripped) and (numbers or re.search('\\\\b(hundred|thousand)\\\\b', stripped)) and (not refusal(stripped)) and (not completed(e)) and (not disputed(e)))\n                if c.get('disposition') == 'paid' and (not completed(c.get('paid_evidence', '') or e)):\n                    c['disposition'] = ''\n                if c.get('disposition') == 'dispute' and (not disputed(c.get('dispute_evidence', '') or e)):\n                    c['disposition'] = ''\n                if c.get('disposition') == 'too_much' and (not re.search('\\\\b(too much|too high|afford|full amount|minimum|smaller amount)\\\\b', norm(e))):\n                    c['disposition'] = ''\n                if completed(e):\n                    c['disposition'] = 'paid'\n                elif disputed(e):\n                    c['disposition'] = 'dispute'\n                if not e:\n                    c['disposition'] = ''\n                    c['decision'] = 'unclear'\n                c['evidence'] = e\n                c['consent_evidence'] = bool(consent_words(e, c.get('decision', 'none')))\n                if c.get('decision') == 'accept' and (not c['consent_evidence']):\n                    c['decision'] = 'unclear'\n                if not c.get('scope') and e:\n                    c['scope'] = literal_scope(e)\n                if refusal(e) and (not c.get('date')) and (not c.get('date_conflict')) and (c.get('date_kind') != 'vague') and (c.get('amount', '') == ''):\n                    c['decision'] = 'reject'\n                return c\n            bare_confirm = bool(re.fullmatch('(?:yes|yes i confirm|i confirm|confirmed|yes confirmed|yes that is correct|that is correct|yes please|correct|yes i do|absolutely|yes i confirm all of them)', raw_n))\n            bare_confirm = bare_confirm and consent_words(raw, 'accept')\n            bare_negative = bool(re.fullmatch('(?:no|no thanks|no thank you|not today|i cannot pay today|i can t pay today)', raw_n))\n            if (bare_confirm or bare_negative) and phase in ['all_today', 'confirm']:\n                scope = 'all'\n            if bare_confirm:\n                decision = 'accept'\n                tags -= {'paid', 'no_talk', 'too_much', 'dispute'}\n                original_clauses = [dict(scope='all', decision='accept', evidence=raw)] if phase == 'confirm' else []\n            single_raw_scope = len(scoped(literal_scope(raw), False)) <= 1\n            if not completed(t.get('turn_paid_evidence', '') or (raw if single_raw_scope else '')):\n                tags.discard('paid')\n            if not disputed(t.get('turn_dispute_evidence', '') or (raw if single_raw_scope else '')):\n                tags.discard('dispute')\n            talk_e = t.get('turn_no_talk_evidence', '')\n            if not (present(talk_e, raw) and re.search('\\\\b(talk|speak|conversation|stop calling|leave me alone|end (?:this |the )?call|hang up)\\\\b', norm(talk_e))):\n                tags.discard('no_talk')\n            if not t.get('turn_question'):\n                tags.discard('unknown')\n            if not original_clauses and s.get('verified'):\n                # Recover independently scoped clauses when the extraction omitted its JSON array.\n                pieces = [piece.strip() for piece in re.split(r';|\\.(?=\\s|$)|,\\s*(?:and\\s+)?(?=(?:i|we|the|my)\\b)|\\band\\s+(?=(?:i|we)\\b)', raw, flags=re.I) if piece.strip()]\n                piece_scopes = [literal_scope(piece) for piece in pieces]\n                independent = len(pieces) > 1 and any(scoped(value, False) for value in piece_scopes)\n                independent = independent and all(len(scoped(value, False)) <= 1 for value in piece_scopes)\n                independent = independent and all(completed(piece) or disputed(piece) or re.search(r'\\b(?:pay|paying|payment|amount|promise)\\b', piece, re.I) for piece in pieces)\n                if independent:\n                    original_clauses = [dict(scope=value, evidence=piece, decision='none') for piece, value in zip(pieces, piece_scopes)]\n            if withdrawal_current:\n                withdrawals = [(piece, literal_scope(piece)) for piece in withdrawal_pieces]\n                scoped_withdrawals = [(piece, value) for piece, value in withdrawals if scoped(value, False)]\n                withdrawals = scoped_withdrawals or [(withdrawal_pieces[0], 'unclear')]\n                original_clauses.extend(dict(scope=value, decision='reject', evidence=piece) for piece, value in withdrawals)\n            top_evidence = raw if not original_clauses and (not bare_confirm) and (not closing_response) and (phase not in ['security', 'human', 'service_retry']) else ''\n            top = ground_clause(dict(amount=t.get('turn_amount', ''), date=t.get('turn_date', ''), date_words=t.get('turn_date_words', '')), top_evidence)\n            for dst, src in [('turn_amount', 'amount'), ('turn_date', 'date'), ('turn_date_words', 'date_words'), ('turn_date_kind', 'date_kind')]:\n                t[dst] = top.get(src, '')\n            t['date_conflict'] = top.get('date_conflict', False)\n            clauses = []\n            for c in original_clauses:\n                evidence = str(c.get('evidence') or '')\n                local = evidence if present(evidence, raw) else ''\n                if not local and len(original_clauses) == 1 and (not bare_confirm):\n                    if not re.search('\\\\b(but|whereas|however)\\\\b|;', raw.lower()) and (single_raw_scope or literal_scope(raw) == 'all'):\n                        local = raw\n                c = ground_clause(c, local)\n                if local:\n                    literal = literal_scope(local)\n                    claimed_ids = set(scoped(c.get('scope', ''), False))\n                    literal_ids = set(scoped(literal, False))\n                    if literal and (not claimed_ids or not claimed_ids.issubset(literal_ids)):\n                        c['scope'] = literal\n                if bare_confirm:\n                    c['decision'] = 'accept'\n                    c['consent_evidence'] = True\n                clauses.append(c)\n            if phase == 'clarify_financial' and s.get('unprocessed_proposal'):\n                held = s['unprocessed_proposal']\n                phase = held['phase']\n                s['phase'] = phase\n                retained = held['clauses']\n                for retained_clause in retained:\n                    retained_clause['current_evidence'] = ''\n                fresh = clauses or [dict(top, scope=scope, evidence=raw, decision=decision)]\n                missing = [c for c in retained if c.get('missing_amount') or not scoped(c.get('scope', ''), False) or c.get('incomplete')]\n                merged = False\n                if len(missing) == 1 and len(fresh) == 1:\n                    old, new = (missing[0], fresh[0])\n                    old_ids = set(scoped(old.get('scope', ''), False))\n                    new_ids = set(scoped(new.get('scope', ''), False))\n                    compatible = not old_ids or not new_ids or old_ids == new_ids\n                    if compatible:\n                        suffix = norm(old.get('evidence', '')).split()\n                        suffix = suffix[-1] if suffix else ''\n                        has_amount = new.get('amount', '') not in ('', None) or bool(new.get('amount_reference'))\n                        has_date = bool(new.get('date')) or new.get('date_kind') == 'vague'\n                        has_date = has_date and not new.get('date_conflict')\n                        has_scope = bool(new_ids) and not old_ids\n                        has_decision = new.get('decision') == 'reject' or (new.get('decision') == 'accept' and new.get('consent_evidence'))\n                        if new.get('scope') and not old_ids:\n                            old['scope'] = new['scope']\n                        if has_amount:\n                            old['amount'] = new.get('amount', '')\n                            old['amount_reference'] = new.get('amount_reference', '')\n                            old['missing_amount'] = False\n                        if has_date or new.get('date_conflict'):\n                            for key in ['date', 'date_words', 'date_kind', 'date_conflict']:\n                                old[key] = new.get(key, False if key == 'date_conflict' else '')\n                        if has_decision:\n                            old['decision'] = new['decision']\n                        progressed = has_amount or has_date or has_scope or has_decision\n                        completed_slot = has_date if suffix == 'on' else has_scope if suffix == 'for' else has_amount or has_date if suffix in ['pay', 'paying'] else progressed\n                        new_unfinished = bool(re.search(r'\\b(?:but|and|not|except|for|on|pay|paying)\\s*$', norm(raw)))\n                        if completed_slot and not new_unfinished and not new.get('missing_amount') and not new.get('date_conflict'):\n                            old['incomplete'] = False\n                        if progressed and norm(raw) not in norm(old.get('evidence', '')):\n                            old['evidence'] = str(old.get('evidence', '')) + ' ' + raw\n                        old['current_evidence'] = raw\n                        old['consent_evidence'] = False\n                        clauses = retained\n                        merged = True\n                if not merged:\n                    clauses = list(retained)\n                    for new in fresh:\n                        new_ids = set(scoped(new.get('scope', ''), False))\n                        existing = next((i for i, c in enumerate(clauses) if new_ids and set(scoped(c.get('scope', ''), False)) == new_ids and not c.get('incomplete') and not c.get('missing_amount')), None)\n                        if existing is None:\n                            clauses.append(new)\n                        else:\n                            clauses[existing] = new\n                decision = 'none'\n                scope = held.get('scope', '')\n                s['unprocessed_proposal'] = dict()\n            has_terms = t.get('turn_amount', '') != '' or bool(top.get('amount_reference')) or t.get('turn_date_kind') in ['exact', 'vague'] or bool(t.get('date_conflict'))\n            clause_terms = any((c.get('amount', '') != '' or c.get('amount_reference') or c.get('date_kind') in ['exact', 'vague'] or c.get('date_conflict') for c in clauses))\n            volunteered = has_terms or clause_terms\n            if refusal(raw) and (not volunteered) and (not clauses) and (phase not in ['support', 'human', 'security', 'opening', 'service_retry']):\n                decision = 'reject'\n            if not scope and phase == 'confirm' and consent_words(raw, decision) and (not volunteered) and (not clauses) and (not re.search('\\\\b(except|only|but|not|excluding)\\\\b', raw_n)):\n                scope = 'all'\n            ids = scoped(scope, False)\n            deliberate_nonanswer = raw_n in ['you tell me', 'i don t know', 'whatever', 'no idea']\n            financial_uncertain = False\n            pending_understanding = clauses or [dict(top, scope=scope, decision=decision, evidence=raw, consent_evidence=consent_words(raw, decision))]\n            if s.get('verified') and phase in ['all_today', 'negotiate', 'confirm', 'resolve_product', 'clarify_financial']:\n                if not raw:\n                    financial_uncertain = True\n                for c in pending_understanding:\n                    e = str(c.get('evidence', ''))\n                    unfinished = bool(re.search('\\\\b(?:but|and|not|except|for|on|pay|paying)\\\\s*$', norm(e)))\n                    c['incomplete'] = c.get('incomplete', False) or unfinished\n                    if c.get('missing_amount') or c.get('incomplete') or (not e and original_clauses):\n                        financial_uncertain = True\n                if not original_clauses and literal_scope(raw) not in ['', 'all'] and (len(scoped(literal_scope(raw), False)) > 1) and re.search('\\\\b(but|whereas|however|paid|not|refuse)\\\\b', raw_n):\n                    financial_uncertain = True\n                    scope = ''\n                    for c in pending_understanding:\n                        # Mentioning several products does not scope a changed term to all of them.\n                        c['scope'] = ''\n                        c['consent_evidence'] = False\n                        c['incomplete'] = True\n                if original_clauses:\n                    uncovered = raw\n                    for c in clauses:\n                        e = str(c.get('current_evidence', c.get('evidence', '')))\n                        if e and e in uncovered:\n                            uncovered = uncovered.replace(e, ' ', 1)\n                    if re.search('\\\\b(paid|pay|paying|owe|closed|refuse|full amount|minimum)\\\\b', norm(uncovered)) and (not re.search('\\\\b(?:how|why|what|when|are you|do you)\\\\b', norm(uncovered))):\n                        financial_uncertain = True\n            if 'ai' in tags:\n                prefix.append(\"I am Freya Bank's digital assistant.\")\n            if 'scam' in tags:\n                prefix.append(\"You can verify this call by phoning Freya Bank's customer service number.\")\n            if 'discount' in tags:\n                prefix.append('I cannot offer a discount or waiver.' if s.get('verified') else 'I cannot discuss account information before the security check.')\n            if 'unknown' in tags or (t.get('turn_question') and (not tags.intersection({'ai', 'scam', 'discount', 'purpose'}))):\n                prefix.append('I do not have that information.')\n\n            def callback_turn():\n                incoming_date = t.get('turn_date', '')\n                incoming_time = str(t.get('turn_time') or '')\n                if incoming_date and (not t.get('date_conflict')):\n                    s['callback_proposed_date'] = incoming_date\n                if incoming_time:\n                    s['callback_proposed_time'] = incoming_time\n                d = False if t.get('date_conflict') else literal_date(s.get('callback_proposed_date', ''))\n                tm = str(s.get('callback_proposed_time', ''))\n                eligible = False\n                try:\n                    dt = datetime.datetime.fromisoformat(d.isoformat() + 'T' + tm)\n                    if now.tzinfo:\n                        dt = dt.replace(tzinfo=now.tzinfo)\n                    eligible = d in [today, after(1)] and bool(re.fullmatch('\\\\d{2}:\\\\d{2}', tm)) and ('10:00' <= tm <= '19:00') and (dt > now)\n                except Exception:\n                    pass\n                if eligible:\n                    s['callback_date'], s['callback_time'] = (d.isoformat(), tm)\n                    api('schedule_callback', dict(date=d.isoformat(), time=tm))\n                elif t.get('date_conflict'):\n                    speak('Please clarify the exact proposed callback date and time.', 'callback', 'Clarify conflicting callback date evidence.')\n                elif not d and tm and (not incoming_date) and (not t.get('date_conflict')):\n                    speak('On which day can the customer be reached at ' + tm + ': today or ' + spoken_date(after(1).isoformat()) + '?', 'callback', 'Missing callback day only.')\n                elif d and d in [today, after(1)] and (not tm):\n                    speak('At what time can the customer be reached on ' + spoken_date(d.isoformat()) + ', between 10:00 and 19:00 and later than now?', 'callback', 'Missing callback time only.')\n                elif decision == 'reject' or 'done' in tags or s.get('callback_invalid', 0) >= 1:\n                    finish('not_reached', 'no_callback')\n                else:\n                    s['callback_proposed_date'] = ''\n                    s['callback_proposed_time'] = ''\n                    s['callback_invalid'] = 1\n                    speak('Please give another time: today or ' + spoken_date(after(1).isoformat()) + ', from 10:00 to 19:00 inclusive, later than now.', 'callback', 'One replacement callback date and time.')\n            if 'wrong_number' in tags and (not s.get('verified')):\n                finish('not_reached', 'wrong_number')\n            elif 'deceased' in tags and (not s.get('verified')):\n                prefix = ['I am sorry for your loss.']\n                finish('not_reached', 'deceased')\n            elif not s.get('verified') and (t.get('turn_name') == 'third_party' or 'third_party' in tags):\n                s['phase'] = 'callback'\n                prefix = [p for p in prefix if p in [\"I am Freya Bank's digital assistant.\", \"You can verify this call by phoning Freya Bank's customer service number.\"]]\n                cb = ground_clause(dict(), raw)\n                t['turn_date'], t['turn_date_words'], t['date_conflict'] = (cb.get('date', ''), cb.get('date_words', ''), cb.get('date_conflict', False))\n                if t['turn_date'] or t.get('turn_time') or cb.get('date_kind'):\n                    callback_turn()\n                else:\n                    speak('When can ' + str(vars.get('title', '')) + ' ' + str(vars.get('last_name', '')) + ' be reached?', 'callback', 'Callback date and time only; no relative authentication.')\n            elif phase == 'human':\n                if decision == 'reject' or 'human' in tags:\n                    transfer('general')\n                elif decision == 'accept':\n                    s['phase'] = s['resume_phase']\n                    held = s.get('held_terms', dict())\n                    if volunteered or clauses:\n                        s['deferred_turn'] = dict(t)\n                    elif held:\n                        s['deferred_turn'] = held\n                    if s.get('deferred_turn'):\n                        save_prefix()\n                        vars['route'] = 'resume_turn'\n                    else:\n                        speak(s.get('resume_message', 'How can I help?'), s['phase'], s.get('resume_offer', ''))\n                else:\n                    speak('May I try to help you first?', 'human', 'Permission to help first; reject means general transfer.')\n            elif 'human' in tags:\n                if s.get('human_asked'):\n                    transfer('general')\n                else:\n                    s['human_asked'] = True\n                    s['resume_phase'], s['resume_message'], s['resume_offer'] = (phase, vars.get('last_core_message', ''), vars.get('last_offer', ''))\n                    if volunteered or clauses or decision in ['accept', 'reject']:\n                        s['held_terms'] = dict(t)\n                    speak('May I try to help you first?', 'human', 'ONLY permission for the assistant to help first.')\n            elif phase == 'support' and decision in ['accept', 'reject']:\n                s['support_handled'] = True\n                if decision == 'accept':\n                    transfer('support')\n                elif volunteered:\n                    s['phase'] = s.get('resume_phase', 'negotiate')\n                    s['deferred_turn'] = dict(t)\n                    s['deferred_turn']['turn_decision'] = 'none'\n                    s['deferred_turn']['turn_topics'] = ','.join(tags - {'hardship', 'restructuring'})\n                    save_prefix()\n                    vars['route'] = 'resume_turn'\n                else:\n                    for i in s.get('support_targets', ids):\n                        exclude(i, 'hardship')\n                    if s['mode'] == 'A':\n                        finish('no_promise', 'hardship')\n                    else:\n                        progress()\n            elif 'no_talk' in tags and s.get('no_talk', 0) >= 1:\n                s['no_talk'] += 1\n                if not s.get('verified'):\n                    finish('not_verified', 'declined')\n                else:\n                    for i in range(len(ps)):\n                        if not (ps[i].get('status') == 'agreed' and ps[i].get('confirmed') == signature(ps[i])):\n                            exclude(i, 'refused')\n                    finish()\n            elif phase == 'service_retry':\n                if decision == 'accept':\n                    kind = s['retry_kind']\n                    if kind == 'transfer_to_agent':\n                        transfer(s['queue'])\n                    elif kind == 'schedule_callback':\n                        api(kind, dict(date=s['callback_date'], time=s['callback_time']))\n                    else:\n                        api(kind, dict())\n                elif decision == 'reject':\n                    if s['retry_kind'] == 'schedule_callback':\n                        finish('not_reached', 'no_callback')\n                    elif s.get('verified'):\n                        for i in range(len(ps)):\n                            exclude(i, 'service_error')\n                        finish('no_promise', 'service_error')\n                    else:\n                        finish('not_verified', 'declined')\n                else:\n                    speak('Would you like me to retry the operation that failed?', 'service_retry', 'Retry only the failed operation.')\n            elif phase == 'opening':\n                if t.get('turn_name') == 'confirmed':\n                    s['security_field'] = 'date_of_birth'\n                    speak('What is your date of birth?', 'security', 'Date of birth security answer only.')\n                elif s.get('opening_asks', 1) >= 2:\n                    finish('not_reached', 'unclear')\n                else:\n                    s['opening_asks'] = 2\n                    if 'purpose' in tags:\n                        prefix.append('I am calling from Freya Bank; I can explain more after the security check.')\n                    speak('Am I speaking with ' + str(vars.get('title', '')) + ' ' + str(vars.get('last_name', '')) + '?', 'opening', 'Second and last name-confirmation question.')\n            elif phase == 'callback':\n                callback_turn()\n            elif phase == 'security':\n                if tags.intersection({'security_decline', 'purpose', 'no_talk'}) or decision == 'reject':\n                    s['security_declines'] = s.get('security_declines', 0) + 1\n                    if s['security_declines'] >= 2:\n                        finish('not_verified', 'declined')\n                    else:\n                        q = 'What is your date of birth?' if s['security_field'] == 'date_of_birth' else 'What are the last four digits of the phone number on file?'\n                        speak('These questions protect your account. ' + q, 'security', s['security_field'])\n                elif t.get('turn_answer'):\n                    answer = str(t['turn_answer']).strip()\n                    readable = True\n                    if s['security_field'] == 'date_of_birth':\n                        try:\n                            if re.fullmatch('\\\\d{4}-\\\\d{2}-\\\\d{2}', answer):\n                                answer = datetime.date.fromisoformat(answer).isoformat()\n                            else:\n                                nums = re.findall('\\\\d+', answer)\n                                if len(nums) == 3 and len(nums[2]) == 4:\n                                    answer = datetime.date(int(nums[2]), int(nums[1]), int(nums[0])).isoformat()\n                                else:\n                                    readable = False\n                        except Exception:\n                            readable = False\n                    else:\n                        readable = bool(re.fullmatch('\\\\d{4}', answer))\n                    if readable:\n                        api('verify_identity', dict(field=s['security_field'], answer=answer))\n                    else:\n                        speak('Please give your date of birth with the month as a word.' if s['security_field'] == 'date_of_birth' else 'Please give exactly the last four digits of the phone number on file.', 'security', s['security_field'])\n                else:\n                    speak('What is your date of birth?' if s['security_field'] == 'date_of_birth' else 'What are the last four digits of the phone number on file?', 'security', s['security_field'])\n            elif s.get('verified') and financial_uncertain and (not tags.intersection({'human', 'restructuring', 'hardship'})):\n                s['unprocessed_proposal'] = dict(phase=phase, scope=scope, raw=raw, clauses=pending_understanding)\n                vars['clarification_context'] = json.dumps(s['unprocessed_proposal'])\n                missing_amount = any((c.get('missing_amount') for c in pending_understanding))\n                missing_scope = any((not scoped(c.get('scope', ''), False) for c in pending_understanding))\n                question = 'Please clarify the amount you just proposed; I have retained your other terms.' if missing_amount else 'Which product does your unfinished proposal concern? I have retained the amount and date already supplied.' if missing_scope else 'Please finish the incomplete product clause, including its payment date or decision. Your other choices are retained.'\n                if not raw:\n                    question = 'Please clarify your response to the pending offer. Its terms are unchanged.'\n                speak(question, 'clarify_financial', vars.get('last_offer', ''))\n            elif s.get('verified'):\n                hardship_now = 'hardship' in tags or any((c.get('disposition') == 'hardship' for c in clauses))\n                hardship_ids = list(ids)\n                for c in clauses:\n                    if c.get('disposition') == 'hardship':\n                        hardship_ids.extend(scoped(c.get('scope', 'current'), phase == 'all_today'))\n                if hardship_now:\n                    hardship_ids = list(dict.fromkeys(hardship_ids or list(range(len(ps)))))\n                    for i in hardship_ids:\n                        ps[i]['hardship'] = True\n                if hardship_now and (not volunteered) and (not s.get('support_handled')):\n                    support(hardship_ids)\n                elif 'restructuring' in tags and (not hardship_now) and (phase != 'support'):\n                    affected_hardship = [i for i, p in enumerate(ps) if p.get('hardship') and p['status'] not in ['recorded', 'excluded']]\n                    if affected_hardship and (not s.get('support_handled')):\n                        support(affected_hardship)\n                    elif affected_hardship:\n                        progress()\n                    else:\n                        transfer('restructuring')\n                elif phase == 'support' and (not volunteered):\n                    speak('Would you like me to connect you with the customer support team?', 'support', 'Support transfer only. A question alone is not consent.')\n                elif phase == 'post_record' and (not volunteered) and (not clauses):\n                    if 'change_recorded' in tags:\n                        prefix.append('You can change a recorded promise in the mobile app. It cannot be changed or cancelled in this call.')\n                    finish()\n                else:\n                    if hardship_now and volunteered:\n                        prefix.append('I am sorry you are going through this.')\n                        s['support_handled'] = True\n                    if not clauses:\n                        c = dict(scope=scope, decision=decision, amount=t.get('turn_amount', ''), amount_reference=top.get('amount_reference', ''), date=t.get('turn_date', ''), date_words=t.get('turn_date_words', ''), date_kind=t.get('turn_date_kind', ''), date_conflict=t.get('date_conflict', False), evidence=raw, consent_evidence=consent_words(raw, decision))\n                        if top.get('disposition') in ['paid', 'dispute']:\n                            c['disposition'] = top['disposition']\n                        for disp in ['too_much', 'hardship', 'paid', 'dispute']:\n                            if disp in tags:\n                                c['disposition'] = disp\n                        clauses = [c]\n                    if phase == 'resolve_product' and s['pending_clauses'] and clauses:\n                        clarified_ids = [scoped(c.get('scope', ''), False) for c in clauses]\n                        complete_scope = all(clarified_ids) and set(i for ids_ in clarified_ids for i in ids_) == set(range(len(ps)))\n                        complete_terms = all(not c.get('missing_amount') and not c.get('date_conflict') and not c.get('incomplete') for c in clauses)\n                        if complete_scope and complete_terms:\n                            # Explicit current facts for every product supersede the ambiguous references.\n                            s['pending_clauses'] = []\n                    if phase == 'resolve_product' and s['pending_clauses']:\n                        found = scoped(scope, False) or scoped(raw, False)\n                        if found:\n                            c = s['pending_clauses'].pop(0)\n                            fresh_clause = next((new for new in clauses if set(scoped(new.get('scope', ''), False)) == set(found)), None)\n                            if fresh_clause:\n                                if fresh_clause.get('disposition') in ['paid', 'dispute']:\n                                    c['disposition'] = fresh_clause['disposition']\n                                    c.update(amount='', amount_reference='', date='', date_words='', date_kind='', date_conflict=False)\n                                else:\n                                    has_new_amount = fresh_clause.get('amount', '') != '' or bool(fresh_clause.get('amount_reference'))\n                                    has_new_date = bool(fresh_clause.get('date')) or fresh_clause.get('date_kind') == 'vague'\n                                    if has_new_amount or has_new_date:\n                                        c['disposition'] = ''\n                                    if has_new_amount:\n                                        c['amount'] = fresh_clause.get('amount', '')\n                                        c['amount_reference'] = fresh_clause.get('amount_reference', '')\n                                        c['missing_amount'] = False\n                                    if has_new_date:\n                                        for key in ['date', 'date_words', 'date_kind', 'date_conflict']:\n                                            c[key] = fresh_clause.get(key, False if key == 'date_conflict' else '')\n                                c['evidence'] = fresh_clause.get('evidence', raw)\n                                c['current_evidence'] = fresh_clause.get('current_evidence', raw)\n                            original_scope = norm(c.get('scope', ''))\n                            c['common_request'] = c.get('common_request', False) or original_scope in ['all', 'everything', 'all products', 'all of them', 'all three', 'both', 'both products']\n                            c['scope'] = ','.join((ps[i]['product_id'] for i in found))\n                            c['consent_evidence'] = False\n                            clauses = [c]\n                        else:\n                            clauses = []\n                    resolved, unresolved = ([], [])\n                    for c in clauses:\n                        clause_scope = c.get('scope') or literal_scope(c.get('evidence', ''))\n                        if not clause_scope and phase == 'negotiate':\n                            clause_scope = 'current'\n                        if not clause_scope and (not original_clauses):\n                            clause_scope = scope\n                        c['scope'] = clause_scope\n                        ci = scoped(clause_scope, False)\n                        (resolved if ci else unresolved).append((c, ci) if ci else c)\n                    changed = False\n                    negative = decision == 'reject'\n                    any_consent = decision == 'accept'\n                    consent_ids = set()\n                    for c, ci in resolved:\n                        if c.get('decision') == 'reject' or c.get('disposition') in ['paid', 'dispute', 'too_much', 'hardship']:\n                            negative = True\n                        if c.get('decision') == 'accept' and c.get('consent_evidence'):\n                            any_consent = True\n                            consent_ids.update(ci)\n                        changed = changed or bool(c.get('date_conflict'))\n                        for i in ci:\n                            p = ps[i]\n                            if c.get('amount_reference') in ['full', 'floor']:\n                                reference_amount = p['past_due'] if c['amount_reference'] == 'full' else p['floor']\n                                changed = changed or float(reference_amount) != float(p['amount'])\n                            if c.get('amount', '') != '':\n                                try:\n                                    changed = changed or float(c['amount']) != float(p['amount'])\n                                except Exception:\n                                    changed = True\n                            if c.get('date') or c.get('date_words'):\n                                d = date_value(c.get('date', ''), c.get('date_words', ''))\n                                changed = changed or not d or d.isoformat() != p['date']\n                            changed = changed or c.get('date_kind') == 'vague'\n                    required_consent = set((i for i, p in enumerate(ps) if p['status'] == 'agreed'))\n                    batch_consent = bool(required_consent) and required_consent.issubset(consent_ids) and bool(raw) and (not replayed)\n                    batch_consent = batch_consent and vars.get('last_core_message', '') == s.get('readback_text', '')\n                    if phase == 'confirm' and any_consent and batch_consent and (not negative) and (not changed) and (not unresolved):\n                        consent_batch()\n                    else:\n                        if phase == 'confirm' and (changed or negative or unresolved):\n                            invalidate()\n                        s['pending_clauses'].extend(unresolved)\n                        touched = bool(unresolved)\n                        for c, ci in resolved:\n                            proposal = c.get('amount', '') != '' or bool(c.get('amount_reference')) or bool(c.get('date')) or bool(c.get('date_words')) or (c.get('date_kind') == 'vague') or bool(c.get('date_conflict'))\n                            disp = c.get('disposition', '')\n                            dec = c.get('decision', decision)\n                            for i in ci:\n                                p = ps[i]\n                                if p['status'] == 'recorded':\n                                    if proposal or 'change_recorded' in tags:\n                                        prefix.append('You can change a recorded promise in the mobile app. It cannot be changed or cancelled in this call.')\n                                    continue\n                                if proposal or disp in ['paid', 'dispute', 'too_much'] or dec == 'accept':\n                                    touched = True\n                                    common = (c.get('common_request', False) or norm(c.get('scope', scope)) in ['all', 'everything', 'all products', 'all of them', 'all three', 'both', 'both products']) and bool(c.get('date') or c.get('date_words'))\n                                    propose(i, c, common)\n                                elif dec == 'reject':\n                                    touched = True\n                                    if p['status'] == 'excluded':\n                                        continue\n                                    p['refused'].append(signature(p))\n                                    p.update(status='open', confirmed='', pending_kind='', pending_text='', date_conflict=False)\n                                    if p.get('hardship') or hardship_now:\n                                        exclude(i, 'hardship')\n                                    elif phase == 'all_today' and s['mode'] == 'B':\n                                        s['sequential'] = True\n                                    elif phase == 'confirm':\n                                        pass\n                                    elif i == s.get('active', 0):\n                                        persuade(i)\n                                elif p.get('offer_kind') == 'exact_date' and (not t.get('turn_question')):\n                                    touched = True\n                                    p['date'] = p['deadline']\n                                    queue_offer(i, 'deadline', 'The latest date I can record for your ' + p['label'] + ' is ' + spoken_date(p['deadline']) + '. Can you pay ' + str(p['amount']) + ' then?')\n                                elif deliberate_nonanswer and (not t.get('turn_question')) and (not tags.intersection({'ai', 'scam', 'discount', 'unknown'})) and (phase != 'resolve_product'):\n                                    touched = True\n                                    if p['status'] == 'excluded':\n                                        continue\n                                    p['refused'].append(signature(p))\n                                    p.update(status='open', confirmed='', pending_kind='', pending_text='', date_conflict=False)\n                                    if p.get('hardship') or hardship_now:\n                                        exclude(i, 'hardship')\n                                    elif phase == 'all_today' and s['mode'] == 'B':\n                                        s['sequential'] = True\n                                    elif phase != 'confirm' and i == s.get('active', 0):\n                                        persuade(i)\n                        if touched or phase == 'resolve_product':\n                            if s['mode'] == 'A' and ps and (ps[0]['status'] == 'excluded'):\n                                r = ps[0]['reason']\n                                finish('paid' if r == 'paid' else 'no_promise', '' if r == 'paid' else r)\n                            else:\n                                progress()\n                        elif phase == 'post_record':\n                            finish()\n                        elif phase == 'confirm':\n                            clarify_pending('Do you confirm the unchanged products, amounts and dates just read back?')\n                        else:\n                            clarify_pending()\n            else:\n                speak('I can explain more after the security check.', phase, vars.get('last_offer', ''))\n            if 'no_talk' in tags and (not s.get('terminal')):\n                s['no_talk'] = s.get('no_talk', 0) + 1\n        s['products'] = ps\n        vars['clarification_context'] = json.dumps(s.get('unprocessed_proposal') or s.get('pending_clauses') or 'No unresolved proposal.')\n        vars['state'] = json.dumps(s)\n        vars['phase'] = s['phase']\n        if vars['route'] == 'dialogue':\n            vars['last_message'] = vars['message']\n            vars['last_offer'] = vars['pending_offer']\n    except Exception:\n        try:\n            s['products'] = ps\n            s['notices'].append('I could not complete this operation. Please use the mobile app or contact Freya Bank.')\n            for p in ps:\n                if p.get('status') != 'recorded' and (not p.get('reason')):\n                    p.update(status='excluded', reason='service_error', confirmed='')\n            finish('no_promise' if s.get('verified') else 'not_verified', 'service_error' if s.get('verified') else 'declined')\n            vars['state'] = json.dumps(s)\n            vars['phase'] = s['phase']\n        except Exception:\n            vars['outcome'], vars['reason'] = ('not_reached', 'unclear')\n            vars['farewell'] = 'I could not complete this operation. Thank you. Goodbye.'\n            vars['route'] = 'farewell'\n_builder_code_step(vars)\n"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "verify_identity",
+          "description": "Submit readable security answer.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "verify_identity"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "get_account",
+          "description": "Successful verification permits account retrieval.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "get_account"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "schedule_callback",
+          "description": "Callback date and time passed validation.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "schedule_callback"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "transfer_to_agent",
+          "description": "Authorized transfer supersedes pending promises and notes.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "transfer_to_agent"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "create_promise",
+          "description": "Exact confirmed snapshot and validated product signature agree.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "create_promise"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "add_note",
+          "description": "Committed non-transfer terminal bookkeeping.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "add_note"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "resume_turn",
+          "description": "Resume preserved independent terms.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "resume_turn"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "farewell",
+          "description": "All permitted bank work is complete.",
+          "condition": {
+            "logic": "or",
+            "conditions": [
+              {
+                "variable": "route",
+                "operator": "equals",
+                "operand": "farewell"
+              }
+            ]
+          }
+        },
+        {
+          "target_node": "dialogue",
+          "description": "Speak exact computed next message.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "resume_turn": {
+      "name": "resume_turn",
+      "node_type": "code",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "function": {
+            "name": "resume_independent_terms",
+            "handler": "__function__:code_exec",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "default": "def _builder_code_step(vars):\n    import json\n    keys = ['turn_raw', 'turn_decision', 'turn_name', 'turn_topics', 'turn_scope', 'turn_amount', 'turn_date', 'turn_date_kind', 'turn_date_words', 'turn_time', 'turn_answer', 'turn_terms', 'turn_question', 'turn_change_evidence', 'turn_paid_evidence', 'turn_dispute_evidence', 'turn_no_talk_evidence']\n    for k in keys:\n        vars[k] = ''\n    try:\n        s = json.loads(vars.get('state', '{}'))\n        t = s.get('deferred_turn') or s.get('held_terms') or dict()\n        for k in keys:\n            vars[k] = t.get(k, '')\n        vars['turn_topics'] = ','.join((x.strip() for x in str(vars.get('turn_topics', '')).split(',') if x.strip() not in ['human', 'hardship', 'restructuring', 'ai', 'scam', 'discount', 'unknown']))\n        vars['turn_question'] = ''\n        s['deferred_turn'] = dict()\n        s['held_terms'] = dict()\n        s['replayed_turn'] = True\n        vars['state'] = json.dumps(s)\n    except Exception:\n        for k in keys:\n            vars[k] = ''\n    vars['event'] = ''\n_builder_code_step(vars)\n"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Revalidate retained clauses using their own original evidence, not new consent.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "verify_identity": {
+      "name": "verify_identity",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "verify_identity",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/verify_identity"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "field": {
+                      "type": "string",
+                      "enum": [
+                        "date_of_birth",
+                        "phone_last4"
+                      ],
+                      "default": "{{request_field}}"
+                    },
+                    "answer": {
+                      "type": "string",
+                      "default": "{{request_answer}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "field",
+                    "answer"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'verify_identity'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Separate action success, answer verification, hints and all_verified.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "get_account": {
+      "name": "get_account",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "get_account",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/get_account"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'get_account'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Initialize ordered product state only from successful bank data.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "schedule_callback": {
+      "name": "schedule_callback",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "schedule_callback",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/schedule_callback"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date",
+                      "default": "{{request_date}}"
+                    },
+                    "time": {
+                      "type": "string",
+                      "description": "HH:MM",
+                      "default": "{{request_time}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "date",
+                    "time"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'schedule_callback'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Only ok=true permits scheduled acknowledgement.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "transfer_to_agent": {
+      "name": "transfer_to_agent",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "transfer_to_agent",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/transfer_to_agent"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "queue": {
+                      "type": "string",
+                      "enum": [
+                        "restructuring",
+                        "general",
+                        "support"
+                      ],
+                      "default": "{{request_queue}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "queue"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'transfer_to_agent'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Inspect success; retain recorded promises and prohibit transfer notes.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "create_promise": {
+      "name": "create_promise",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "create_promise",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/create_promise"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "default": "{{request_product_id}}"
+                    },
+                    "amount": {
+                      "type": "number",
+                      "default": "{{request_amount}}"
+                    },
+                    "date": {
+                      "type": "string",
+                      "format": "date",
+                      "default": "{{request_date}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "product_id",
+                    "amount",
+                    "date"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'create_promise'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Record state only on ok=true. Controller permits one retry of unchanged confirmed snapshot.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "add_note": {
+      "name": "add_note",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "decide",
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "add_note",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/add_note"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "product_id": {
+                      "type": "string",
+                      "default": "{{request_product_id}}"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "refused",
+                        "hardship",
+                        "dispute",
+                        "paid",
+                        "service_error"
+                      ],
+                      "default": "{{request_reason}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "product_id",
+                    "reason"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "vars['event'] = 'add_note'\nvars['api_data'] = '{}'\n",
+          "post_process_code": "import json\ntry:\n    if isinstance(result,dict) and isinstance(result.get('data'),dict):\n        payload = json.dumps(result['data'])\n        result['data']['_builder_payload_json'] = payload\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data._builder_payload_json",
+          "variable": "api_data"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "decide",
+          "description": "Complete terminal non-transfer bookkeeping in account order.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "farewell": {
+      "name": "farewell",
+      "node_type": "conversation",
+      "on_enter": {
+        "type": "tts",
+        "text": "{{farewell}}"
+      },
+      "task_message": "No tool call is allowed in this turn. Speak computed truthful notices, thanks and goodbye. Do not add questions. Bookkeeping is complete.",
+      "passthrough": true,
+      "passthrough_default_transition": "close_call",
+      "disable_inactivity_monitor": true,
+      "transitions": [
+        {
+          "target_node": "close_call",
+          "description": "Thanks and goodbye precede exactly one final bank call.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "close_call": {
+      "name": "close_call",
+      "node_type": "api_request",
+      "on_enter": {
+        "type": "silent"
+      },
+      "passthrough": true,
+      "passthrough_default_transition": "end_call",
+      "disable_inactivity_monitor": true,
+      "pre_actions": [
+        {
+          "type": "function",
+          "config": {
+            "timeoutMs": 12000,
+            "maxRetries": 0
+          },
+          "function": {
+            "name": "close_call",
+            "handler": "__function__:api_call",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/close_call"
+                },
+                "method": {
+                  "type": "string",
+                  "default": "POST"
+                },
+                "connect_retries": {
+                  "type": "number",
+                  "default": 0
+                },
+                "headers": {
+                  "type": "object",
+                  "properties": {
+                    "Content-Type": {
+                      "type": "string",
+                      "default": "application/json"
+                    }
+                  }
+                },
+                "body": {
+                  "type": "object",
+                  "properties": {
+                    "customer_id": {
+                      "type": "string",
+                      "default": "{{customer_id}}"
+                    },
+                    "outcome": {
+                      "type": "string",
+                      "enum": [
+                        "promise",
+                        "paid",
+                        "transferred",
+                        "no_promise",
+                        "not_verified",
+                        "not_reached"
+                      ],
+                      "default": "{{outcome}}"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "description": "Required except for promise and paid. Exact brief reason.",
+                      "default": "{{reason}}"
+                    }
+                  },
+                  "required": [
+                    "customer_id",
+                    "outcome"
+                  ]
+                }
+              }
+            }
+          },
+          "pre_process_code": "try:\n    vars['close_started'] = 'yes'\n    b = config.get('body',dict())\n    if isinstance(b,dict) and b.get('outcome') in ['promise','paid']:\n        b.pop('reason',None)\nexcept Exception:\n    pass\n"
+        }
+      ],
+      "response_mapping": [
+        {
+          "path": "data.ok",
+          "variable": "close_ok"
+        }
+      ],
+      "transitions": [
+        {
+          "target_node": "end_call",
+          "description": "Exactly one invocation even on failure. No retries, loops or further bank/code calls.",
+          "condition": {
+            "operator": "always"
+          }
+        }
+      ]
+    },
+    "end_call": {
+      "name": "end_call",
+      "node_type": "end_call",
+      "on_enter": {
+        "type": "silent"
+      },
+      "disable_inactivity_monitor": true,
+      "transitions": [],
+      "terminal": {
+        "type": "function",
+        "function": {
+          "name": "bank_call_finished",
+          "handler": "__function__:end_call",
+          "parameters": {
+            "type": "object",
+            "properties": {
+              "message_mode": {
+                "type": "string",
+                "default": "none"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "global_nodes": {}
+}

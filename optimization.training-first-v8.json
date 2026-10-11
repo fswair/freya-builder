@@ -1,0 +1,34 @@
+{
+  "dataset": "datasets/freya-v2/live-priority",
+  "public_cases": "documents/dataset-request-v2/sources/public-test-set.json",
+  "guidance": "benchmarks/builder-guidance-v2.txt",
+  "workflow_references": [
+    "benchmarks/development-references-v8/single-product.json",
+    "benchmarks/development-references-v8/multi-product.json"
+  ],
+  "briefs": {
+    "A": {
+      "documents": [
+        "vendor/freya-v3/briefs/brief-a.md"
+      ],
+      "tool_api": "vendor/freya-v3/tools/openapi.json"
+    },
+    "B": {
+      "documents": [
+        "vendor/freya-v3/briefs/brief-a.md",
+        "vendor/freya-v3/briefs/brief-b.md"
+      ],
+      "tool_api": "vendor/freya-v3/tools/openapi.json"
+    }
+  },
+  "model": "gpt-6-astra",
+  "reasoning": "high",
+  "metric_calls": 8,
+  "max_builds": 4,
+  "max_reflections": 1,
+  "study_seconds": 7200,
+  "generation_seconds": 1200,
+  "practice_seconds": 1800,
+  "train_repetitions": 1,
+  "validation_repetitions": 3
+}

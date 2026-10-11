@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-11T14:23:03.158633+00:00",
+  "scope": "experimental public/train development references; not promoted",
+  "official_submission": false,
+  "holdout_opened": false,
+  "sources": {
+    "single-product.json": {
+      "path": "runs/v13-a-affordability-repair-003/A/workflow.json",
+      "sha256": "24673e2e64b404d4d3fbcf733bb6830af87e29f068e94b746d3173a67ddd7fb9",
+      "bytes": 135757
+    },
+    "multi-product.json": {
+      "path": "runs/v13-b-financial-extraction-001/B/workflow.json",
+      "sha256": "a3daebbca325d906db3cb2de2d1bd78902920f3644c9cc62abffef2116d6d0d9",
+      "bytes": 161061
+    }
+  }
+}

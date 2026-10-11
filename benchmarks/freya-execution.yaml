@@ -1,0 +1,41 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/vcoderun/autobench/415c2e6100e85b5671f9f045ca6dc4e4c78f081c/schemas/0.3.0/benchmark_schema.json
+benchmark:
+  freya-execution:
+    description: Live builder and synthetic practice operations; application commands supply inputs.
+    cases:
+      - id: operation
+        input: {}
+        expected:
+          completed: true
+    run:
+      python: freya_hackathon.recording:execution_task
+    variants:
+      candidate:
+        factors: {}
+    instrumentation:
+      pydantic_gepa:
+        detail: full
+        assets:
+          discover: true
+          representations: [definition, effective]
+      pydantic_ai: {}
+      openai: {}
+      httpx:
+        capture:
+          path: hash
+          request_headers: []
+          response_headers: [x-request-id, cf-ray]
+          request_body: false
+          response_body: false
+    capture:
+      default_level: metadata
+      asset_default_level: full
+      max_artifact_bytes: 67108864
+    score:
+      completed:
+        exact:
+          actual: output.completed
+          expected: case.expected.completed
+        semantic: quality.correctness
+        goal: maximize
+        role: diagnostic

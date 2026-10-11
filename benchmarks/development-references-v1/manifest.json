@@ -1,0 +1,19 @@
+{
+  "scope": "Public development examples; not authoritative policy or hidden-case evidence",
+  "single-product.json": {
+    "source": "runs/astra-a-015-repair/workflow.json",
+    "sha256": "d23fdc6b8fd71c2856f825da6641b95ddddee759a94689931ce588c91ddb4657",
+    "public_passed_by_run": [10, 9, 10],
+    "public_case_count": 10
+  },
+  "multi-product.json": {
+    "source": "runs/astra-b-008-repair/workflow.json",
+    "sha256": "026ffe934412b2239c4f25ec3fe4a62b2076371a766df9e588d2197983a9b300",
+    "public_passed_by_run": [3, 2, 3],
+    "public_case_count": 3,
+    "qualification": "Second repeat included Freya automatic retries"
+  },
+  "use": "Read the new brief and OpenAPI; adapt reference mechanics and replace all conflicting policy",
+  "test_variables_included": false,
+  "hidden_brief_information_included": false
+}

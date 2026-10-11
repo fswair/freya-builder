@@ -1,0 +1,35 @@
+Official entry preparation, verified against the Submit page on 2026-10-11 at16:22UTC.
+Source: https://www.freyavoice.ai/hackathon#submit
+
+The generated RUN/submission.json is an internal export/provenance report. It is
+NOT the official eight-field entry form. Use final-submission-template.json to
+prepare the final official submission.json after the final run and Git commit.
+The template is unfinished and must not be sent as an entry.
+
+1. At17UTC download the final zip, read BRIEF.md then README.md. Keep all case
+   content as builder input. Implement its separate Cloudflare mock from the
+   service contract and supplied test customers. Test and deploy the mock first.
+2. Run the verified builder on the full case directory with the actual mock URL.
+   Use the selected guidance. Root repo uses benchmarks/builder-guidance-v3.txt;
+   the V21 source ZIP carries identical bytes as benchmarks/builder-guidance.txt.
+3. Require RUN/submission.json status exported and submission_ready true. Check
+   that its export/trace hashes match the files, its IDs match the actual export,
+   and the export parity check passed. This is not a behavioral quality claim.
+4. Copy RUN/submission.workflow.json verbatim to submission/final.workflow.json.
+   Do not edit the workflow. Copy the matching trace to submission/final.trace.jsonl,
+   removing credentials if present as the official rules require. Preserve the
+   original private trace, its hash, and native Autobench artifacts locally.
+5. Commit builder sources, the separate mock source, exact workflow export and
+   matching sanitized trace. Exclude .env, keys, local authentication files and
+   unrelated customer data. Check that the chosen commit contains the declared
+   paths with the expected bytes. The repo must be readable by the organizers.
+6. Fill team, one or two members, repo URL, full commit, actual reproducible command,
+   workflow path, trace path and live mock URL. Paths are relative to the repo.
+   The command above is a root-repo example; align guidance/path names with the
+   submitted commit. A fresh checkout must contain every required source file.
+7. Official submission is an explicit user action/approval: send final submission.json
+   to the address in the kit email before20UTC (23:00Istanbul). Do not send the
+   internal RUN/submission.json. Keep the mock running until results are announced.
+
+Pending user-supplied metadata: repository destination, team name and member details.
+Cloudflare browser access is ready; Wrangler CLI authorization is still pending.

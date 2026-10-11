@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-11T15:18:24.725188+00:00",
+  "scope": "experimental public/train development references; not promoted",
+  "official_submission": false,
+  "holdout_opened": false,
+  "sources": {
+    "single-product.json": {
+      "path": "runs/v17-a-numeric-confirmation-repair-003/A/workflow.json",
+      "sha256": "192ede4d8177b3d1cf8628d3aa34aac6d8cfc3619adf63889a6633fff8c9783f",
+      "bytes": 134346
+    },
+    "multi-product.json": {
+      "path": "runs/v16-package-fresh-b-001/B/workflow.json",
+      "sha256": "fca7f75e464b2148ca9fe4372165f4c2c154941812e97fc58f1f93a53fe958a2",
+      "bytes": 158631
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-10-11T15:29:15.256599+00:00",
+  "scope": "experimental public/train development references; not promoted",
+  "official_submission": false,
+  "holdout_opened": false,
+  "sources": {
+    "single-product.json": {
+      "path": "runs/v17-package-fresh-a-001/A/workflow.json",
+      "sha256": "192ede4d8177b3d1cf8628d3aa34aac6d8cfc3619adf63889a6633fff8c9783f",
+      "bytes": 134346
+    },
+    "multi-product.json": {
+      "path": "runs/v17-b-partial-confirmation-repair-001/B/workflow.json",
+      "sha256": "0e578415be894fea314cf9b1a7f8826e77483b41b15767a8ef558cb09e89568e",
+      "bytes": 159282
+    }
+  }
+}

@@ -1,0 +1,38 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/vcoderun/autobench/415c2e6100e85b5671f9f045ca6dc4e4c78f081c/schemas/0.3.0/benchmark_schema.json
+benchmark:
+  freya-practice-cases:
+    description: Official ledger-plus-conversation outcomes, evaluated from saved synthetic evidence.
+    cases:
+      - id: supplied-by-recording-command
+        input: {}
+        expected:
+          passed: true
+    run:
+      python: freya_hackathon.recording:case_task
+    variants:
+      candidate:
+        factors: {}
+    capture:
+      default_level: metadata
+      asset_default_level: full
+      max_artifact_bytes: 67108864
+    score:
+      official_pass:
+        exact:
+          actual: output.passed
+          expected: case.expected.passed
+        semantic: quality.correctness
+        goal: maximize
+        role: objective
+    policies:
+      - name: official-case-passed
+        metric: quality.correctness
+        must_equal: 1.0
+    report:
+      leaderboard:
+        show:
+          official_pass_rate:
+            metric: quality.correctness
+            aggregate: mean
+      matrix:
+        metric: quality.correctness
