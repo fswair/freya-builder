@@ -26,10 +26,16 @@ be implemented by that API. Keep workflow-level decisions, unavailable business 
 platform integration questions in notes for the later policy/workflow stages. A choice among
 documented request values is a workflow decision, not an undefined HTTP schema. These notes
 must preserve the limitation; they do not authorize inventing fields, values or business rules.
-Merely unspecified
-optional constraints are notes: response examples do not imply exhaustive enums, and an absent
-invalid-input response does not prevent sending a documented valid request. Preserve such
-uncertainties in notes without inventing restrictions. Do not remove a genuinely missing
+Merely unspecified optional constraints are notes: response examples do not imply exhaustive
+enums, and an absent invalid-input response does not prevent sending a documented valid request.
+OpenAPI can describe an error status without a content schema when its body is undocumented;
+do not invent that body. A documented successful response without an exact status can use a
+success status range with the uncertainty recorded in notes. Neither omission alone blocks a
+valid request. Preserve distinctions between production and explicitly supplied test/deployment
+contracts, including authentication exemptions; document an operation's deployment applicability
+without inventing credentials or treating a production-only dependency as mandatory in a test
+environment that explicitly excludes it. Preserve such uncertainties in notes without inventing
+restrictions. Do not remove a genuinely missing
 required HTTP contract detail just to pass a validation retry; new source evidence is required.
 The evidence source must be a supplied document ID and the quote must occur literally in it.
 Record whether request fields are strings, numbers, dates or enums exactly as documented.

@@ -158,9 +158,12 @@ def test_document_contract_policy_and_workflow_share_a_fresh_recorded_run(tmp_pa
         },
         rule_nodes={"lookup": ["lookup"]},
     )
+    extracted_contract = contract()
+    extracted_contract.notes = ["The error response body is not documented."]
+    policy.notes = ["Only documented service capabilities may be claimed."]
     outputs = iter(
         [
-            contract().model_dump_json(),
+            extracted_contract.model_dump_json(),
             policy.model_dump_json(),
             draft.model_dump_json(),
         ]
@@ -200,6 +203,11 @@ def test_document_contract_policy_and_workflow_share_a_fresh_recorded_run(tmp_pa
     assert "deployment-config" in prompts[1]
     assert MOCK_URL in prompts[1]
     assert MOCK_URL in prompts[2]
+    assert extracted_contract.notes[0] in prompts[1]
+    assert extracted_contract.notes[0] in prompts[2]
+    assert policy.notes[0] in prompts[2]
+    assert json.loads((out / "service-contract-notes.json").read_text()) == extracted_contract.notes
+    assert "contract-notes" not in builder.inputs.sources
     assert json.loads((out / "deployment-config.json").read_text()) == {"mock_url": MOCK_URL}
     policy.check_sources(builder.inputs.sources)
     assert trace[-1]["event"] == "builder_end"

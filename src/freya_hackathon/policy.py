@@ -30,6 +30,11 @@ class Policy(StrictModel):
         description="Unresolved contradictions or missing authoritative source dependencies. "
         "Do not clear a missing dependency merely to pass validation.",
     )
+    notes: list[str] = Field(
+        default_factory=list,
+        description="Source-documented limitations or explicitly deferred decisions. Preserve "
+        "their scope and the source-backed handling rule; notes cannot resolve missing policy.",
+    )
 
     def check_sources(self, sources: dict[str, str]) -> None:
         ids = [rule.id for rule in self.rules]

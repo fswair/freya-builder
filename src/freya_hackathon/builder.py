@@ -77,6 +77,12 @@ provided documents do not contradict each other. Development references cannot f
 A validation error is not permission to erase an unresolved dependency: retain it on retry
 unless the missing source has actually been supplied. Do not label a requirement unresolved
 merely because it needs runtime account data. Every rule must have source evidence.
+Distinguish a missing governing policy from a supplied document that explicitly leaves a
+decision open or a capability unavailable. Preserve the latter in notes and extract the
+documented handling, boundary or fallback as a rule; do not invent the deferred decision or
+claim unavailable data exists. If no source-backed handling can satisfy a required action,
+keep that requirement unresolved. Model-derived contract notes are observations to verify
+against original sources, never independent policy authority or evidence quotes.
 The deployment-config document, when present, supplies explicit runtime configuration such as
 the mock service base URL. It resolves that configuration dependency, not bank business policy.
 """
@@ -90,6 +96,9 @@ Return WorkflowBuild: workflow is a JSON object in the documented Freya format; 
 every policy rule to real node IDs. This is a local candidate, not a deployed or tested agent.
 Read the original briefs too; the policy extraction may have omissions. Apply amendments only in
 their documented scope. The base agent illustrates serialization, not the correct bank policy.
+Preserve policy and contract limitations in the implementation. Do not turn an open decision
+into an invented rule, unavailable data into a guessed value, or an unsupported operation into
+a claimed success. Follow the source-backed handling rules for those boundaries.
 Take fields, enums and API URLs from the supplied OpenAPI. Do not copy the base agent's policy.
 
 Prefer small stages, deterministic code and routing for critical state, and dialogue for wording.
@@ -630,6 +639,7 @@ class Builder:
         )
         try:
             async with asyncio.timeout(self.seconds):
+                contract_context = ""
                 if self.inputs.mock_url and not self.inputs.api:
                     mock_url = self.inputs.mock_url
                     contract = await self.stage(
@@ -641,6 +651,12 @@ class Builder:
                     )
                     api = contract.checked_api(self.inputs.sources, mock_url)
                     write_json(self.output / "derived-openapi.json", api)
+                    write_json(self.output / "service-contract-notes.json", contract.notes)
+                    contract_context = (
+                        '\n<contract-notes authority="model-observations-not-policy">\n'
+                        + json.dumps(contract.notes, ensure_ascii=False)
+                        + "\n</contract-notes>\n"
+                    )
                     self.inputs = replace(self.inputs, api=api)
                 if self.inputs.mock_url:
                     deployment_api = (
@@ -662,7 +678,7 @@ class Builder:
                     policy = await self.stage(
                         "policy",
                         POLICY_INSTRUCTIONS,
-                        documents,
+                        documents + contract_context,
                         Policy,
                         lambda value: value.check_sources(self.inputs.sources),
                     )
@@ -674,6 +690,7 @@ class Builder:
                     + "\n</policy>\n"
                     + self.inputs.references
                     + deployment_api
+                    + contract_context
                 )
                 if self.repair_from and self.feedback:
                     previous_workflow = self.reuse(self.repair_from, "workflow.json")
