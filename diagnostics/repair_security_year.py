@@ -13,7 +13,7 @@ from freya_hackathon.compiler import compile_workflow
 from freya_hackathon.recording import capture_sync
 from freya_hackathon.workflow import WorkflowBuild
 
-HELPER = r'''def _builder_unfinished_birth_year(speech, answer):
+HELPER = r"""def _builder_unfinished_birth_year(speech, answer):
  import re as _birth_re
  speech, answer = str(speech or ''), str(answer or '')
  spoken_years = _birth_re.findall(r'\b(?:18|19|20)\d{2}\b', speech)
@@ -21,7 +21,7 @@ HELPER = r'''def _builder_unfinished_birth_year(speech, answer):
   return True
  extracted_years = _birth_re.findall(r'\b(?:18|19|20)\d{2}\b', answer)
  return bool(spoken_years and extracted_years and set(spoken_years) != set(extracted_years))
-'''
+"""
 
 
 def repair(code: str, brief: str) -> str:
@@ -31,7 +31,7 @@ def repair(code: str, brief: str) -> str:
     )
     indent = " " * function.body[0].col_offset
     lines = code.splitlines()
-    lines[function.body[0].lineno - 1: function.body[0].lineno - 1] = [
+    lines[function.body[0].lineno - 1 : function.body[0].lineno - 1] = [
         indent + line for line in HELPER.splitlines()
     ]
     code = "\n".join(lines) + "\n"

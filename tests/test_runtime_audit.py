@@ -182,10 +182,21 @@ def _structured(event: dict, *, node="verify_identity", role="system") -> dict:
 @pytest.mark.parametrize("role", ["system", "user", "assistant"])
 def test_blank_extraction_error_is_counted_only_as_an_actual_system_event(tmp_path, role):
     practice, result, _ = _fixture(tmp_path)
-    _messages(practice, [_structured({
-        "event": "extraction_error", "variables": ["turn_terms"], "error": "",
-        "input_text": "PRIVATE_INPUT",
-    }, node="dialogue", role=role)])
+    _messages(
+        practice,
+        [
+            _structured(
+                {
+                    "event": "extraction_error",
+                    "variables": ["turn_terms"],
+                    "error": "",
+                    "input_text": "PRIVATE_INPUT",
+                },
+                node="dialogue",
+                role=role,
+            )
+        ],
+    )
     report = audit_runtime(tmp_path)
     assert report["usable_as_clean_model_comparison"] is (role != "system")
     if role == "system":
@@ -203,14 +214,20 @@ def test_timeout_metadata_requires_same_node_api_start_and_is_not_recounted(
     tmp_path, prior, route_node
 ):
     practice, result, _ = _fixture(tmp_path)
-    events = [] if prior is None else [
-        _structured({"event": "function_call_start", "function": prior})
-    ]
-    route = _structured({"event": "route_evaluated", "variable_table": {
-        "verify_identity_response.status": "error",
-        "verify_identity_response.status_code": 408,
-        "verify_identity_response.message": "Action api_call timed out PRIVATE",
-    }}, node=route_node)
+    events = (
+        [] if prior is None else [_structured({"event": "function_call_start", "function": prior})]
+    )
+    route = _structured(
+        {
+            "event": "route_evaluated",
+            "variable_table": {
+                "verify_identity_response.status": "error",
+                "verify_identity_response.status_code": 408,
+                "verify_identity_response.message": "Action api_call timed out PRIVATE",
+            },
+        },
+        node=route_node,
+    )
     _messages(practice, [*events, route, route])
     report = audit_runtime(tmp_path)
     errors = report["cases"][0]["unresolved_runtime_errors"]
@@ -226,16 +243,32 @@ def test_timeout_metadata_requires_same_node_api_start_and_is_not_recounted(
 @pytest.mark.parametrize("status", ["success", "error"])
 def test_completed_api_error_is_counted_once_but_domain_denial_is_not(tmp_path, status):
     practice, _, _ = _fixture(tmp_path)
-    _messages(practice, [
-        _structured({"event": "function_call_start", "function": "api_call"}),
-        _structured({"event": "function_call_complete", "function": "api_call", "result": {
-            "status": status, "data": {"ok": False}, "status_code": 400,
-        }}),
-        _structured({"event": "route_evaluated", "variable_table": {
-            "verify_identity_response.status": "error",
-            "verify_identity_response.status_code": 400,
-        }}),
-    ])
+    _messages(
+        practice,
+        [
+            _structured({"event": "function_call_start", "function": "api_call"}),
+            _structured(
+                {
+                    "event": "function_call_complete",
+                    "function": "api_call",
+                    "result": {
+                        "status": status,
+                        "data": {"ok": False},
+                        "status_code": 400,
+                    },
+                }
+            ),
+            _structured(
+                {
+                    "event": "route_evaluated",
+                    "variable_table": {
+                        "verify_identity_response.status": "error",
+                        "verify_identity_response.status_code": 400,
+                    },
+                }
+            ),
+        ],
+    )
     report = audit_runtime(tmp_path)
     errors = report["cases"][0]["unresolved_runtime_errors"]
     assert len(errors) == int(status == "error")
@@ -245,15 +278,28 @@ def test_completed_api_error_is_counted_once_but_domain_denial_is_not(tmp_path, 
 
 def test_function_error_and_later_timeout_snapshot_are_not_counted_twice(tmp_path):
     practice, _, _ = _fixture(tmp_path)
-    _messages(practice, [
-        _structured({"event": "function_call_start", "function": "api_call"}),
-        _structured({"event": "function_call_error", "function": "api_call",
-                     "error": "API request failed: Worker threw exception"}),
-        _structured({"event": "route_evaluated", "variable_table": {
-            "verify_identity_response.status": "error",
-            "verify_identity_response.status_code": 408,
-        }}),
-    ])
+    _messages(
+        practice,
+        [
+            _structured({"event": "function_call_start", "function": "api_call"}),
+            _structured(
+                {
+                    "event": "function_call_error",
+                    "function": "api_call",
+                    "error": "API request failed: Worker threw exception",
+                }
+            ),
+            _structured(
+                {
+                    "event": "route_evaluated",
+                    "variable_table": {
+                        "verify_identity_response.status": "error",
+                        "verify_identity_response.status_code": 408,
+                    },
+                }
+            ),
+        ],
+    )
     errors = audit_runtime(tmp_path)["cases"][0]["unresolved_runtime_errors"]
     assert len(errors) == 1
     assert errors[0]["signature"] == BANK_WORKER_SIGNATURE

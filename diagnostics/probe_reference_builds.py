@@ -27,7 +27,7 @@ def read(path: Path):
 
 def evaluate(source: Path, output: Path) -> None:
     output.mkdir(parents=True, exist_ok=True)
-    config = StudyConfig.read(ROOT / "optimization.example.json")
+    config = StudyConfig.read(ROOT / "configs/optimization/example.json")
     rows = load_split(config, "train")
     by_id = {row["id"]: row for row in rows}
     summary_path = output / "report.json"

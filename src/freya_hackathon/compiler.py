@@ -185,6 +185,11 @@ def compile_workflow(draft: WorkflowBuild) -> tuple[WorkflowBuild, list[dict]]:
         compact = compact_code(code)
         if compact != code:
             field["default"] = compact
-            changes.append({"path": path, "fix": "compact_code_exec_layout",
-                            "saved_bytes": len(code.encode()) - len(compact.encode())})
+            changes.append(
+                {
+                    "path": path,
+                    "fix": "compact_code_exec_layout",
+                    "saved_bytes": len(code.encode()) - len(compact.encode()),
+                }
+            )
     return result, changes

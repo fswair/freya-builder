@@ -1,0 +1,117 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "group_id": {
+      "type": "string"
+    },
+    "split": {
+      "type": "string",
+      "enum": [
+        "train",
+        "validation",
+        "holdout"
+      ]
+    },
+    "variables": {
+      "type": "object",
+      "properties": {
+        "session_id": {
+          "type": "string"
+        },
+        "now": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "session_id",
+        "now"
+      ],
+      "additionalProperties": false
+    },
+    "customer_private_facts": {
+      "type": "object"
+    },
+    "script": {
+      "type": "string",
+      "minLength": 100
+    },
+    "behavior_metadata": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "coverage_roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1
+        },
+        "state_tone_transitions": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "policy_origin": {
+          "type": "string",
+          "enum": [
+            "synthetic"
+          ]
+        },
+        "dimensions_are_open_ended": {
+          "const": true
+        }
+      },
+      "required": [
+        "labels",
+        "coverage_roles",
+        "state_tone_transitions",
+        "policy_origin",
+        "dimensions_are_open_ended"
+      ],
+      "additionalProperties": false
+    },
+    "fixture_reference": {
+      "type": "object",
+      "properties": {
+        "file": {
+          "type": "string",
+          "enum": [
+            "mock-fixture.json"
+          ]
+        },
+        "pointer": {
+          "type": "string",
+          "pattern": "^/cases/.+/initial_state$"
+        }
+      },
+      "required": [
+        "file",
+        "pointer"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "id",
+    "group_id",
+    "split",
+    "variables",
+    "customer_private_facts",
+    "script",
+    "behavior_metadata",
+    "fixture_reference"
+  ],
+  "additionalProperties": false,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

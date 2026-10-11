@@ -42,7 +42,7 @@ def run(
         raise FileExistsError(output)
     if not 1 <= concurrency <= 5:
         raise ValueError("Diagnostic concurrency must be between one and five")
-    inputs = StudyConfig.read(ROOT / "optimization.example.json").inputs()[brief]
+    inputs = StudyConfig.read(ROOT / "configs/optimization/example.json").inputs()[brief]
     selected = read(cases)
     if not selected or any(case["brief"] != brief for case in selected):
         raise ValueError("Cases must belong to the selected brief")

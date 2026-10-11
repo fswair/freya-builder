@@ -1,0 +1,75 @@
+{
+  "id": "GEN-TR-IN-01",
+  "brief_family_id": "FAM-TR-IN",
+  "split": "train",
+  "sector": "insurance",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "tool_contract": "extended_local_contract",
+  "source_files": [
+    "documents/email.txt",
+    "documents/policy.txt",
+    "documents/amendment.txt",
+    "documents/codes.json",
+    "openapi.json"
+  ],
+  "evaluator_files": [
+    "mock-fixture.json",
+    "cases.json",
+    "oracle.json",
+    "author-review.txt",
+    "validation-report.json"
+  ],
+  "scope_notes": [
+    "Extended LOCAL incident-notice contract; not claims adjudication, collections or the official final tool surface.",
+    "The amendment supersedes only one event-specific age limit."
+  ],
+  "assumptions": {
+    "timezone": "UTC",
+    "effective_policy_date": "2027-01-01",
+    "authority": "Only the actual policyholder in these cases",
+    "all_entities": "synthetic"
+  },
+  "document_format": "raw_document_bundle",
+  "case_count": 4,
+  "policy_rule_index": [
+    {
+      "file": "documents/email.txt",
+      "rule_id": "TI.E1"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P1"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P2"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P3"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P4"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P5"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "TI.P6"
+    },
+    {
+      "file": "documents/amendment.txt",
+      "rule_id": "TI.M1"
+    },
+    {
+      "file": "documents/codes.json",
+      "rule_id": "TI.C1"
+    }
+  ],
+  "builder_input_boundary": "Only source_files are builder input. No fixture, private customer facts, cases, oracle, author-review or validation report is builder input. Runtime read responses expose only the declared fields.",
+  "failure_model": "No failure is implied by omission. Only controls explicitly present in a case initial_state are active."
+}

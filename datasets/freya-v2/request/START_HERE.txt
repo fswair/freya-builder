@@ -1,0 +1,22 @@
+Bu paket v1 isteğinin yerine geçer.
+
+Pro'ya iletilecek kısa mesaj:
+
+"PROMPT.txt dosyasını okuyup uygula. LIVE_CASES_SPEC.txt ve
+GENERALIZATION_SPEC.txt uyarınca iki ayrı dataset hazırla. sources/ içindeki
+belgeleri kaynak al. Bankacılık ve sigortacılığa odaklan; duygu, niyet, konuşma
+biçimi ve kuralı aşma girişimini ayrı boyutlarda ele al. Yeni briefler sentetik
+olmalı ve yalnızca yerel mock testler olarak etiketlenmeli. Dosyaları üret,
+doğrula ve sonuçları indirilebilir bir ZIP olarak ver. Yapmadığın testi yapılmış
+gibi raporlama."
+
+İstenen çıktılar:
+- 48 yeni canlı practice vakası: 32 train / 8 validation / 8 holdout.
+- 6 yeni sentetik brief: 3 bankacılık, 3 sigortacılık; her briefte 4 vaka.
+  Her splitte bir bankacılık ve bir sigortacılık briefi bulunur.
+- Kontrol raporu ve manifestler; holdout içeriği ortak rapora sızdırılmaz.
+
+Önemli sınır:
+Canlı bankanın kimlik/bakiye/saat kayıtlarını değiştirmiyoruz. Sigortacılık ve
+yeni iş süreçleri için ayrıca tanımlanan sahte araç ortamını uygulamamız gerekir.
+Üretilen dataset, çalıştırılmış bir benchmark veya resmi hidden set değildir.

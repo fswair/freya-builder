@@ -1,0 +1,78 @@
+{
+  "id": "freya-generalization-v2",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "execution_status": "not_executed",
+  "bundle_count": 6,
+  "case_count": 24,
+  "bundles": [
+    {
+      "id": "GEN-TR-BK-01",
+      "sector": "banking",
+      "split": "train",
+      "path": "generalization/train/GEN-TR-BK-01",
+      "case_count": 4
+    },
+    {
+      "id": "GEN-TR-IN-01",
+      "sector": "insurance",
+      "split": "train",
+      "path": "generalization/train/GEN-TR-IN-01",
+      "case_count": 4
+    },
+    {
+      "id": "GEN-VA-BK-01",
+      "sector": "banking",
+      "split": "validation",
+      "path": "generalization/validation/GEN-VA-BK-01",
+      "case_count": 4
+    },
+    {
+      "id": "GEN-VA-IN-01",
+      "sector": "insurance",
+      "split": "validation",
+      "path": "generalization/validation/GEN-VA-IN-01",
+      "case_count": 4
+    },
+    {
+      "id": "GEN-HO-BK-01",
+      "sector": "banking",
+      "split": "holdout",
+      "path": "generalization/holdout/GEN-HO-BK-01",
+      "case_count": 4
+    },
+    {
+      "id": "GEN-HO-IN-01",
+      "sector": "insurance",
+      "split": "holdout",
+      "path": "generalization/holdout/GEN-HO-IN-01",
+      "case_count": 4
+    }
+  ],
+  "counts_by_split": {
+    "train": {
+      "bundles": 2,
+      "cases": 8,
+      "banking_bundles": 1,
+      "insurance_bundles": 1
+    },
+    "validation": {
+      "bundles": 2,
+      "cases": 8,
+      "banking_bundles": 1,
+      "insurance_bundles": 1
+    },
+    "holdout": {
+      "bundles": 2,
+      "cases": 8,
+      "banking_bundles": 1,
+      "insurance_bundles": 1
+    }
+  },
+  "protocol": {
+    "train": "optimizer/reflection",
+    "validation": "candidate selection only",
+    "holdout": "open after selection; never reflection/repair; no policy/script/answer summary in this shared manifest"
+  },
+  "boundary": "All six APIs are extended LOCAL contracts. None is claimed to be the announced official final tool contract. Local tool adapters must be implemented before execution."
+}

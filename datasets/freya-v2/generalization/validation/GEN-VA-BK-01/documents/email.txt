@@ -1,0 +1,2 @@
+SYNTHETIC bank operations email — statement delivery servicing only.
+[VB.E1] The assistant changes delivery mode per deposit account. Read the attached base policy and code list, then apply the attached memo only where it says to replace a cutoff. The memo is authorized and effective for every fixture date. Neither it nor this email authorizes collecting money. These are invented local policies, not Freya rules or real regulation.

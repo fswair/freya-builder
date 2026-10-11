@@ -20,14 +20,16 @@ def pdf_bytes(*texts: str) -> bytes:
     writer = PdfWriter()
     for text in texts:
         page = writer.add_blank_page(612, 792)
-        font = DictionaryObject({
-            NameObject("/Type"): NameObject("/Font"),
-            NameObject("/Subtype"): NameObject("/Type1"),
-            NameObject("/BaseFont"): NameObject("/Helvetica"),
-        })
-        page[NameObject("/Resources")] = DictionaryObject({
-            NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})
-        })
+        font = DictionaryObject(
+            {
+                NameObject("/Type"): NameObject("/Font"),
+                NameObject("/Subtype"): NameObject("/Type1"),
+                NameObject("/BaseFont"): NameObject("/Helvetica"),
+            }
+        )
+        page[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})}
+        )
         stream = DecodedStreamObject()
         stream.set_data(f"BT /F1 12 Tf 50 700 Td ({text}) Tj ET".encode())
         page[NameObject("/Contents")] = stream
@@ -68,9 +70,16 @@ def test_excel_retains_all_sheets_dates_formulas_formats_and_notes(tmp_path):
     path = tmp_path / "customers.xlsx"
     book.save(path)
     text = decode_document(path, path.read_bytes())
-    for term in ["Müşteriler", "2026-01-05", "000000", '"formula": "=C2*2"',
-                 '"cached_value": null', "Örnek müşteri tutarı", "visibility: hidden",
-                 "Gizli sekme de girdinin parçasıdır."]:
+    for term in [
+        "Müşteriler",
+        "2026-01-05",
+        "000000",
+        '"formula": "=C2*2"',
+        '"cached_value": null',
+        "Örnek müşteri tutarı",
+        "visibility: hidden",
+        "Gizli sekme de girdinin parçasıdır.",
+    ]:
         assert term in text
     assert '"calculated_by_builder": false' in text
 

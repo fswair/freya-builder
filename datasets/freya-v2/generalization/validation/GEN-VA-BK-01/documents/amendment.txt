@@ -1,0 +1,2 @@
+SYNTHETIC AUTHORIZED CUTOVER MEMO — effective 2027-02-01
+[VB.M1] Replace only the hour in VB.P3 for account kind SAVINGS: use 19:00 UTC on day 18, inclusive. CURRENT accounts retain the 17:00 inclusive cutoff. The month labels, confirmation rule, contact verification and all other clauses are unchanged. This is a scoped replacement, not an additional cutoff to satisfy.

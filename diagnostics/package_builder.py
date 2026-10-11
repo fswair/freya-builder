@@ -94,7 +94,7 @@ def build_bundle(
         )
     ]
     for directory, pattern in (
-        ("src/freya_hackathon", "*.py"),
+        ("src/freya_hackathon", "**/*.py"),
         ("benchmarks", "*.yaml"),
         (reference_directory, "*.json"),
         ("vendor/freya-v3/docs", "*.md"),
@@ -124,6 +124,13 @@ def build_bundle(
     contents["RUNBOOK.txt"] = RUNBOOK.replace(
         "benchmarks/development-references-v1/", reference_directory + "/"
     ).encode()
+    contents["README.md"] = (
+        b"# Freya builder source bundle\n\n"
+        b"Follow [RUNBOOK.txt](RUNBOOK.txt) for setup and the final generation command.\n\n"
+        b"This minimal archive contains the builder, selected guidance and public kit. "
+        b"The full repository also includes development datasets, optimizer configurations "
+        b"and tests; those are deliberately outside this archive.\n"
+    )
     manifest = {
         "created_at": datetime.now(UTC).isoformat(),
         "scope": "builder source and public kit; no final brief run or quality claim",

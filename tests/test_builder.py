@@ -407,10 +407,12 @@ def test_policy_retries_preserve_workflow_time_in_actual_request_path(
         yield FunctionModel(respond)
 
     out = tmp_path / "reserved"
-    inputs = Inputs(sources={"brief-1": "Check identity."}, api=api,
-                    references="fixture", manifest=[])
-    builder = Builder(inputs, out, model_factory=factory, seconds=1200,
-                      call_seconds=600, attempts=2)
+    inputs = Inputs(
+        sources={"brief-1": "Check identity."}, api=api, references="fixture", manifest=[]
+    )
+    builder = Builder(
+        inputs, out, model_factory=factory, seconds=1200, call_seconds=600, attempts=2
+    )
     if second_policy_succeeds:
         asyncio.run(builder.run())
         assert timeouts == [600, 298, 348]

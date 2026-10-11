@@ -134,8 +134,7 @@ def repair_interrupted_corrections(code: str) -> str:
         "(?:[1-9]|[12][0-9]|3[01])$', raw_n)):\n"
         "    clarify_pending('Please finish the change you want to make. "
         "I have retained the existing amounts and dates, and have not recorded "
-        "these promises.')\n   "
-        + anchor
+        "these promises.')\n   " + anchor
     )
     code = code.replace(anchor, replacement, 1)
     ast.parse(code)

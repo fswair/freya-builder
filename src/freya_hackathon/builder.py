@@ -560,8 +560,11 @@ class Builder:
                 "builder.development_reference_count": len(self.inputs.workflow_references),
                 "builder.guidance_sha256": hashlib.sha256(self.guidance.encode()).hexdigest(),
             },
-            inputs={"documents": self.inputs.manifest, "seconds": self.seconds,
-                    "mock_url": self.inputs.mock_url},
+            inputs={
+                "documents": self.inputs.manifest,
+                "seconds": self.seconds,
+                "mock_url": self.inputs.mock_url,
+            },
         )
 
     async def _run(self) -> dict:
@@ -604,8 +607,9 @@ class Builder:
                 "note": "Reused runs are development experiments, not fresh timed submissions.",
             },
         )
-        source_paths = {item["source"]: item.get("path", item["source"])
-                        for item in self.inputs.manifest}
+        source_paths = {
+            item["source"]: item.get("path", item["source"]) for item in self.inputs.manifest
+        }
         if self.inputs.mock_url:
             configuration = {"mock_url": validate_mock_url(self.inputs.mock_url)}
             write_json(self.output / "deployment-config.json", configuration)
@@ -805,11 +809,15 @@ class Builder:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("brief", type=Path, help="Primary document file or document directory")
-    parser.add_argument("tool_api", type=Path, nargs="?",
-                        help="Optional OpenAPI file supplied with this brief")
+    parser.add_argument(
+        "tool_api", type=Path, nargs="?", help="Optional OpenAPI file supplied with this brief"
+    )
     parser.add_argument("--mock-url", help="Explicit deployed mock HTTPS base URL")
     parser.add_argument(
-        "--additional-brief", type=Path, action="append", default=[],
+        "--additional-brief",
+        type=Path,
+        action="append",
+        default=[],
         help="Additional document or directory; visible files are loaded in sorted order",
     )
     parser.add_argument("--kit", type=Path, default=KIT)

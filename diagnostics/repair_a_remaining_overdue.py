@@ -15,14 +15,16 @@ from freya_hackathon.recording import capture_sync
 from freya_hackathon.workflow import WorkflowBuild
 
 ROOT = Path(__file__).resolve().parents[1]
-CALL = ROOT / ("diagnostics/v15-a012-live-read-001/practice/"
-               "call-86fcb5dc-5dec-418f-8aed-6b1dd16c8727.json")
+CALL = ROOT / (
+    "diagnostics/v15-a012-live-read-001/practice/call-86fcb5dc-5dec-418f-8aed-6b1dd16c8727.json"
+)
 ANSWER = "Any unpaid part of the past-due amount stays overdue."
 
 
 def code_field(workflow):
-    return workflow["nodes"]["advance"]["pre_actions"][0]["function"]["parameters"][
-        "properties"]["code"]
+    return workflow["nodes"]["advance"]["pre_actions"][0]["function"]["parameters"]["properties"][
+        "code"
+    ]
 
 
 def repair(code):
@@ -48,8 +50,11 @@ def seed():
         if not isinstance(event, dict):
             continue
         values = event.get("variable_table", {})
-        if (event.get("event") == "route_evaluated" and event.get("target") == "advance"
-                and "rest still" in values.get("turn_raw", "")):
+        if (
+            event.get("event") == "route_evaluated"
+            and event.get("target") == "advance"
+            and "rest still" in values.get("turn_raw", "")
+        ):
             return values
     raise ValueError("Native remainder-question input missing")
 
@@ -80,34 +85,58 @@ def main():
         workflow = json.loads(source.read_text())
         baseline = code_field(workflow)["default"]
         code_field(workflow)["default"] = repair(baseline)
-        compiled, changes = compile_workflow(WorkflowBuild(
-            workflow=workflow,
-            rule_nodes=json.loads((args.parent / "rule-nodes.json").read_text())))
+        compiled, changes = compile_workflow(
+            WorkflowBuild(
+                workflow=workflow,
+                rule_nodes=json.loads((args.parent / "rule-nodes.json").read_text()),
+            )
+        )
         code = code_field(compiled.workflow)["default"]
         write_json(args.out / "workflow.json", compiled.workflow)
         values = seed()
         rows = []
-        positives = [values["turn_raw"], "16 October. Does the remaining balance stay overdue?",
-                     "16 October. Will the unpaid amount still be past due?",
-                     "16 October. Is the remainder still late?"]
+        positives = [
+            values["turn_raw"],
+            "16 October. Does the remaining balance stay overdue?",
+            "16 October. Will the unpaid amount still be past due?",
+            "16 October. Is the remainder still late?",
+        ]
         for raw in positives:
             v = {**values, "turn_raw": raw}
             old, new = probe(baseline, v), probe(code, v)
             state = json.loads(new["call_state"])
             p = state["products"]["p1"]
             expected_confirmation = old["confirmation_text"].replace(
-                "I do not have that information.", ANSWER, 1)
-            passed = (ANSWER in new["instruction"] and new["next"] == "confirm_speak"
-                      and new["confirmation_text"] == expected_confirmation
-                      and state_without_wording(old) == state_without_wording(new)
-                      and state["stage"] == "confirm" and p["amount"] == 637.5
-                      and p["date"] == "2026-10-16" and not p["confirmed"]
-                      and not p["recorded"])
-            rows.append({"id": raw, "passed": passed,
-                         "baseline_instruction": old["instruction"],
-                         "candidate_instruction": new["instruction"]})
-        for name in ("unverified", "third_party", "unknown", "no_question",
-                     "credit_score", "minimum", "deadline"):
+                "I do not have that information.", ANSWER, 1
+            )
+            passed = (
+                ANSWER in new["instruction"]
+                and new["next"] == "confirm_speak"
+                and new["confirmation_text"] == expected_confirmation
+                and state_without_wording(old) == state_without_wording(new)
+                and state["stage"] == "confirm"
+                and p["amount"] == 637.5
+                and p["date"] == "2026-10-16"
+                and not p["confirmed"]
+                and not p["recorded"]
+            )
+            rows.append(
+                {
+                    "id": raw,
+                    "passed": passed,
+                    "baseline_instruction": old["instruction"],
+                    "candidate_instruction": new["instruction"],
+                }
+            )
+        for name in (
+            "unverified",
+            "third_party",
+            "unknown",
+            "no_question",
+            "credit_score",
+            "minimum",
+            "deadline",
+        ):
             v = copy.deepcopy(values)
             state = json.loads(v["call_state"])
             if name == "unverified":
@@ -125,13 +154,22 @@ def main():
             v["call_state"] = json.dumps(state)
             old, new = probe(baseline, v), probe(code, v)
             rows.append({"id": name, "passed": old == new and ANSWER not in new["instruction"]})
-        report = {"passed": sum(r["passed"] for r in rows), "total": len(rows),
-                  "rows": rows, "source": str(source), "source_call": str(CALL),
-                  "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                  "workflow_sha256": hashlib.sha256(
-                      (args.out / "workflow.json").read_bytes()).hexdigest(),
-                  "compiler_changes": changes, "source_rule": "Brief A26 and A43",
-                  "native_simulation": False, "fresh_generation": False, "promoted": False}
+        report = {
+            "passed": sum(r["passed"] for r in rows),
+            "total": len(rows),
+            "rows": rows,
+            "source": str(source),
+            "source_call": str(CALL),
+            "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "workflow_sha256": hashlib.sha256(
+                (args.out / "workflow.json").read_bytes()
+            ).hexdigest(),
+            "compiler_changes": changes,
+            "source_rule": "Brief A26 and A43",
+            "native_simulation": False,
+            "fresh_generation": False,
+            "promoted": False,
+        }
         write_json(args.out / "report.json", report)
         return report
 

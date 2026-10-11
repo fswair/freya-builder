@@ -1,0 +1,414 @@
+{
+  "format_version": "1.0",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "executable_adapter_included": false,
+  "specification_notice": "This is a declarative mock SPECIFICATION. A local tool adapter must implement it; no Freya endpoint/customer registration is implied. The supplied verifier only evaluates authored proof witnesses, not a phone workflow or a mock server.",
+  "clock_timezone": "Europe/Istanbul",
+  "clock_rule": "Each independent case starts from its own initial_state.now. Only an explicit listed transition may advance it; never use the host wall clock.",
+  "expression_language": "Restricted side-effect-free Python expression subset documented by validation_support.py. q=request, s=pre-state, op=operation. Decimal-safe money and calendar helpers are pure. Effects are simultaneous; receipts hold deep copies.",
+  "case_isolation": {
+    "reset": "deep-copy the selected case initial_state before every repetition",
+    "shared_mutable_state": false,
+    "case_order_dependency": false
+  },
+  "identifier_mapping": "All usable entity IDs are keys/IDs of the selected initial_state and must be grounded in the relevant read response. Caller aliases appear in customer_private_facts. No external lookup is allowed.",
+  "operation_models": {
+    "inspect_cards": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.1"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.2"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "inspect_cards.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "inspect_cards.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "cards.read",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'cards': s['cards']}}",
+          "effects": []
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "verify_card_code": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.3"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.4"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "verify_card_code.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "verify_card_code.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "code.budget",
+          "when": "s['wrong_codes'] >= 2",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'CODE_LOCKED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "code.pass",
+          "when": "q['code'] == s['secret_code']",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified': True, 'wrong_left': 2-s['wrong_codes']}}",
+          "effects": [
+            {
+              "path_expression": "['verified']",
+              "value_expression": "True"
+            }
+          ]
+        },
+        {
+          "id": "code.fail",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified': False, 'wrong_left': 1-s['wrong_codes']}}",
+          "effects": [
+            {
+              "path_expression": "['wrong_codes']",
+              "value_expression": "s['wrong_codes']+1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "set_card_lock": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.2"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.3"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.5"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.6"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "set_card_lock.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_card_lock.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_card_lock.key_conflict",
+          "when": "q['request_key'] in s['receipts'] and (s['receipts'][q['request_key']]['request'] != q or s['receipts'][q['request_key']]['operation'] != op)",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'KEY_REUSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_card_lock.idempotent_replay",
+          "when": "q['request_key'] in s['receipts']",
+          "status": 200,
+          "response_expression": "s['receipts'][q['request_key']]['response']",
+          "effects": []
+        },
+        {
+          "id": "card.unknown",
+          "when": "q['card_id'] not in s['cards']",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'UNKNOWN_CARD', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "unlock.unauthorized",
+          "when": "not q['locked'] and not s['verified']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'CODE_REQUIRED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "card.changed",
+          "when": "s['cards'][q['card_id']]['changed_this_call']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_CHANGED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "card.same",
+          "when": "q['locked'] == s['cards'][q['card_id']]['locked']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_SET', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "card.stale",
+          "when": "q['expected_version'] != s['cards'][q['card_id']]['version']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'STALE_VERSION', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "card.change",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'card_id': q['card_id'], 'locked': q['locked'], 'version': s['cards'][q['card_id']]['version']+1}}",
+          "effects": [
+            {
+              "path_expression": "['cards',q['card_id'],'locked']",
+              "value_expression": "q['locked']"
+            },
+            {
+              "path_expression": "['cards',q['card_id'],'version']",
+              "value_expression": "s['cards'][q['card_id']]['version']+1"
+            },
+            {
+              "path_expression": "['cards',q['card_id'],'changed_this_call']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['receipts', q['request_key']]",
+              "value_expression": "{'operation': op, 'request': q, 'response': {'ok': True, 'data': {'card_id': q['card_id'], 'locked': q['locked'], 'version': s['cards'][q['card_id']]['version']+1}}}"
+            },
+            {
+              "path_expression": "['mutation_count']",
+              "value_expression": "s['mutation_count'] + 1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Exact same request_key+operation+payload replays the successful receipt without a new business mutation; a changed payload on the same key yields KEY_REUSE. Post-close operations are rejected. Additional product-state guards reject a second independent irreversible action."
+    },
+    "finish_security": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "TB.7"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "finish_security.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "finish_security.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.wrong",
+          "when": "q['code'] != ('changed' if s['mutation_count'] > 0 else ('verification_failed' if s['wrong_codes'] >= 2 else 'unchanged'))",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.ok",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'code':q['code']}}",
+          "effects": [
+            {
+              "path_expression": "['closed']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['final_code']",
+              "value_expression": "q['code']"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    }
+  },
+  "cases": {
+    "GEN-TR-BK-01-C01": {
+      "initial_state": {
+        "session_id": "session-tb-1",
+        "now": "2027-01-12T09:30:00+03:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cards": {
+          "CARD-A": {
+            "card_id": "CARD-A",
+            "nickname": "Everyday",
+            "last4": "1207",
+            "locked": false,
+            "version": 4,
+            "changed_this_call": false
+          },
+          "CARD-B": {
+            "card_id": "CARD-B",
+            "nickname": "Travel",
+            "last4": "9031",
+            "locked": true,
+            "version": 2,
+            "changed_this_call": false
+          }
+        },
+        "secret_code": "582614",
+        "verified": false,
+        "wrong_codes": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-BK-01-C02": {
+      "initial_state": {
+        "session_id": "session-tb-2",
+        "now": "2027-01-12T09:30:00+03:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cards": {
+          "CARD-A": {
+            "card_id": "CARD-A",
+            "nickname": "Everyday",
+            "last4": "1207",
+            "locked": false,
+            "version": 4,
+            "changed_this_call": false
+          },
+          "CARD-B": {
+            "card_id": "CARD-B",
+            "nickname": "Travel",
+            "last4": "9031",
+            "locked": false,
+            "version": 2,
+            "changed_this_call": false
+          }
+        },
+        "secret_code": "582614",
+        "verified": false,
+        "wrong_codes": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-BK-01-C03": {
+      "initial_state": {
+        "session_id": "session-tb-3",
+        "now": "2027-01-12T09:30:00+03:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cards": {
+          "CARD-A": {
+            "card_id": "CARD-A",
+            "nickname": "Everyday",
+            "last4": "1207",
+            "locked": true,
+            "version": 4,
+            "changed_this_call": false
+          },
+          "CARD-B": {
+            "card_id": "CARD-B",
+            "nickname": "Travel",
+            "last4": "9031",
+            "locked": true,
+            "version": 2,
+            "changed_this_call": false
+          }
+        },
+        "secret_code": "582614",
+        "verified": false,
+        "wrong_codes": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-BK-01-C04": {
+      "initial_state": {
+        "session_id": "session-tb-4",
+        "now": "2027-01-12T09:30:00+03:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cards": {
+          "CARD-A": {
+            "card_id": "CARD-A",
+            "nickname": "Everyday",
+            "last4": "1207",
+            "locked": true,
+            "version": 4,
+            "changed_this_call": false
+          },
+          "CARD-B": {
+            "card_id": "CARD-B",
+            "nickname": "Travel",
+            "last4": "9031",
+            "locked": true,
+            "version": 2,
+            "changed_this_call": false
+          }
+        },
+        "secret_code": "582614",
+        "verified": false,
+        "wrong_codes": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    }
+  }
+}

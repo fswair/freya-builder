@@ -26,10 +26,10 @@ def main():
     expected = Path.cwd().resolve()
     assert ROOT.resolve() == expected
     modules = []
-    for item in pkgutil.iter_modules(freya_hackathon.__path__):
-        module = importlib.import_module(f"freya_hackathon.{item.name}")
+    for item in pkgutil.walk_packages(freya_hackathon.__path__, prefix="freya_hackathon."):
+        module = importlib.import_module(item.name)
         assert Path(module.__file__).resolve().is_relative_to(expected)
-        modules.append(item.name)
+        modules.append(item.name.removeprefix("freya_hackathon."))
     os.environ["FREYA_API_KEY"] = "offline-smoke-key"
     os.environ["FREYA_BANK_TEAM_KEY"] = "offline-smoke-team-key"
     requests = []
@@ -57,9 +57,15 @@ def main():
             expanded = load_inputs([material], KIT / "tools/openapi.json")
             assert expanded == explicit
         directory_inputs = "passed; directory and individual inputs identical"
-    result = {"package": str(expected), "imports": "passed", "modules": modules,
-              "practice_kit": "passed", "export_parity_import": "passed",
-              "directory_inputs": directory_inputs, "external_requests": len(requests)}
+    result = {
+        "package": str(expected),
+        "imports": "passed",
+        "modules": modules,
+        "practice_kit": "passed",
+        "export_parity_import": "passed",
+        "directory_inputs": directory_inputs,
+        "external_requests": len(requests),
+    }
     write_json(args.out, result)
     print(json.dumps(result))
 

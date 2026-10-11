@@ -13,7 +13,7 @@ from freya_hackathon.optimization_data import StudyConfig, load_split
 from freya_hackathon.pipeline import run_pipeline
 
 
-def run(output: Path, config_path: Path = ROOT / "optimization.example.json") -> None:
+def run(output: Path, config_path: Path = ROOT / "configs/optimization/example.json") -> None:
     config = StudyConfig.read(config_path)
     inputs = config.inputs()["B"]
     public = [c for c in json.loads(config.public_cases.read_text()) if c["brief"] == "B"]
@@ -94,7 +94,7 @@ def run(output: Path, config_path: Path = ROOT / "optimization.example.json") ->
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("output", type=Path)
-    parser.add_argument("--config", type=Path, default=ROOT / "optimization.example.json")
+    parser.add_argument("--config", type=Path, default=ROOT / "configs/optimization/example.json")
     args = parser.parse_args()
     with workspace_lock():
         run(args.output.resolve(), args.config.resolve())

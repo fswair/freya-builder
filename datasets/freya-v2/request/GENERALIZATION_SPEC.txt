@@ -1,0 +1,117 @@
+NEW BRIEF GENERALIZATION — LOCAL MOCK DATA ONLY
+Read PROMPT.txt first. This tests whether the builder can learn a different set of
+rules from its INPUT. It must not learn a fixed collections policy from the dataset.
+
+TARGET
+Create 6 original synthetic brief bundles: 3 banking and 3 insurance.
+- train/: 1 banking and 1 insurance bundle.
+- validation/: 1 banking and 1 insurance bundle.
+- holdout/: 1 banking and 1 insurance bundle.
+Give each bundle 4 reactive customer cases, 24 cases total. Include at least one
+ordinary successful case, one mixed-intent case, one information/correction/scope
+case and one policy-boundary or supported-tool-failure case. They can have diverse
+and changing emotions without emotion determining the expected business outcome.
+
+Keep different business-policy families in different splits; a renamed policy or
+different threshold on an otherwise copied brief is not an independent family.
+Holdout policy content, answers and scripts stay exclusively under holdout/.
+All variants or paired policy counterfactuals from the same family stay together.
+
+BUSINESS SCOPE
+Use varied banking and insurance tasks. Possible examples are banking servicing,
+collections or account-security requests; insurance renewal, claim intake or policy
+servicing. These are suggestions, not quotas or statements about hidden test topics.
+Pick tasks you can define completely and test deterministically. Do not spread into
+unrelated sectors or make unsupported claims about real regulations or products.
+All bank/insurer rules in this section are invented SYNTHETIC test policy, not legal
+advice and not official Freya policy. Label them accordingly.
+
+FORMAT VARIATION
+Across the 6 bundles provide both clean specifications and raw document bundles.
+At least 3 bundles should combine an email, a policy excerpt, an amendment/memo and
+a code list. The correct order/scope of amendments must be explicitly resolvable
+from those documents. Do not create an unsolvable contradiction and guess an oracle.
+
+Vary the data needed to interpret the brief: identity requirements, authorization
+boundaries, permitted disclosures, thresholds/deadlines, calendars, confirmation
+conditions, retries, action order, per-entity state and closure codes, where relevant.
+Some tasks may not have a minimum offer, holiday adjustment, payment promise, callback
+or identity challenge. Their absence matters: the builder must not import those
+rules merely because they existed in the public collections example.
+
+TOOL CONTRACT BOUNDARY
+For a bank collection variant intended to resemble the documented final contract,
+retain the official seven tool names while making any changed fields/enums explicit
+in the synthetic OpenAPI. For other banking/insurance tasks, a self-contained MOCK
+API may use task-appropriate tools. Flag that as an extended LOCAL contract, not as
+an officially supported Freya final tool contract. Do not rename create_promise to
+mean approval of an insurance claim or otherwise hide a semantic mismatch.
+Use reserved .invalid URLs, such as https://mock-bank.invalid or
+https://mock-insurance.invalid. No real endpoints, credentials or real customer data.
+Never attach practice_session_case to a generalization case or point it at the live
+bank endpoint. We must implement its fake tools before it can run.
+
+BUNDLE FILES
+generalization/<split>/<bundle-id>/
+  manifest.json
+  brief.txt OR documents/email.txt, policy.txt, amendment.txt, codes.json
+  openapi.json
+  mock-fixture.json
+  cases.json
+  oracle.json
+
+manifest.json:
+  id, brief_family_id, split, sector (banking or insurance),
+  policy_origin: synthetic,
+  execution_target: local_mock_only,
+  tool_contract: official_names_variant or extended_local_contract,
+  source_files: exact relative paths used as BUILDER INPUT,
+  evaluator_files: fixture/cases/oracle paths kept OUT of builder input,
+  scope_notes and assumptions.
+
+openapi.json:
+  Valid OpenAPI 3.x with operationIds, required/optional request fields, response
+  envelopes, enums and failure responses needed by the cases. Specify operation
+  semantics in descriptions and their required policy references. Avoid unused APIs.
+
+mock-fixture.json:
+  Synthetic account/policy/request entities, initial state, supplied clock/timezone,
+  identifier mapping, operation preconditions, deterministic state transitions and
+  any explicit scripted failure followed by success. For each case define a fresh
+  independent initial state; cases must not depend on another case running first.
+  Define repeated-call behavior so duplicate irreversible actions are detectable.
+  This is a mock SPECIFICATION; do not claim it is executable without an adapter.
+
+cases.json:
+  A plain array of 4 objects containing id, group_id, split, variables,
+  customer_private_facts, script, behavior metadata and fixture_reference.
+  Customer scripts follow the same reactive, bounded, non-leaking rules as the live
+  dataset. They should test the supplied policy, not teach it to the agent.
+
+oracle.json:
+  Keyed by case ID, with policy rule references, rationale, required/forbidden
+  disclosures/actions, payload expectations, ordering constraints, call count bounds,
+  final state/outcome and narrowly scoped conversation assertions.
+  Do not force one arbitrary tool sequence when several sequences meet the policy;
+  express partial-order constraints or clearly separate permitted alternatives.
+  Define explicit success conditions and distinguish irreversible effects from
+  utterances promising an effect. Expected values must derive from the brief and
+  fixture, not from unstated banking/insurance convention.
+
+Builder-visible source documents and OpenAPI describe the POLICY. Do not include
+the test customer's private answers, expected transcript or oracle there.
+Evaluation artifacts are separate and must never become hidden hints in the brief.
+
+VALIDATION
+Parse all JSON and validate OpenAPI structure when tooling is available. Verify
+all rule/document/fixture references; request and response examples against their
+schemas; enum consistency; clock/calendar and amount arithmetic; amendment scope;
+case independence; and satisfiability of every expected final state.
+Review whether a correct agent can actually achieve each oracle using only the
+declared mock operations. No missing action or fabricated state transition.
+Report tooling used, real checks performed and remaining ambiguities. Do not claim
+the builder or mock environment has been executed.
+
+generalization/manifest.json may list bundle IDs, sectors, splits, paths and counts.
+Keep holdout-specific behavior summaries, unique policy values and review notes
+inside the holdout directory. Do not expose them in the shared training report.

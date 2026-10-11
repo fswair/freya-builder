@@ -41,7 +41,7 @@ def run(
     output: Path,
     reasoning: Reasoning | None = None,
     baseline: Path | None = None,
-    config_path: Path = ROOT / "optimization.example.json",
+    config_path: Path = ROOT / "configs/optimization/example.json",
 ) -> None:
     config = StudyConfig.read(config_path)
     inputs = config.inputs()["A"]
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     parser.add_argument("output", type=Path)
     parser.add_argument("--reasoning", choices=("high", "xhigh"))
     parser.add_argument("--baseline", type=Path)
-    parser.add_argument("--config", type=Path, default=ROOT / "optimization.example.json")
+    parser.add_argument("--config", type=Path, default=ROOT / "configs/optimization/example.json")
     args = parser.parse_args()
     with workspace_lock():
         run(

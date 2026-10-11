@@ -24,8 +24,12 @@ def main():
         rows = []
         for item in iteration["runs"]:
             path = root / f"call-{item.get('callId')}.json"
-            row = {"id": item["personaName"].split()[0], "call_id": item.get("callId"),
-                   "official_outcome": item.get("outcome"), "raw": str(path)}
+            row = {
+                "id": item["personaName"].split()[0],
+                "call_id": item.get("callId"),
+                "official_outcome": item.get("outcome"),
+                "raw": str(path),
+            }
             if not path.exists():
                 row["missing_call"] = True
                 rows.append(row)
@@ -46,37 +50,60 @@ def main():
                     events.append(event)
             user = next((m for m in reversed(messages) if m.get("role") == "user"), None)
             user_time = float(user.get("secondsFromStart", 0)) if user else None
-            after = [m for m in messages if user_time is not None
-                     and float(m.get("secondsFromStart", 0)) > user_time]
+            after = [
+                m
+                for m in messages
+                if user_time is not None and float(m.get("secondsFromStart", 0)) > user_time
+            ]
             duration = float(call.get("duration") or 0)
-            decide = sum(e.get("event") == "node_enter" and e.get("node") == "decide"
-                         for e in events)
-            early_silence = (user is not None and len(dialogue) == 2 and not after
-                             and duration - user_time >= 45 and decide == 0)
+            decide = sum(
+                e.get("event") == "node_enter" and e.get("node") == "decide" for e in events
+            )
+            early_silence = (
+                user is not None
+                and len(dialogue) == 2
+                and not after
+                and duration - user_time >= 45
+                and decide == 0
+            )
             no_greeting_silence = not dialogue and duration >= 45
-            row.update(duration=duration, dialogue_messages=len(dialogue),
-                       last_customer_seconds=user_time, events_after_last_customer=len(after),
-                       decide_entries=decide, ended_reason=call.get("endedReason"),
-                       extraction_errors=sum(e.get("event") == "extraction_error"
-                                             for e in events),
-                       early_silence=early_silence, no_greeting_silence=no_greeting_silence)
+            row.update(
+                duration=duration,
+                dialogue_messages=len(dialogue),
+                last_customer_seconds=user_time,
+                events_after_last_customer=len(after),
+                decide_entries=decide,
+                ended_reason=call.get("endedReason"),
+                extraction_errors=sum(e.get("event") == "extraction_error" for e in events),
+                early_silence=early_silence,
+                no_greeting_silence=no_greeting_silence,
+            )
             rows.append(row)
-        report = {"run": str(args.run), "cases": rows,
-                  "early_silence_count": sum(r.get("early_silence", False) for r in rows),
-                  "no_greeting_silence_count": sum(r.get("no_greeting_silence", False)
-                                                   for r in rows),
-                  "total_calls": len(rows), "official_score_adjusted": False,
-                  "interpretation": "Early silence means one greeting and one customer reply, "
-                  "then at least45s until the end with no further recorded event and no decide "
-                  "entry. No-greeting silence means zero dialogue and at least45s duration. "
-                  "These are observed boundaries, not proof of "
-                  "an infrastructure, model, simulator or workflow cause."}
+        report = {
+            "run": str(args.run),
+            "cases": rows,
+            "early_silence_count": sum(r.get("early_silence", False) for r in rows),
+            "no_greeting_silence_count": sum(r.get("no_greeting_silence", False) for r in rows),
+            "total_calls": len(rows),
+            "official_score_adjusted": False,
+            "interpretation": "Early silence means one greeting and one customer reply, "
+            "then at least45s until the end with no further recorded event and no decide "
+            "entry. No-greeting silence means zero dialogue and at least45s duration. "
+            "These are observed boundaries, not proof of "
+            "an infrastructure, model, simulator or workflow cause.",
+        }
         write_json(args.out / "report.json", report)
         return report
 
     result = capture_sync(args.out, "post_customer_silence_audit", action)
-    print(json.dumps({k: result[k] for k in (
-        "early_silence_count", "no_greeting_silence_count", "total_calls")}))
+    print(
+        json.dumps(
+            {
+                k: result[k]
+                for k in ("early_silence_count", "no_greeting_silence_count", "total_calls")
+            }
+        )
+    )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3 @@
+jsonschema==4.26.0
+# Optional additional OpenAPI structural model check:
+# fastapi==0.128.2

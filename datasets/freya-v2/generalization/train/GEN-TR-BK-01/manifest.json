@@ -1,0 +1,63 @@
+{
+  "id": "GEN-TR-BK-01",
+  "brief_family_id": "FAM-TR-BK",
+  "split": "train",
+  "sector": "banking",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "tool_contract": "extended_local_contract",
+  "source_files": [
+    "brief.txt",
+    "openapi.json"
+  ],
+  "evaluator_files": [
+    "mock-fixture.json",
+    "cases.json",
+    "oracle.json",
+    "author-review.txt",
+    "validation-report.json"
+  ],
+  "scope_notes": [
+    "Extended LOCAL card-servicing contract, not the official seven collections tools.",
+    "No debt, minimum offer, promise, holiday adjustment or callback exists."
+  ],
+  "assumptions": {
+    "timezone": "Europe/Istanbul",
+    "channel": "bound inbound session",
+    "all_people_and_cards": "synthetic"
+  },
+  "document_format": "clean_specification",
+  "case_count": 4,
+  "policy_rule_index": [
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.1"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.2"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.3"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.4"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.5"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.6"
+    },
+    {
+      "file": "brief.txt",
+      "rule_id": "TB.7"
+    }
+  ],
+  "builder_input_boundary": "Only source_files are builder input. No fixture, private customer facts, cases, oracle, author-review or validation report is builder input. Runtime read responses expose only the declared fields.",
+  "failure_model": "No failure is implied by omission. Only controls explicitly present in a case initial_state are active."
+}

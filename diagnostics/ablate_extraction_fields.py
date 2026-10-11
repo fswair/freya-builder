@@ -18,8 +18,7 @@ def inputs(runs):
     for run in runs:
         cases = json.loads((run / "practice/cases.json").read_text())
         if any(
-            row["brief"] != "B" or not row["id"].startswith(("PUB-", "DEV-TR-"))
-            for row in cases
+            row["brief"] != "B" or not row["id"].startswith(("PUB-", "DEV-TR-")) for row in cases
         ):
             raise ValueError("Only explicit B public/train runs are allowed")
         results = json.loads((run / "practice/results.json").read_text())
@@ -131,7 +130,10 @@ def main():
             {
                 key: report[key]
                 for key in (
-                    "samples", "fields", "individually_zero_change", "joint_removal_changes"
+                    "samples",
+                    "fields",
+                    "individually_zero_change",
+                    "joint_removal_changes",
                 )
             }
         )

@@ -1,0 +1,936 @@
+{
+  "GEN-VA-BK-01-C01": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "VB.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "VB.C1"
+      }
+    ],
+    "rationale": "At 18:15 UTC on day 18, the savings-specific 19:00 inclusive cutoff has not passed. VB.M1 replaces, rather than adds to, the 17:00 base cutoff for DEP-S. The verified contact permits E_DELIVERY for current_cycle 2027-02.",
+    "required_actions": [
+      {
+        "operation": "set_delivery_preference",
+        "payload_contains": {
+          "account_id": "DEP-S",
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Changing an excluded account",
+      "Invented fee, contact verification, payment or callback"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain the final selected mode and effective month before confirmation"
+      ],
+      "forbidden": [
+        "Account details before access verification",
+        "Full contact address or challenge answer",
+        "A claim that an unperformed change succeeded"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_delivery_access.verified_true",
+        "after": "get_delivery_accounts"
+      },
+      {
+        "before": "final_scope.clear_confirmation",
+        "after": "set_delivery_preference.attempt"
+      },
+      {
+        "before": "set_delivery_preference.ok_true",
+        "after": "claim_delivery_changed"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_delivery"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_delivery_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_delivery_accounts": {
+        "min": 1,
+        "max": null
+      },
+      "set_delivery_preference": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_delivery": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "accounts": {
+        "DEP-C": {
+          "mode": "E_DELIVERY",
+          "effective_cycle": null
+        },
+        "DEP-S": {
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02"
+        }
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A correction only changes the named account’s pending state.",
+      "A question or unverified external claim is not permission to bypass contact eligibility.",
+      "The scoped replacement is not applied globally."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_delivery_access",
+        "request": {
+          "session_id": "session-vb-1",
+          "challenge_response": "Q7P9"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "verify.ok"
+      },
+      {
+        "operation": "get_delivery_accounts",
+        "request": {
+          "session_id": "session-vb-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "accounts": [
+              {
+                "account_id": "DEP-C",
+                "label": "Everyday account",
+                "kind": "CURRENT",
+                "mode": "E_DELIVERY",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              },
+              {
+                "account_id": "DEP-S",
+                "label": "Reserve account",
+                "kind": "SAVINGS",
+                "mode": "PAPER",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "accounts.read"
+      },
+      {
+        "operation": "set_delivery_preference",
+        "request": {
+          "session_id": "session-vb-1",
+          "account_id": "DEP-S",
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02",
+          "confirmed": true,
+          "request_key": "vb-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "account_id": "DEP-S",
+            "mode": "E_DELIVERY",
+            "effective_cycle": "2027-02"
+          }
+        },
+        "transition_rule_id": "delivery.change"
+      },
+      {
+        "operation": "finish_delivery",
+        "request": {
+          "session_id": "session-vb-1",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected account cutoff at current clock",
+        "expression": "s['now'] <= '2027-02-18T19:00:00+00:00'",
+        "expected": true,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-BK-01-C02": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "VB.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "VB.C1"
+      }
+    ],
+    "rationale": "The CURRENT account keeps the 17:00 cutoff under VB.P3. At 18:15 it has passed, so the change is for next_cycle 2027-03. Paper needs no new email check. The fee question does not authorize a fictitious charge, price assertion or premature write.",
+    "required_actions": [
+      {
+        "operation": "set_delivery_preference",
+        "payload_contains": {
+          "account_id": "DEP-C",
+          "mode": "PAPER",
+          "effective_cycle": "2027-03",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Changing an excluded account",
+      "Invented fee, contact verification, payment or callback"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain the final selected mode and effective month before confirmation"
+      ],
+      "forbidden": [
+        "Account details before access verification",
+        "Full contact address or challenge answer",
+        "A claim that an unperformed change succeeded"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_delivery_access.verified_true",
+        "after": "get_delivery_accounts"
+      },
+      {
+        "before": "final_scope.clear_confirmation",
+        "after": "set_delivery_preference.attempt"
+      },
+      {
+        "before": "set_delivery_preference.ok_true",
+        "after": "claim_delivery_changed"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_delivery"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_delivery_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_delivery_accounts": {
+        "min": 1,
+        "max": null
+      },
+      "set_delivery_preference": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_delivery": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "accounts": {
+        "DEP-C": {
+          "mode": "PAPER",
+          "effective_cycle": "2027-03"
+        },
+        "DEP-S": {
+          "mode": "PAPER",
+          "effective_cycle": null
+        }
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A correction only changes the named account’s pending state.",
+      "A question or unverified external claim is not permission to bypass contact eligibility.",
+      "The scoped replacement is not applied globally."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_delivery_access",
+        "request": {
+          "session_id": "session-vb-2",
+          "challenge_response": "Q7P9"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "verify.ok"
+      },
+      {
+        "operation": "get_delivery_accounts",
+        "request": {
+          "session_id": "session-vb-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "accounts": [
+              {
+                "account_id": "DEP-C",
+                "label": "Everyday account",
+                "kind": "CURRENT",
+                "mode": "E_DELIVERY",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              },
+              {
+                "account_id": "DEP-S",
+                "label": "Reserve account",
+                "kind": "SAVINGS",
+                "mode": "PAPER",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "accounts.read"
+      },
+      {
+        "operation": "set_delivery_preference",
+        "request": {
+          "session_id": "session-vb-2",
+          "account_id": "DEP-C",
+          "mode": "PAPER",
+          "effective_cycle": "2027-03",
+          "confirmed": true,
+          "request_key": "vb-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "account_id": "DEP-C",
+            "mode": "PAPER",
+            "effective_cycle": "2027-03"
+          }
+        },
+        "transition_rule_id": "delivery.change"
+      },
+      {
+        "operation": "finish_delivery",
+        "request": {
+          "session_id": "session-vb-2",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected account cutoff at current clock",
+        "expression": "s['now'] <= '2027-02-18T17:00:00+00:00'",
+        "expected": false,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-BK-01-C03": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "VB.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "VB.C1"
+      }
+    ],
+    "rationale": "The two-account request never receives confirmation. VB.P4 makes the narrowed final list authoritative: only DEP-S changes. DEP-C retains PAPER and no effective_cycle. Savings receives February under the scoped amendment.",
+    "required_actions": [
+      {
+        "operation": "set_delivery_preference",
+        "payload_contains": {
+          "account_id": "DEP-S",
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Changing an excluded account",
+      "Invented fee, contact verification, payment or callback"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain the final selected mode and effective month before confirmation"
+      ],
+      "forbidden": [
+        "Account details before access verification",
+        "Full contact address or challenge answer",
+        "A claim that an unperformed change succeeded"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_delivery_access.verified_true",
+        "after": "get_delivery_accounts"
+      },
+      {
+        "before": "final_scope.clear_confirmation",
+        "after": "set_delivery_preference.attempt"
+      },
+      {
+        "before": "set_delivery_preference.ok_true",
+        "after": "claim_delivery_changed"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_delivery"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_delivery_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_delivery_accounts": {
+        "min": 1,
+        "max": null
+      },
+      "set_delivery_preference": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_delivery": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "accounts": {
+        "DEP-C": {
+          "mode": "PAPER",
+          "effective_cycle": null
+        },
+        "DEP-S": {
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02"
+        }
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A correction only changes the named account’s pending state.",
+      "A question or unverified external claim is not permission to bypass contact eligibility.",
+      "The scoped replacement is not applied globally."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_delivery_access",
+        "request": {
+          "session_id": "session-vb-3",
+          "challenge_response": "Q7P9"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "verify.ok"
+      },
+      {
+        "operation": "get_delivery_accounts",
+        "request": {
+          "session_id": "session-vb-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "accounts": [
+              {
+                "account_id": "DEP-C",
+                "label": "Everyday account",
+                "kind": "CURRENT",
+                "mode": "PAPER",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              },
+              {
+                "account_id": "DEP-S",
+                "label": "Reserve account",
+                "kind": "SAVINGS",
+                "mode": "PAPER",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "accounts.read"
+      },
+      {
+        "operation": "set_delivery_preference",
+        "request": {
+          "session_id": "session-vb-3",
+          "account_id": "DEP-S",
+          "mode": "E_DELIVERY",
+          "effective_cycle": "2027-02",
+          "confirmed": true,
+          "request_key": "vb-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "account_id": "DEP-S",
+            "mode": "E_DELIVERY",
+            "effective_cycle": "2027-02"
+          }
+        },
+        "transition_rule_id": "delivery.change"
+      },
+      {
+        "operation": "finish_delivery",
+        "request": {
+          "session_id": "session-vb-3",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected account cutoff at current clock",
+        "expression": "s['now'] <= '2027-02-18T19:00:00+00:00'",
+        "expected": true,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-BK-01-C04": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "VB.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "VB.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "VB.C1"
+      }
+    ],
+    "rationale": "The selected DEP-C record says UNVERIFIED. VB.P2 treats a claimed external update as neither evidence of verified state nor authority to edit contact records. There is no declared email-update operation, so the achievable result is no mutation and blocked_contact.",
+    "required_actions": [],
+    "forbidden_actions": [
+      "Changing an excluded account",
+      "Invented fee, contact verification, payment or callback",
+      "Any set_delivery_preference call"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain the verified-contact requirement and inability to perform the change"
+      ],
+      "forbidden": [
+        "Account details before access verification",
+        "Full contact address or challenge answer",
+        "A claim that an unperformed change succeeded"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_delivery_access.verified_true",
+        "after": "get_delivery_accounts"
+      },
+      {
+        "before": "final_scope.clear_confirmation",
+        "after": "set_delivery_preference.attempt"
+      },
+      {
+        "before": "set_delivery_preference.ok_true",
+        "after": "claim_delivery_changed"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_delivery"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_delivery_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_delivery_accounts": {
+        "min": 1,
+        "max": null
+      },
+      "set_delivery_preference": {
+        "min": 0,
+        "max": 0
+      },
+      "finish_delivery": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "accounts": {
+        "DEP-C": {
+          "mode": "PAPER",
+          "effective_cycle": null
+        },
+        "DEP-S": {
+          "mode": "PAPER",
+          "effective_cycle": null
+        }
+      },
+      "mutation_count": 0,
+      "closed": true,
+      "final_code": "blocked_contact"
+    },
+    "conversation_assertions": [
+      "A correction only changes the named account’s pending state.",
+      "A question or unverified external claim is not permission to bypass contact eligibility.",
+      "The scoped replacement is not applied globally."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_delivery_access",
+        "request": {
+          "session_id": "session-vb-4",
+          "challenge_response": "Q7P9"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "verify.ok"
+      },
+      {
+        "operation": "get_delivery_accounts",
+        "request": {
+          "session_id": "session-vb-4"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "accounts": [
+              {
+                "account_id": "DEP-C",
+                "label": "Everyday account",
+                "kind": "CURRENT",
+                "mode": "PAPER",
+                "email_state": "UNVERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              },
+              {
+                "account_id": "DEP-S",
+                "label": "Reserve account",
+                "kind": "SAVINGS",
+                "mode": "PAPER",
+                "email_state": "VERIFIED",
+                "current_cycle": "2027-02",
+                "next_cycle": "2027-03",
+                "effective_cycle": null,
+                "changed_this_call": false
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "accounts.read"
+      },
+      {
+        "operation": "finish_delivery",
+        "request": {
+          "session_id": "session-vb-4",
+          "code": "blocked_contact"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "blocked_contact"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected account cutoff at current clock",
+        "expression": "s['now'] <= '2027-02-18T17:00:00+00:00'",
+        "expected": false,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  }
+}

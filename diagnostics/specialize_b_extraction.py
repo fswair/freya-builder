@@ -16,8 +16,12 @@ from freya_hackathon.workflow import WorkflowBuild
 
 PHASES = ("all_today", "negotiate", "confirm", "resolve_product", "clarify_financial")
 FIELDS = (
-    "turn_amount", "turn_date", "turn_date_kind", "turn_date_words",
-    "turn_change_evidence", "turn_paid_evidence",
+    "turn_amount",
+    "turn_date",
+    "turn_date_kind",
+    "turn_date_words",
+    "turn_change_evidence",
+    "turn_paid_evidence",
 )
 
 
@@ -42,7 +46,8 @@ def specialize(workflow, removed):
     assert field["default"].count(anchor) == 1
     field["default"] = field["default"].replace(
         anchor,
-        anchor + f"\n  if s.get('phase') in {PHASES!r}:\n"
+        anchor
+        + f"\n  if s.get('phase') in {PHASES!r}:\n"
         + f"   for _pruned_field in {tuple(removed)!r}:\n"
         + "    t[_pruned_field] = ''",
         1,

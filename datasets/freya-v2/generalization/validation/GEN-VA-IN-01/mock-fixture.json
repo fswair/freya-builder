@@ -1,0 +1,345 @@
+{
+  "format_version": "1.0",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "executable_adapter_included": false,
+  "specification_notice": "This is a declarative mock SPECIFICATION. A local tool adapter must implement it; no Freya endpoint/customer registration is implied. The supplied verifier only evaluates authored proof witnesses, not a phone workflow or a mock server.",
+  "clock_timezone": "UTC",
+  "clock_rule": "Each independent case starts from its own initial_state.now. Only an explicit listed transition may advance it; never use the host wall clock.",
+  "expression_language": "Restricted side-effect-free Python expression subset documented by validation_support.py. q=request, s=pre-state, op=operation. Decimal-safe money and calendar helpers are pure. Effects are simultaneous; receipts hold deep copies.",
+  "case_isolation": {
+    "reset": "deep-copy the selected case initial_state before every repetition",
+    "shared_mutable_state": false,
+    "case_order_dependency": false
+  },
+  "identifier_mapping": "All usable entity IDs are keys/IDs of the selected initial_state and must be grounded in the relevant read response. Caller aliases appear in customer_private_facts. No external lookup is allowed.",
+  "operation_models": {
+    "get_renewal_offers": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.1"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.2"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "get_renewal_offers.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "get_renewal_offers.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "offers.read",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'channel_verified':True,'offers':values(s['offers'])}}",
+          "effects": []
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "record_renewal_choice": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.2"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.3"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.4"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.5"
+        },
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.6"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "record_renewal_choice.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "record_renewal_choice.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "record_renewal_choice.key_conflict",
+          "when": "q['request_key'] in s['receipts'] and (s['receipts'][q['request_key']]['request'] != q or s['receipts'][q['request_key']]['operation'] != op)",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'KEY_REUSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "record_renewal_choice.idempotent_replay",
+          "when": "q['request_key'] in s['receipts']",
+          "status": 200,
+          "response_expression": "s['receipts'][q['request_key']]['response']",
+          "effects": []
+        },
+        {
+          "id": "offer.unknown",
+          "when": "q['offer_id'] not in s['offers']",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'UNKNOWN_OFFER', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "offer.expired",
+          "when": "s['now'] > s['offers'][q['offer_id']]['expires_at']",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'OFFER_EXPIRED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "offer.decided",
+          "when": "s['offers'][q['offer_id']]['policy_id'] in s['decisions']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_DECIDED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "offer.decide",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'policy_id':s['offers'][q['offer_id']]['policy_id'],'choice':q['choice'],'status':'choice_recorded','charged':False}}",
+          "effects": [
+            {
+              "path_expression": "['decisions',s['offers'][q['offer_id']]['policy_id']]",
+              "value_expression": "q['choice']"
+            },
+            {
+              "path_expression": "['receipts', q['request_key']]",
+              "value_expression": "{'operation': op, 'request': q, 'response': {'ok': True, 'data': {'policy_id':s['offers'][q['offer_id']]['policy_id'],'choice':q['choice'],'status':'choice_recorded','charged':False}}}"
+            },
+            {
+              "path_expression": "['mutation_count']",
+              "value_expression": "s['mutation_count'] + 1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Exact same request_key+operation+payload replays the successful receipt without a new business mutation; a changed payload on the same key yields KEY_REUSE. Post-close operations are rejected. Additional product-state guards reject a second independent irreversible action."
+    },
+    "close_renewal": {
+      "policy_refs": [
+        {
+          "file": "brief.txt",
+          "rule_id": "VI.7"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "close_renewal.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close_renewal.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.choices",
+          "when": "len(s['decisions'])>0 and q['code'] != ('mixed' if count_value(s['decisions'],'renew')>0 and count_value(s['decisions'],'let_expire')>0 else ('renewed' if count_value(s['decisions'],'renew')>0 else 'lapsed'))",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.none",
+          "when": "len(s['decisions'])==0 and q['code'] in ['renewed','lapsed','mixed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.ok",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'code':q['code']}}",
+          "effects": [
+            {
+              "path_expression": "['closed']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['final_code']",
+              "value_expression": "q['code']"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    }
+  },
+  "cases": {
+    "GEN-VA-IN-01-C01": {
+      "initial_state": {
+        "session_id": "session-vi-1",
+        "now": "2027-02-28T17:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "offers": {
+          "O-HOME": {
+            "offer_id": "O-HOME",
+            "policy_id": "POL-HOME",
+            "label": "Home cover",
+            "premium": 125.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-01",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          },
+          "O-BIKE": {
+            "offer_id": "O-BIKE",
+            "policy_id": "POL-BIKE",
+            "label": "Bicycle cover",
+            "premium": 260.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-03",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          }
+        },
+        "channel_verified": true,
+        "decisions": {}
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-IN-01-C02": {
+      "initial_state": {
+        "session_id": "session-vi-2",
+        "now": "2027-02-28T17:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "offers": {
+          "O-HOME": {
+            "offer_id": "O-HOME",
+            "policy_id": "POL-HOME",
+            "label": "Home cover",
+            "premium": 125.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-01",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          },
+          "O-BIKE": {
+            "offer_id": "O-BIKE",
+            "policy_id": "POL-BIKE",
+            "label": "Bicycle cover",
+            "premium": 260.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-03",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          }
+        },
+        "channel_verified": true,
+        "decisions": {}
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-IN-01-C03": {
+      "initial_state": {
+        "session_id": "session-vi-3",
+        "now": "2027-02-28T17:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "offers": {
+          "O-HOME": {
+            "offer_id": "O-HOME",
+            "policy_id": "POL-HOME",
+            "label": "Home cover",
+            "premium": 125.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-01",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          },
+          "O-BIKE": {
+            "offer_id": "O-BIKE",
+            "policy_id": "POL-BIKE",
+            "label": "Bicycle cover",
+            "premium": 260.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-03",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          }
+        },
+        "channel_verified": true,
+        "decisions": {}
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-IN-01-C04": {
+      "initial_state": {
+        "session_id": "session-vi-4",
+        "now": "2027-02-28T17:00:01+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "offers": {
+          "O-HOME": {
+            "offer_id": "O-HOME",
+            "policy_id": "POL-HOME",
+            "label": "Home cover",
+            "premium": 125.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-01",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          },
+          "O-BIKE": {
+            "offer_id": "O-BIKE",
+            "policy_id": "POL-BIKE",
+            "label": "Bicycle cover",
+            "premium": 260.0,
+            "currency": "GBP",
+            "coverage_from": "2027-03-03",
+            "expires_at": "2027-02-28T17:00:00+00:00"
+          }
+        },
+        "channel_verified": true,
+        "decisions": {}
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    }
+  }
+}

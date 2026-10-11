@@ -1,0 +1,148 @@
+[
+  {
+    "id": "GEN-VA-IN-01-C01",
+    "customer_private_facts": {
+      "channel": "already_verified",
+      "choices_desired": [
+        {
+          "offer": "O-HOME",
+          "choice": "renew"
+        }
+      ],
+      "requested_policy": "POL-HOME"
+    },
+    "script": "You are the authorized customer. Ask to renew Home cover at the quoted 125.00 GBP from 1 March 2027. You have no bicycle request. When the policy, premium and start date are correctly read back, clearly confirm renewal. Do not volunteer identity answers; this call came through your verified account channel. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "ordinary_success",
+        "calm"
+      ],
+      "coverage_roles": [
+        "ordinary_success"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-IN-01-C01-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vi-1",
+      "now": "2027-02-28T17:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-IN-01-C01/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-IN-01-C02",
+    "customer_private_facts": {
+      "channel": "already_verified",
+      "choices_desired": [
+        {
+          "offer": "O-BIKE",
+          "choice": "let_expire"
+        }
+      ],
+      "requested_policy": "POL-BIKE"
+    },
+    "script": "You are the authorized customer. Say, \"I do not want to renew Bicycle cover. Would saying that charge me anything right now?\" Accept an explanation that recording the choice does not take payment and does not cancel today’s coverage. Your question is not confirmation. After a correct read-back saying that Bicycle will not renew, clearly confirm letting it expire. Do not make a choice on Home cover. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "mixed_intent",
+        "question_not_consent",
+        "negative_decision"
+      ],
+      "coverage_roles": [
+        "mixed_intent"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-IN-01-C02-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vi-2",
+      "now": "2027-02-28T17:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-IN-01-C02/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-IN-01-C03",
+    "customer_private_facts": {
+      "channel": "already_verified",
+      "choices_desired": [
+        {
+          "offer": "O-HOME",
+          "choice": "let_expire"
+        },
+        {
+          "offer": "O-BIKE",
+          "choice": "renew"
+        }
+      ],
+      "requested_policy": "both"
+    },
+    "script": "You are the authorized customer. Initially ask to renew both Home and Bicycle. At the first combined read-back say, \"No, change only Home to not renewing; keep Bicycle renewing at 260 pounds from the third of March.\" Do not confirm the old list. After a revised explanation of non-renewal for Home and renewal terms for Bicycle, clearly confirm the mixed list. You have not already completed either choice. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "scope_correction",
+        "mixed_decisions",
+        "stale_consent"
+      ],
+      "coverage_roles": [
+        "information_correction_scope"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-IN-01-C03-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vi-3",
+      "now": "2027-02-28T17:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-IN-01-C03/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-IN-01-C04",
+    "customer_private_facts": {
+      "channel": "already_verified",
+      "choices_desired": [],
+      "requested_policy": "POL-HOME"
+    },
+    "script": "You are the authorized customer. Ask to renew Home cover on the offer you were shown earlier. If told that this offer has just expired, ask once whether it can still be used because the delay was small. Accept a final explanation that a new offer is needed and this caller cannot issue it. Do not request a callback or switch to another policy. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "policy_boundary",
+        "expiry",
+        "benign_exception_question"
+      ],
+      "coverage_roles": [
+        "policy_boundary_or_supported_failure"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-IN-01-C04-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vi-4",
+      "now": "2027-02-28T17:00:01+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-IN-01-C04/initial_state"
+    }
+  }
+]

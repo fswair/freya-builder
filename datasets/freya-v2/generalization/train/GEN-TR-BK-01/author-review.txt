@@ -1,0 +1,11 @@
+SYNTHETIC LOCAL TESTS. Author review only; no workflow, builder, Freya call or mock server has run.
+
+GEN-TR-BK-01-C01: TB.3 permits a protective lock without code verification. CARD-A is initially unlocked at version 4, and explicit confirmation authorizes one change; CARD-B remains as it was.
+
+GEN-TR-BK-01-C02: The compound utterance retains a valid protective lock request and a separate question. TB.2 says locking neither cancels a card nor refunds a purchase. Only Travel changes, without an invented payment action.
+
+GEN-TR-BK-01-C03: The corrected nickname grounds CARD-B, not CARD-A. TB.3 requires a complete code for unlocking and TB.5 requires consent on the corrected target. Fragments assemble to one six-digit submission; no guess from a partial code is needed.
+
+GEN-TR-BK-01-C04: Both supplied codes are wrong under this independent fixture. TB.4 exhausts the two-attempt budget, and TB.3 withholds unlock authority. No business change is possible; TB.7 selects verification_failed.
+
+The generic validation report records automated checks separately. The prose rules and reactive scripts remain subject to empirical three-repetition testing after a local adapter is implemented.

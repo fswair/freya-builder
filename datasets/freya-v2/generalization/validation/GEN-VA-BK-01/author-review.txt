@@ -1,0 +1,11 @@
+SYNTHETIC LOCAL TESTS. Author review only; no workflow, builder, Freya call or mock server has run.
+
+GEN-VA-BK-01-C01: At 18:15 UTC on day 18, the savings-specific 19:00 inclusive cutoff has not passed. VB.M1 replaces, rather than adds to, the 17:00 base cutoff for DEP-S. The verified contact permits E_DELIVERY for current_cycle 2027-02.
+
+GEN-VA-BK-01-C02: The CURRENT account keeps the 17:00 cutoff under VB.P3. At 18:15 it has passed, so the change is for next_cycle 2027-03. Paper needs no new email check. The fee question does not authorize a fictitious charge, price assertion or premature write.
+
+GEN-VA-BK-01-C03: The two-account request never receives confirmation. VB.P4 makes the narrowed final list authoritative: only DEP-S changes. DEP-C retains PAPER and no effective_cycle. Savings receives February under the scoped amendment.
+
+GEN-VA-BK-01-C04: The selected DEP-C record says UNVERIFIED. VB.P2 treats a claimed external update as neither evidence of verified state nor authority to edit contact records. There is no declared email-update operation, so the achievable result is no mutation and blocked_contact.
+
+The generic validation report records automated checks separately. The prose rules and reactive scripts remain subject to empirical three-repetition testing after a local adapter is implemented.

@@ -1,0 +1,2 @@
+SYNTHETIC AUTHORIZED MEMO — effective 2027-01-01
+[TI.M1] This replaces only the age limit in TI.P4 for event code WATER_ESCAPE: its inclusive window is 0 through 10 calendar days. For THEFT, TI.P4 remains 0 through 7. The occurrence day and today remain calendar dates, future events remain invalid, and all identity/confirmation/write rules remain unchanged. Never apply this extension to every event merely because both are in one policy.

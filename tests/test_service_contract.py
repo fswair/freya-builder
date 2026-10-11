@@ -16,26 +16,42 @@ from freya_hackathon.workflow import WorkflowBuild, api_operations
 
 MOCK_URL = "https://example-mock.workers.dev"
 SOURCE = 'POST /lookup requires a JSON body with the string field "reference".'
-API = {
+API: dict = {
     "openapi": "3.0.3",
     "info": {"title": "Fixture", "version": "1"},
     "servers": [{"url": "https://old.example.invalid"}],
-    "paths": {"/lookup": {"post": {
-        "operationId": "lookup",
-        "requestBody": {"content": {"application/json": {"schema": {
-            "type": "object", "required": ["reference"],
-            "properties": {"reference": {"type": "string"}},
-        }}}},
-        "responses": {"200": {"description": "Lookup response"}},
-    }}},
+    "paths": {
+        "/lookup": {
+            "post": {
+                "operationId": "lookup",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object",
+                                "required": ["reference"],
+                                "properties": {"reference": {"type": "string"}},
+                            }
+                        }
+                    }
+                },
+                "responses": {"200": {"description": "Lookup response"}},
+            }
+        }
+    },
 }
 
 
 def contract():
     return ServiceContract(
         openapi=copy.deepcopy(API),
-        operations=[{"method": "POST", "path": "/lookup",
-                     "evidence": [{"source": "brief-1", "quote": SOURCE}]}],
+        operations=[
+            {
+                "method": "POST",
+                "path": "/lookup",
+                "evidence": [{"source": "brief-1", "quote": SOURCE}],
+            }
+        ],
     )
 
 
@@ -53,8 +69,17 @@ def test_binding_overrides_every_server_scope_without_changing_request_fields():
     assert original == before
 
 
-@pytest.mark.parametrize("url", ["http://localhost", "https://u:p@host", "https://host?key=x",
-                                 "https://host#fragment", "https://{host}", "/relative"])
+@pytest.mark.parametrize(
+    "url",
+    [
+        "http://localhost",
+        "https://u:p@host",
+        "https://host?key=x",
+        "https://host#fragment",
+        "https://{host}",
+        "/relative",
+    ],
+)
 def test_mock_url_rejects_ambiguous_or_secret_bearing_configuration(url):
     with pytest.raises(ValueError, match="Mock URL"):
         validate_mock_url(url)
@@ -84,46 +109,82 @@ def test_folder_entry_without_explicit_api_preserves_documents_and_mock_url(tmp_
 
 
 def test_document_contract_policy_and_workflow_share_a_fresh_recorded_run(tmp_path):
-    policy = Policy(rules=[Rule(
-        id="lookup", requirement="Use the supplied lookup contract.", applies_when="Lookup",
-        implementation="API tool", evidence=[
-            Evidence(source="brief-1", quote=SOURCE),
-            Evidence(source="deployment-config", quote=MOCK_URL),
-        ],
-    )])
-    draft = WorkflowBuild(workflow={
-        "initial_node": "lookup", "global_nodes": {}, "nodes": {"lookup": {
-            "node_type": "conversation", "task_message": "Ask for the reference.",
-            "tools": [{"type": "function", "function": {
-                "name": "lookup", "handler": "__function__:api_call",
-                "parameters": {"type": "object", "properties": {
-                    "url": {"type": "string", "default": MOCK_URL + "/lookup"},
-                    "method": {"type": "string", "default": "POST"},
-                    "body": {"type": "object", "properties": {
-                        "reference": {"type": "string"},
-                    }},
-                }},
-            }}],
-        }},
-    }, rule_nodes={"lookup": ["lookup"]})
-    outputs = iter([
-        contract().model_dump_json(), policy.model_dump_json(), draft.model_dump_json(),
-    ])
+    policy = Policy(
+        rules=[
+            Rule(
+                id="lookup",
+                requirement="Use the supplied lookup contract.",
+                applies_when="Lookup",
+                implementation="API tool",
+                evidence=[
+                    Evidence(source="brief-1", quote=SOURCE),
+                    Evidence(source="deployment-config", quote=MOCK_URL),
+                ],
+            )
+        ]
+    )
+    draft = WorkflowBuild(
+        workflow={
+            "initial_node": "lookup",
+            "global_nodes": {},
+            "nodes": {
+                "lookup": {
+                    "node_type": "conversation",
+                    "task_message": "Ask for the reference.",
+                    "tools": [
+                        {
+                            "type": "function",
+                            "function": {
+                                "name": "lookup",
+                                "handler": "__function__:api_call",
+                                "parameters": {
+                                    "type": "object",
+                                    "properties": {
+                                        "url": {"type": "string", "default": MOCK_URL + "/lookup"},
+                                        "method": {"type": "string", "default": "POST"},
+                                        "body": {
+                                            "type": "object",
+                                            "properties": {
+                                                "reference": {"type": "string"},
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        }
+                    ],
+                }
+            },
+        },
+        rule_nodes={"lookup": ["lookup"]},
+    )
+    outputs = iter(
+        [
+            contract().model_dump_json(),
+            policy.model_dump_json(),
+            draft.model_dump_json(),
+        ]
+    )
     prompts = []
 
     def respond(messages, _info):
-        prompts.append("\n".join(
-            str(part.content) for message in messages for part in message.parts
-            if isinstance(part, UserPromptPart)
-        ))
+        prompts.append(
+            "\n".join(
+                str(part.content)
+                for message in messages
+                for part in message.parts
+                if isinstance(part, UserPromptPart)
+            )
+        )
         return ModelResponse(parts=[TextPart(next(outputs))])
 
     @asynccontextmanager
     async def factory(_name, _seconds, _reasoning):
         yield FunctionModel(respond)
 
-    inputs = Inputs(sources={"brief-1": SOURCE}, api={}, references="", manifest=[],
-                    mock_url=MOCK_URL)
+    inputs = Inputs(
+        sources={"brief-1": SOURCE}, api={}, references="", manifest=[], mock_url=MOCK_URL
+    )
     out = tmp_path / "build"
     builder = Builder(inputs, out, model_factory=factory)
     asyncio.run(builder.run())

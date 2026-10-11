@@ -1,0 +1,26 @@
+{
+  "status": "passed_development_preflight",
+  "archive_sha256": "1e16e0a5fc89c02efe7598d848f74edd9a0233824b8c4317866d0ced97d040cf",
+  "splits": {
+    "train": {"cases": 32, "A": 16, "B": 16},
+    "validation": {"cases": 8, "A": 4, "B": 4}
+  },
+  "checks": {
+    "optimizer_loader": "passed",
+    "registered_fixture_fields": "exact_match",
+    "cross_split_ids_groups_exact_normalized_scripts": "disjoint",
+    "expected_promises_within_product_amount_and_business_date_bounds": 40,
+    "expected_callbacks_within_date_and_time_windows": 2,
+    "amount_date_violations": [],
+    "separate_review_and_validation_report_match_archive": true
+  },
+  "holdout_contents_opened": false,
+  "holdout_members_extracted": false,
+  "author_code_executed": false,
+  "dataset_cases_run_on_freya": false,
+  "limitations": [
+    "Amount and date checks use the supplied A/B briefs and registered fixture product ordering.",
+    "These checks do not prove natural-language oracle correctness or semantic independence.",
+    "Generalization mock fixtures are declarative; a runtime adapter is still needed."
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "status": "passed",
+  "validation_kind": "offline artifact and authored-witness checks; not agent performance",
+  "splits_checked": [
+    "train",
+    "validation",
+    "holdout"
+  ],
+  "tooling": {
+    "python": "3.13.5",
+    "jsonschema": "4.26.0",
+    "fastapi_openapi_model": "0.128.2",
+    "openapi_spec_validator": "not installed; installation unavailable because the environment could not resolve the package index"
+  },
+  "authored_json_documents_parsed": 40,
+  "live": {
+    "case_count": 48,
+    "group_count": 24,
+    "priority_training_ids_checked": 16,
+    "fixture_exact_checks": 48,
+    "payload_examples_checked": 126,
+    "promise_date_amount_checks": 48,
+    "callback_date_time_checks": 2,
+    "exact_script_duplicates": 0,
+    "cross_split_shingle_threshold": 0.35,
+    "max_cross_split_shingle_jaccard": 0.056738,
+    "near_duplicate_flags": 0,
+    "semantic_nonleakage": "Author review plus family grouping; the text heuristic is not a proof of semantic independence."
+  },
+  "generalization": {
+    "bundles_checked": 6,
+    "cases_checked": 24,
+    "raw_document_bundles_checked": 3,
+    "schema_nodes_checked": 144,
+    "request_examples": 93,
+    "response_examples": 93,
+    "derivation_checks": 32,
+    "successful_duplicate_replay_probes": 21,
+    "changed_key_payload_conflict_probes": 21,
+    "new_key_duplicate_rejection_probes": 21,
+    "post_close_rejection_probes": 93,
+    "scripted_error_responses": 3,
+    "fresh_initial_states": 24
+  },
+  "cross_dataset_unique_case_ids": 72,
+  "shared_leak_copy_scans": 4,
+  "execution_not_performed": [
+    "Freya API/session calls",
+    "Builder/GEPA runs",
+    "Phone workflow or simulated-customer runs",
+    "Running a local mock adapter/server",
+    "Three-repetition performance measurement"
+  ],
+  "qualification": "An authored witness shows static reachability under the supplied declarative specification. It does not prove a generated agent will choose it, understand every script or pass an external judge. Text similarity and copy scans are heuristics, not a semantic secrecy proof."
+}

@@ -14,13 +14,14 @@ from freya_hackathon.recording import capture_sync
 
 ROOT = Path(__file__).resolve().parents[1]
 CALLS = {
-    "A": ROOT / (
+    "A": ROOT
+    / (
         "diagnostics/v13-pub03-call-read-001/practice/"
         "call-7d46ae79-1b91-421f-b3d6-6b6110ca7321.json"
     ),
-    "B": ROOT / (
-        "diagnostics/v13-b-control-call-001/practice/"
-        "call-543e8823-4d91-4965-8c24-e754d95cc5d7.json"
+    "B": ROOT
+    / (
+        "diagnostics/v13-b-control-call-001/practice/call-543e8823-4d91-4965-8c24-e754d95cc5d7.json"
     ),
 }
 CASES = (

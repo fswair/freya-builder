@@ -1,0 +1,21 @@
+{
+  "split": "validation",
+  "status": "passed",
+  "case_count": 8,
+  "group_count": 4,
+  "errors": [],
+  "checks": [
+    "strict JSON/schema",
+    "registered PUB reference and exact fixture copy including faults",
+    "rule/source pointers",
+    "allowed ledger payloads and enums",
+    "per-product Decimal/date bounds",
+    "callback boundaries",
+    "closure/transfer/note invariants",
+    "pair equality and manifest membership"
+  ],
+  "limits": [
+    "No live session, simulator, builder or three-repetition execution was run.",
+    "Natural-language interpretation remains author-reviewed, not empirically verified."
+  ]
+}

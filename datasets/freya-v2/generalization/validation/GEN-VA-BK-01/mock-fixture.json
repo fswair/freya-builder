@@ -1,0 +1,475 @@
+{
+  "format_version": "1.0",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "executable_adapter_included": false,
+  "specification_notice": "This is a declarative mock SPECIFICATION. A local tool adapter must implement it; no Freya endpoint/customer registration is implied. The supplied verifier only evaluates authored proof witnesses, not a phone workflow or a mock server.",
+  "clock_timezone": "UTC",
+  "clock_rule": "Each independent case starts from its own initial_state.now. Only an explicit listed transition may advance it; never use the host wall clock.",
+  "expression_language": "Restricted side-effect-free Python expression subset documented by validation_support.py. q=request, s=pre-state, op=operation. Decimal-safe money and calendar helpers are pure. Effects are simultaneous; receipts hold deep copies.",
+  "case_isolation": {
+    "reset": "deep-copy the selected case initial_state before every repetition",
+    "shared_mutable_state": false,
+    "case_order_dependency": false
+  },
+  "identifier_mapping": "All usable entity IDs are keys/IDs of the selected initial_state and must be grounded in the relevant read response. Caller aliases appear in customer_private_facts. No external lookup is allowed.",
+  "operation_models": {
+    "verify_delivery_access": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "verify_delivery_access.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "verify_delivery_access.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "verify.blocked",
+          "when": "s['wrong_access']>=2",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'CHALLENGE_BLOCKED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "verify.ok",
+          "when": "q['challenge_response']==s['challenge_answer']",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified':True,'wrong_left':2-s['wrong_access']}}",
+          "effects": [
+            {
+              "path_expression": "['verified']",
+              "value_expression": "True"
+            }
+          ]
+        },
+        {
+          "id": "verify.wrong",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified':False,'wrong_left':1-s['wrong_access']}}",
+          "effects": [
+            {
+              "path_expression": "['wrong_access']",
+              "value_expression": "s['wrong_access']+1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "get_delivery_accounts": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P1"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P2"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P3"
+        },
+        {
+          "file": "documents/amendment.txt",
+          "rule_id": "VB.M1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "get_delivery_accounts.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "get_delivery_accounts.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "accounts.auth",
+          "when": "not s['verified']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'VERIFY_FIRST', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "accounts.read",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'accounts':values(s['accounts'])}}",
+          "effects": []
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "set_delivery_preference": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P2"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P3"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P4"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P5"
+        },
+        {
+          "file": "documents/amendment.txt",
+          "rule_id": "VB.M1"
+        },
+        {
+          "file": "documents/codes.json",
+          "rule_id": "VB.C1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "set_delivery_preference.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_delivery_preference.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_delivery_preference.key_conflict",
+          "when": "q['request_key'] in s['receipts'] and (s['receipts'][q['request_key']]['request'] != q or s['receipts'][q['request_key']]['operation'] != op)",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'KEY_REUSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "set_delivery_preference.idempotent_replay",
+          "when": "q['request_key'] in s['receipts']",
+          "status": 200,
+          "response_expression": "s['receipts'][q['request_key']]['response']",
+          "effects": []
+        },
+        {
+          "id": "delivery.auth",
+          "when": "not s['verified']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'VERIFY_FIRST', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.unknown",
+          "when": "q['account_id'] not in s['accounts']",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'UNKNOWN_ACCOUNT', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.email",
+          "when": "q['mode']=='E_DELIVERY' and s['accounts'][q['account_id']]['email_state']!='VERIFIED'",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'CONTACT_UNVERIFIED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.repeat",
+          "when": "s['accounts'][q['account_id']]['changed_this_call']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_CHANGED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.same",
+          "when": "q['mode']==s['accounts'][q['account_id']]['mode']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_SET', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.cycle",
+          "when": "q['effective_cycle'] != (s['accounts'][q['account_id']]['current_cycle'] if s['now'] <= s['accounts'][q['account_id']]['current_cycle'] + ('-18T19:00:00+00:00' if s['accounts'][q['account_id']]['kind']=='SAVINGS' else '-18T17:00:00+00:00') else s['accounts'][q['account_id']]['next_cycle'])",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'WRONG_CYCLE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "delivery.change",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'account_id':q['account_id'],'mode':q['mode'],'effective_cycle':q['effective_cycle']}}",
+          "effects": [
+            {
+              "path_expression": "['accounts',q['account_id'],'mode']",
+              "value_expression": "q['mode']"
+            },
+            {
+              "path_expression": "['accounts',q['account_id'],'effective_cycle']",
+              "value_expression": "q['effective_cycle']"
+            },
+            {
+              "path_expression": "['accounts',q['account_id'],'changed_this_call']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['receipts', q['request_key']]",
+              "value_expression": "{'operation': op, 'request': q, 'response': {'ok': True, 'data': {'account_id':q['account_id'],'mode':q['mode'],'effective_cycle':q['effective_cycle']}}}"
+            },
+            {
+              "path_expression": "['mutation_count']",
+              "value_expression": "s['mutation_count'] + 1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Exact same request_key+operation+payload replays the successful receipt without a new business mutation; a changed payload on the same key yields KEY_REUSE. Post-close operations are rejected. Additional product-state guards reject a second independent irreversible action."
+    },
+    "finish_delivery": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "VB.P6"
+        },
+        {
+          "file": "documents/codes.json",
+          "rule_id": "VB.C1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "finish_delivery.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "finish_delivery.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.changed",
+          "when": "(s['mutation_count']>0) != (q['code']=='changed')",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.verify",
+          "when": "q['code']=='verification_failed' and s['wrong_access']<2",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.ok",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'code':q['code']}}",
+          "effects": [
+            {
+              "path_expression": "['closed']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['final_code']",
+              "value_expression": "q['code']"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    }
+  },
+  "cases": {
+    "GEN-VA-BK-01-C01": {
+      "initial_state": {
+        "session_id": "session-vb-1",
+        "now": "2027-02-18T18:15:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "accounts": {
+          "DEP-C": {
+            "account_id": "DEP-C",
+            "label": "Everyday account",
+            "kind": "CURRENT",
+            "mode": "E_DELIVERY",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          },
+          "DEP-S": {
+            "account_id": "DEP-S",
+            "label": "Reserve account",
+            "kind": "SAVINGS",
+            "mode": "PAPER",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          }
+        },
+        "challenge_answer": "Q7P9",
+        "verified": false,
+        "wrong_access": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-BK-01-C02": {
+      "initial_state": {
+        "session_id": "session-vb-2",
+        "now": "2027-02-18T18:15:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "accounts": {
+          "DEP-C": {
+            "account_id": "DEP-C",
+            "label": "Everyday account",
+            "kind": "CURRENT",
+            "mode": "E_DELIVERY",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          },
+          "DEP-S": {
+            "account_id": "DEP-S",
+            "label": "Reserve account",
+            "kind": "SAVINGS",
+            "mode": "PAPER",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          }
+        },
+        "challenge_answer": "Q7P9",
+        "verified": false,
+        "wrong_access": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-BK-01-C03": {
+      "initial_state": {
+        "session_id": "session-vb-3",
+        "now": "2027-02-18T18:15:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "accounts": {
+          "DEP-C": {
+            "account_id": "DEP-C",
+            "label": "Everyday account",
+            "kind": "CURRENT",
+            "mode": "PAPER",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          },
+          "DEP-S": {
+            "account_id": "DEP-S",
+            "label": "Reserve account",
+            "kind": "SAVINGS",
+            "mode": "PAPER",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          }
+        },
+        "challenge_answer": "Q7P9",
+        "verified": false,
+        "wrong_access": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-VA-BK-01-C04": {
+      "initial_state": {
+        "session_id": "session-vb-4",
+        "now": "2027-02-18T18:15:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "accounts": {
+          "DEP-C": {
+            "account_id": "DEP-C",
+            "label": "Everyday account",
+            "kind": "CURRENT",
+            "mode": "PAPER",
+            "email_state": "UNVERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          },
+          "DEP-S": {
+            "account_id": "DEP-S",
+            "label": "Reserve account",
+            "kind": "SAVINGS",
+            "mode": "PAPER",
+            "email_state": "VERIFIED",
+            "current_cycle": "2027-02",
+            "next_cycle": "2027-03",
+            "effective_cycle": null,
+            "changed_this_call": false
+          }
+        },
+        "challenge_answer": "Q7P9",
+        "verified": false,
+        "wrong_access": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    }
+  }
+}

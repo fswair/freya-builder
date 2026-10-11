@@ -31,5 +31,6 @@ The template is unfinished and must not be sent as an entry.
    to the address in the kit email before20UTC (23:00Istanbul). Do not send the
    internal RUN/submission.json. Keep the mock running until results are announced.
 
-Pending user-supplied metadata: repository destination, team name and member details.
-Cloudflare browser access is ready; Wrangler CLI authorization is still pending.
+Fill all placeholders from the actual team, repository commit and deployed mock.
+The repository is private until its owner grants organizer access or changes visibility.
+Cloudflare deployment requires an authenticated account with Worker deployment access.

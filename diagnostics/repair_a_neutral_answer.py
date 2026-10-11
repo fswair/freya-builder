@@ -17,15 +17,14 @@ from freya_hackathon.workflow import WorkflowBuild
 
 ROOT = Path(__file__).resolve().parents[1]
 CALL = ROOT / (
-    "diagnostics/v13-a-pub06-call-read-001/practice/"
-    "call-6cb807fd-01ee-4bf0-8052-7d55fb420ee6.json"
+    "diagnostics/v13-a-pub06-call-read-001/practice/call-6cb807fd-01ee-4bf0-8052-7d55fb420ee6.json"
 )
 
 
 def code_field(workflow):
-    return workflow["nodes"]["advance"]["pre_actions"][0]["function"]["parameters"][
-        "properties"
-    ]["code"]
+    return workflow["nodes"]["advance"]["pre_actions"][0]["function"]["parameters"]["properties"][
+        "code"
+    ]
 
 
 def repair(code):

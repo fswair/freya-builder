@@ -1,0 +1,829 @@
+{
+  "GEN-VA-IN-01-C01": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.7"
+      }
+    ],
+    "rationale": "The supplied now exactly equals the offer’s expiry; VI.2 makes that boundary inclusive. A clear confirmation authorizes Home renewal at the returned premium and coverage date, without charging money or adding identity questions.",
+    "required_actions": [
+      {
+        "operation": "record_renewal_choice",
+        "payload_contains": {
+          "offer_id": "O-HOME",
+          "choice": "renew",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Any identity challenge not present in this already-verified channel",
+      "Payment, discount, instalment, callback or immediate cancellation of current cover",
+      "Writing the superseded unconfirmed list"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain selected choice and its specific required read-back terms before clear confirmation"
+      ],
+      "forbidden": [
+        "A claim that money was charged",
+        "A claim that non-renewal immediately ended existing cover",
+        "A fabricated replacement offer"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "get_renewal_offers.success",
+        "after": "offer_selection"
+      },
+      {
+        "before": "corrected_choices.clear_confirmation",
+        "after": "record_renewal_choice.attempt"
+      },
+      {
+        "before": "record_renewal_choice.ok_true",
+        "after": "claim_choice_recorded"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_renewal"
+      }
+    ],
+    "call_count_bounds": {
+      "get_renewal_offers": {
+        "min": 1,
+        "max": null
+      },
+      "record_renewal_choice": {
+        "min": 1,
+        "max": 1
+      },
+      "close_renewal": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "decisions": {
+        "POL-HOME": "renew"
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "renewed"
+    },
+    "conversation_assertions": [
+      "A question about charges is distinct from accepting an offer.",
+      "Confirmation refers to the latest complete list, not a stale extracted decision.",
+      "Inclusive expiry is interpreted from the supplied clock."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "get_renewal_offers",
+        "request": {
+          "session_id": "session-vi-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "channel_verified": true,
+            "offers": [
+              {
+                "offer_id": "O-HOME",
+                "policy_id": "POL-HOME",
+                "label": "Home cover",
+                "premium": 125.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-01",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              },
+              {
+                "offer_id": "O-BIKE",
+                "policy_id": "POL-BIKE",
+                "label": "Bicycle cover",
+                "premium": 260.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-03",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "offers.read"
+      },
+      {
+        "operation": "record_renewal_choice",
+        "request": {
+          "session_id": "session-vi-1",
+          "offer_id": "O-HOME",
+          "choice": "renew",
+          "confirmed": true,
+          "request_key": "vi-1-0"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "POL-HOME",
+            "choice": "renew",
+            "status": "choice_recorded",
+            "charged": false
+          }
+        },
+        "transition_rule_id": "offer.decide"
+      },
+      {
+        "operation": "close_renewal",
+        "request": {
+          "session_id": "session-vi-1",
+          "code": "renewed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "renewed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected Home offer is within its inclusive expiry",
+        "expression": "s['now'] <= s['offers']['O-HOME']['expires_at']",
+        "expected": true,
+        "policy_rule_refs": [
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.2"
+          },
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.6"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-IN-01-C02": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.7"
+      }
+    ],
+    "rationale": "The explicit non-renewal intention becomes an actionable let_expire choice only after VI.4’s separate confirmation and current-coverage explanation. VI.3 prohibits treating it as payment authorization or immediate cancellation.",
+    "required_actions": [
+      {
+        "operation": "record_renewal_choice",
+        "payload_contains": {
+          "offer_id": "O-BIKE",
+          "choice": "let_expire",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Any identity challenge not present in this already-verified channel",
+      "Payment, discount, instalment, callback or immediate cancellation of current cover",
+      "Writing the superseded unconfirmed list"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain selected choice and its specific required read-back terms before clear confirmation"
+      ],
+      "forbidden": [
+        "A claim that money was charged",
+        "A claim that non-renewal immediately ended existing cover",
+        "A fabricated replacement offer"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "get_renewal_offers.success",
+        "after": "offer_selection"
+      },
+      {
+        "before": "corrected_choices.clear_confirmation",
+        "after": "record_renewal_choice.attempt"
+      },
+      {
+        "before": "record_renewal_choice.ok_true",
+        "after": "claim_choice_recorded"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_renewal"
+      }
+    ],
+    "call_count_bounds": {
+      "get_renewal_offers": {
+        "min": 1,
+        "max": null
+      },
+      "record_renewal_choice": {
+        "min": 1,
+        "max": 1
+      },
+      "close_renewal": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "decisions": {
+        "POL-BIKE": "let_expire"
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "lapsed"
+    },
+    "conversation_assertions": [
+      "A question about charges is distinct from accepting an offer.",
+      "Confirmation refers to the latest complete list, not a stale extracted decision.",
+      "Inclusive expiry is interpreted from the supplied clock."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "get_renewal_offers",
+        "request": {
+          "session_id": "session-vi-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "channel_verified": true,
+            "offers": [
+              {
+                "offer_id": "O-HOME",
+                "policy_id": "POL-HOME",
+                "label": "Home cover",
+                "premium": 125.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-01",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              },
+              {
+                "offer_id": "O-BIKE",
+                "policy_id": "POL-BIKE",
+                "label": "Bicycle cover",
+                "premium": 260.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-03",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "offers.read"
+      },
+      {
+        "operation": "record_renewal_choice",
+        "request": {
+          "session_id": "session-vi-2",
+          "offer_id": "O-BIKE",
+          "choice": "let_expire",
+          "confirmed": true,
+          "request_key": "vi-2-0"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "POL-BIKE",
+            "choice": "let_expire",
+            "status": "choice_recorded",
+            "charged": false
+          }
+        },
+        "transition_rule_id": "offer.decide"
+      },
+      {
+        "operation": "close_renewal",
+        "request": {
+          "session_id": "session-vi-2",
+          "code": "lapsed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "lapsed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected Home offer is within its inclusive expiry",
+        "expression": "s['now'] <= s['offers']['O-HOME']['expires_at']",
+        "expected": true,
+        "policy_rule_refs": [
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.2"
+          },
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.6"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-IN-01-C03": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.7"
+      }
+    ],
+    "rationale": "The old two-renew list is unconfirmed and has no effects. VI.4 requires a revised list, preserving the unchanged Bicycle terms while changing Home’s decision. Two separately scoped successful choices produce mixed under VI.7.",
+    "required_actions": [
+      {
+        "operation": "record_renewal_choice",
+        "payload_contains": {
+          "offer_id": "O-HOME",
+          "choice": "let_expire",
+          "confirmed": true
+        }
+      },
+      {
+        "operation": "record_renewal_choice",
+        "payload_contains": {
+          "offer_id": "O-BIKE",
+          "choice": "renew",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Any identity challenge not present in this already-verified channel",
+      "Payment, discount, instalment, callback or immediate cancellation of current cover",
+      "Writing the superseded unconfirmed list"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain selected choice and its specific required read-back terms before clear confirmation"
+      ],
+      "forbidden": [
+        "A claim that money was charged",
+        "A claim that non-renewal immediately ended existing cover",
+        "A fabricated replacement offer"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "get_renewal_offers.success",
+        "after": "offer_selection"
+      },
+      {
+        "before": "corrected_choices.clear_confirmation",
+        "after": "record_renewal_choice.attempt"
+      },
+      {
+        "before": "record_renewal_choice.ok_true",
+        "after": "claim_choice_recorded"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_renewal"
+      }
+    ],
+    "call_count_bounds": {
+      "get_renewal_offers": {
+        "min": 1,
+        "max": null
+      },
+      "record_renewal_choice": {
+        "min": 2,
+        "max": 2
+      },
+      "close_renewal": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "decisions": {
+        "POL-HOME": "let_expire",
+        "POL-BIKE": "renew"
+      },
+      "mutation_count": 2,
+      "closed": true,
+      "final_code": "mixed"
+    },
+    "conversation_assertions": [
+      "A question about charges is distinct from accepting an offer.",
+      "Confirmation refers to the latest complete list, not a stale extracted decision.",
+      "Inclusive expiry is interpreted from the supplied clock."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "get_renewal_offers",
+        "request": {
+          "session_id": "session-vi-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "channel_verified": true,
+            "offers": [
+              {
+                "offer_id": "O-HOME",
+                "policy_id": "POL-HOME",
+                "label": "Home cover",
+                "premium": 125.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-01",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              },
+              {
+                "offer_id": "O-BIKE",
+                "policy_id": "POL-BIKE",
+                "label": "Bicycle cover",
+                "premium": 260.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-03",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "offers.read"
+      },
+      {
+        "operation": "record_renewal_choice",
+        "request": {
+          "session_id": "session-vi-3",
+          "offer_id": "O-HOME",
+          "choice": "let_expire",
+          "confirmed": true,
+          "request_key": "vi-3-0"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "POL-HOME",
+            "choice": "let_expire",
+            "status": "choice_recorded",
+            "charged": false
+          }
+        },
+        "transition_rule_id": "offer.decide"
+      },
+      {
+        "operation": "record_renewal_choice",
+        "request": {
+          "session_id": "session-vi-3",
+          "offer_id": "O-BIKE",
+          "choice": "renew",
+          "confirmed": true,
+          "request_key": "vi-3-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "POL-BIKE",
+            "choice": "renew",
+            "status": "choice_recorded",
+            "charged": false
+          }
+        },
+        "transition_rule_id": "offer.decide"
+      },
+      {
+        "operation": "close_renewal",
+        "request": {
+          "session_id": "session-vi-3",
+          "code": "mixed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "mixed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected Home offer is within its inclusive expiry",
+        "expression": "s['now'] <= s['offers']['O-HOME']['expires_at']",
+        "expected": true,
+        "policy_rule_refs": [
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.2"
+          },
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.6"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-VA-IN-01-C04": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "VI.7"
+      }
+    ],
+    "rationale": "The clock is one second after expires_at, not equal to it. VI.2 and VI.6 prohibit a write even for a small delay. No requote operation exists, so an expired close without a decision is the declared achievable outcome.",
+    "required_actions": [],
+    "forbidden_actions": [
+      "Any identity challenge not present in this already-verified channel",
+      "Payment, discount, instalment, callback or immediate cancellation of current cover",
+      "Writing the superseded unconfirmed list",
+      "Any record_renewal_choice call"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain that this offer has expired and a new offer is needed"
+      ],
+      "forbidden": [
+        "A claim that money was charged",
+        "A claim that non-renewal immediately ended existing cover",
+        "A fabricated replacement offer"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "get_renewal_offers.success",
+        "after": "offer_selection"
+      },
+      {
+        "before": "corrected_choices.clear_confirmation",
+        "after": "record_renewal_choice.attempt"
+      },
+      {
+        "before": "record_renewal_choice.ok_true",
+        "after": "claim_choice_recorded"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_renewal"
+      }
+    ],
+    "call_count_bounds": {
+      "get_renewal_offers": {
+        "min": 1,
+        "max": null
+      },
+      "record_renewal_choice": {
+        "min": 0,
+        "max": 0
+      },
+      "close_renewal": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "decisions": {},
+      "mutation_count": 0,
+      "closed": true,
+      "final_code": "expired"
+    },
+    "conversation_assertions": [
+      "A question about charges is distinct from accepting an offer.",
+      "Confirmation refers to the latest complete list, not a stale extracted decision.",
+      "Inclusive expiry is interpreted from the supplied clock."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "get_renewal_offers",
+        "request": {
+          "session_id": "session-vi-4"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "channel_verified": true,
+            "offers": [
+              {
+                "offer_id": "O-HOME",
+                "policy_id": "POL-HOME",
+                "label": "Home cover",
+                "premium": 125.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-01",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              },
+              {
+                "offer_id": "O-BIKE",
+                "policy_id": "POL-BIKE",
+                "label": "Bicycle cover",
+                "premium": 260.0,
+                "currency": "GBP",
+                "coverage_from": "2027-03-03",
+                "expires_at": "2027-02-28T17:00:00+00:00"
+              }
+            ]
+          }
+        },
+        "transition_rule_id": "offers.read"
+      },
+      {
+        "operation": "close_renewal",
+        "request": {
+          "session_id": "session-vi-4",
+          "code": "expired"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "expired"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Selected Home offer is within its inclusive expiry",
+        "expression": "s['now'] <= s['offers']['O-HOME']['expires_at']",
+        "expected": false,
+        "policy_rule_refs": [
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.2"
+          },
+          {
+            "file": "brief.txt",
+            "rule_id": "VI.6"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  }
+}

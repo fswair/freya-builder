@@ -21,8 +21,14 @@ def compact_code(code: str) -> str:
     for line in lines:
         offsets.append(offsets[-1] + len(line))
     edits: list[tuple[int, int, str]] = []
-    layout = {tokenize.INDENT, tokenize.DEDENT, tokenize.NEWLINE, tokenize.NL,
-              tokenize.ENDMARKER, tokenize.COMMENT}
+    layout = {
+        tokenize.INDENT,
+        tokenize.DEDENT,
+        tokenize.NEWLINE,
+        tokenize.NL,
+        tokenize.ENDMARKER,
+        tokenize.COMMENT,
+    }
     words = {tokenize.NAME, tokenize.NUMBER}
     depth = 0
     seen_rows: set[int] = set()

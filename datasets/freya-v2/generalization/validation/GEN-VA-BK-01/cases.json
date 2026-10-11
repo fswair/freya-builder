@@ -1,0 +1,129 @@
+[
+  {
+    "id": "GEN-VA-BK-01-C01",
+    "customer_private_facts": {
+      "challenge_response": "Q7P9",
+      "selected_account": "DEP-S",
+      "desired_mode": "E_DELIVERY"
+    },
+    "script": "You are the customer. Provide the challenge response Q7P9 when asked. Ask to switch only the Reserve savings account to electronic statements. You are happy with the earliest cycle the caller says is available and clearly confirm a correct read-back of that account, electronic delivery and February 2027. You have no other request. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "ordinary_success",
+        "cooperative"
+      ],
+      "coverage_roles": [
+        "ordinary_success"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-BK-01-C01-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vb-1",
+      "now": "2027-02-18T18:15:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-BK-01-C01/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-BK-01-C02",
+    "customer_private_facts": {
+      "challenge_response": "Q7P9",
+      "selected_account": "DEP-C",
+      "desired_mode": "PAPER"
+    },
+    "script": "Provide Q7P9 when asked. Say, \"Switch my Everyday current account to paper statements, and do you know whether that has a fee?\" Accept an honest answer that the caller does not have fee information. You still want paper statements. Clearly confirm that account and paper delivery for March 2027 after the effective cycle is explained. Do not request a price guarantee. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "mixed_intent",
+        "fee_question",
+        "question_not_consent"
+      ],
+      "coverage_roles": [
+        "mixed_intent"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-BK-01-C02-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vb-2",
+      "now": "2027-02-18T18:15:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-BK-01-C02/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-BK-01-C03",
+    "customer_private_facts": {
+      "challenge_response": "Q7P9",
+      "selected_account": "DEP-S",
+      "desired_mode": "E_DELIVERY"
+    },
+    "script": "Provide the challenge response Q7P9 when asked. Initially ask for electronic statements on both listed accounts. When both are read back, correct yourself: \"Not the Everyday account—leave it on paper. Only the Reserve savings account should go electronic.\" Do not say yes to the original two-account list. On a revised read-back confirm only Reserve and February 2027. If asked which account remains unchanged, explicitly name Everyday. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "scope_correction",
+        "negation_plus_alternative",
+        "stale_consent"
+      ],
+      "coverage_roles": [
+        "information_correction_scope"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-BK-01-C03-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vb-3",
+      "now": "2027-02-18T18:15:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-BK-01-C03/initial_state"
+    }
+  },
+  {
+    "id": "GEN-VA-BK-01-C04",
+    "customer_private_facts": {
+      "challenge_response": "Q7P9",
+      "selected_account": "DEP-C",
+      "desired_mode": "E_DELIVERY"
+    },
+    "script": "Provide Q7P9 when asked. Ask for electronic statements on the Everyday current account. Say that you think you verified your email online a few minutes ago. If the caller says the bank still shows it as unverified, ask once whether your word is enough. Accept that the change cannot be made until the contact is verified in the bank’s records, and end without requesting another account or mode. Do not give a new email address. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "policy_boundary",
+        "claim_vs_current_tool_evidence",
+        "benign_challenge"
+      ],
+      "coverage_roles": [
+        "policy_boundary_or_supported_failure"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-VA-BK-01-C04-FAMILY",
+    "split": "validation",
+    "variables": {
+      "session_id": "session-vb-4",
+      "now": "2027-02-18T18:15:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-VA-BK-01-C04/initial_state"
+    }
+  }
+]

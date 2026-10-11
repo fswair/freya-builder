@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "openapi": {
+      "type": "string",
+      "pattern": "^3\\.[01]\\.[0-9]+$"
+    },
+    "info": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "version"
+      ],
+      "additionalProperties": true
+    },
+    "servers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "additionalProperties": true
+      },
+      "minItems": 1
+    },
+    "paths": {
+      "type": "object",
+      "minProperties": 1
+    }
+  },
+  "required": [
+    "openapi",
+    "info",
+    "servers",
+    "paths"
+  ],
+  "additionalProperties": true,
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

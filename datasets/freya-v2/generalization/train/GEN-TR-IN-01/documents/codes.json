@@ -1,0 +1,20 @@
+{
+  "policy_origin": "synthetic",
+  "rule_id": "TI.C1",
+  "events": {
+    "WATER_ESCAPE": "escape of water",
+    "THEFT": "theft"
+  },
+  "locations": {
+    "HOME": "insured home",
+    "STORE": "insured storage space"
+  },
+  "closure_codes": [
+    "notice_logged",
+    "outside_window",
+    "identity_failed",
+    "no_authority",
+    "service_unavailable",
+    "no_notice"
+  ]
+}

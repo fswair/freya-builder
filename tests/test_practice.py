@@ -46,12 +46,25 @@ def test_changed_export_stops_practice_before_any_simulation(tmp_path, change):
         raise AssertionError("No API request is allowed after an export mismatch")
 
     practice = runner(tmp_path, handler)
-    workflow = {"nodes": {"speak": {
-        "task_message": "Verify identity first.",
-        "tools": [{"function": {"handler": "__function__:api_call", "parameters": {
-            "properties": {"url": {"default": "https://bank.example/verify_identity"}}
-        }}}],
-    }}}
+    workflow = {
+        "nodes": {
+            "speak": {
+                "task_message": "Verify identity first.",
+                "tools": [
+                    {
+                        "function": {
+                            "handler": "__function__:api_call",
+                            "parameters": {
+                                "properties": {
+                                    "url": {"default": "https://bank.example/verify_identity"}
+                                }
+                            },
+                        }
+                    }
+                ],
+            }
+        }
+    }
     exported = json.loads(json.dumps(workflow))
     node = exported["nodes"]["speak"]
     if change == "handler":
@@ -65,7 +78,9 @@ def test_changed_export_stops_practice_before_any_simulation(tmp_path, change):
     write_json(tmp_path / "workflow.json", workflow)
     practice.freya.validate_workflow = lambda *_: {"valid": True}
     practice.freya.save_workflow = lambda *_: {
-        "workflow_id": "workflow", "agent_id": "agent", "version": 1
+        "workflow_id": "workflow",
+        "agent_id": "agent",
+        "version": 1,
     }
     practice.freya.export_workflow = lambda _id, path: write_json(
         Path(path), {"workflow": exported}

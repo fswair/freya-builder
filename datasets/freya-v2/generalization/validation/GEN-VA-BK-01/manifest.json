@@ -1,0 +1,74 @@
+{
+  "id": "GEN-VA-BK-01",
+  "brief_family_id": "FAM-VA-BK",
+  "split": "validation",
+  "sector": "banking",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "tool_contract": "extended_local_contract",
+  "source_files": [
+    "documents/email.txt",
+    "documents/policy.txt",
+    "documents/amendment.txt",
+    "documents/codes.json",
+    "openapi.json"
+  ],
+  "evaluator_files": [
+    "mock-fixture.json",
+    "cases.json",
+    "oracle.json",
+    "author-review.txt",
+    "validation-report.json"
+  ],
+  "scope_notes": [
+    "Extended LOCAL deposit servicing, not collections.",
+    "A customer’s external-update claim does not edit tool state."
+  ],
+  "assumptions": {
+    "timezone": "UTC",
+    "policy_effective": "2027-02-01",
+    "all_entities": "synthetic"
+  },
+  "document_format": "raw_document_bundle",
+  "case_count": 4,
+  "policy_rule_index": [
+    {
+      "file": "documents/email.txt",
+      "rule_id": "VB.E1"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P1"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P2"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P3"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P4"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P5"
+    },
+    {
+      "file": "documents/policy.txt",
+      "rule_id": "VB.P6"
+    },
+    {
+      "file": "documents/amendment.txt",
+      "rule_id": "VB.M1"
+    },
+    {
+      "file": "documents/codes.json",
+      "rule_id": "VB.C1"
+    }
+  ],
+  "builder_input_boundary": "Only source_files are builder input. No fixture, private customer facts, cases, oracle, author-review or validation report is builder input. Runtime read responses expose only the declared fields.",
+  "failure_model": "No failure is implied by omission. Only controls explicitly present in a case initial_state are active."
+}

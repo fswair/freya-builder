@@ -14,8 +14,7 @@ from freya_hackathon.builder import write_json
 from freya_hackathon.recording import capture_sync
 
 CALL = (
-    ROOT
-    / "runs/v13-b-targeted-native-001/practice/call-fb634d07-47ba-4e3b-af7a-962976601e54.json"
+    ROOT / "runs/v13-b-targeted-native-001/practice/call-fb634d07-47ba-4e3b-af7a-962976601e54.json"
 )
 FRAGMENTS = (
     "Keep the first two. Change only",

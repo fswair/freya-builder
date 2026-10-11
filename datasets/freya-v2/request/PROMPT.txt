@@ -1,0 +1,109 @@
+DATASET REQUEST v2 — BANKING AND INSURANCE, WITHIN-SECTOR GENERALIZATION
+This replaces the v1 request. Read this file first, then both specification files.
+
+We are building a program that reads an unfamiliar business brief and tool schema
+and creates a Freya phone workflow. We will use GEPA to improve the builder using
+training evidence. We need to measure interpretation of new policies and robust
+conversation handling, not memorization of 13 public collections customers.
+
+SCOPE
+Focus on BANKING AND INSURANCE. Do not expand into file management, retail,
+hospitality or arbitrary industries. Generalizable means reading unfamiliar rules,
+exceptions, terminology, data structures and conversation situations within these
+two sectors. Collections is one development example, not a rule to bake into every
+generated agent. No domain-specific action is universally required: its authority,
+preconditions, confirmation, disclosure and closing rules come from the supplied
+brief and tool contract.
+
+The kickoff's generalization comments and the written final rules are separate
+evidence. Read sources/freya-scope-notes.txt. Current written final rules describe
+new briefs for the same kind of call, with the same seven bank tool names but
+potentially different fields and enums. Broader banking/insurance tasks below are
+our LOCAL robustness tests, not a claim about announced hidden-test contents.
+
+DELIVER TWO CLEARLY SEPARATED DATASETS
+1. live/: 48 additional customers supported by the actual 13 bank fixtures.
+   Follow LIVE_CASES_SPEC.txt. These are candidates for Freya practice execution.
+2. generalization/: 6 completely synthetic, self-contained banking/insurance brief
+   bundles with tool contracts and 4 customer cases each. Follow
+   GENERALIZATION_SPEC.txt. These require a LOCAL MOCK implementation; they cannot
+   be run by pretending to be a registered Freya practice customer.
+
+Use downloadable JSON/text files, preferably packaged in a ZIP. Do not return only
+a plan, a taxonomy or fenced snippets. If supported tools let you create files and
+validate them with code, do that. Report honestly what you checked. Never claim
+that you called Freya, ran our builder or measured success.
+
+CONVERSATION DIMENSIONS: OPEN-ENDED, NOT A CLOSED SENTIMENT LIST
+Treat these as independent dimensions that can change during a conversation:
+- Affect/tone: examples include calm, satisfied, frustrated, anxious, embarrassed,
+  impatient, relieved, disappointed, hesitant, suspicious, sarcastic or enthusiastic.
+  These are examples, not an exhaustive enum. Do not invent diagnoses or infer an
+  identity or financial fact from affect.
+- Actual intent: asking a question, accepting, refusing, correcting, postponing,
+  requesting a human, changing scope, expressing inability, or disputing a fact.
+- Cooperation/knowledge: informed or confused, terse or expansive, uncertain about
+  a detail, distracted, willingly cooperative or reluctant to share information.
+- Information delivery: fragments, self-correction, interruptions, negation plus
+  an alternative, references such as "the other one", words for dates/numbers,
+  several intents in one turn and a question inserted into a requested answer.
+- Trust and adversarial behavior: legitimate fraud concerns, inaccurate claims,
+  impersonation or attempts to override instructions/authorization. Prompt injection
+  is not an emotion. A skeptical or angry customer is not automatically malicious.
+
+Include emotional transitions, such as skeptical to reassured or cooperative to
+frustrated after a repeated question. Do not force all axes into every case. Most
+cases should combine one or two difficulties; a minority can be compound stress
+cases. Include ordinary successful controls and benign statements that resemble
+an attack but merely ask about the process. A defensive agent that rejects every
+customer must perform poorly on this dataset.
+
+EXPECTED TRANSFERABLE CAPABILITIES
+- Keep decision, question, correction and tone separate; preserve simultaneous
+  legitimate requests and policy-required priority.
+- Ground state changes in current evidence. Do not treat an omitted field as a
+  repeated value, an old value as new consent, or unknown as a negative disposition.
+- Keep each object's state separate. A change to one account/policy/request must
+  not silently change another. Ground references in actual supplied tool data.
+- Distinguish intent to do something, a claim it happened, authorization to do it,
+  the attempted tool call and a successful result. A question is not consent.
+- Derive dates, amounts, retry limits, identity requirements and closure outcomes
+  from the current brief, clock and tool contract. Never assume the public brief's
+  values or even the presence of its business rules in another task.
+- Follow the supplied scope/precedence of amendments. Do not combine a superseded
+  general rule with its replacement or apply a scoped exception globally.
+- Recover from clarification, changed terms and supported tool failures without
+  duplicating irreversible actions or claiming a failed action succeeded.
+
+SOURCES AND DATA SAFETY
+sources/ contains official kit v3 README, Brief A, Brief B, OpenAPI, 13 public
+synthetic cases, and clearly attributed Freya-only kickoff excerpts/notes.
+Use the official documents for live-case ground truth. Generalization policies
+must be explicitly labeled synthetic and be self-contained. Do not pass an
+invented policy off as a Freya rule. Do not use real customer data, credentials,
+web-scraped datasets, hidden briefs or guesses about hidden answers.
+
+SPLITS AND NON-LEAKAGE
+Training examples feed the optimizer. Validation controls candidate selection.
+Holdout is opened only after selection and is never used for reflection or repair.
+Keep all paraphrases, policy counterfactuals and variants of the same scenario
+family together. Varying a name or number does not create an independent family.
+The live set measures new behavior under known briefs. The generalization set
+measures new brief families; holdout brief families must be absent from training.
+Do not summarize holdout scripts, unique rules or expected answers in shared
+review files. Shared manifests may list IDs, paths, counts and split membership.
+
+OUTPUT ROOT
+- live/train.json, live/validation.json, live/holdout.json
+- live/manifest.json
+- generalization/{train,validation,holdout}/<bundle-id>/...
+- generalization/manifest.json
+- review.txt: actual checks, limitations and unresolved issues, without holdout
+  contents. Put holdout-specific issues inside the holdout directory.
+
+QUALITY OVER QUANTITY
+Return fewer defensible cases rather than fabricating unsupported behavior to fill
+a quota. Flag unresolved policy ambiguity instead of making up an oracle. For each
+case, expected outcomes must follow its customer behavior, applicable rules and
+tool responses. Validate machine-readable files and source references before
+returning them. All examples are proposed tests, not official scores.

@@ -55,13 +55,21 @@ def create(output: Path) -> None:
     doc.save(output / "Policy.docx")
     writer = PdfWriter()
     page = writer.add_blank_page(612, 792)
-    page[NameObject("/Resources")] = DictionaryObject({
-        NameObject("/Font"): DictionaryObject({NameObject("/F1"): DictionaryObject({
-            NameObject("/Type"): NameObject("/Font"),
-            NameObject("/Subtype"): NameObject("/Type1"),
-            NameObject("/BaseFont"): NameObject("/Helvetica"),
-        })}),
-    })
+    page[NameObject("/Resources")] = DictionaryObject(
+        {
+            NameObject("/Font"): DictionaryObject(
+                {
+                    NameObject("/F1"): DictionaryObject(
+                        {
+                            NameObject("/Type"): NameObject("/Font"),
+                            NameObject("/Subtype"): NameObject("/Type1"),
+                            NameObject("/BaseFont"): NameObject("/Helvetica"),
+                        }
+                    )
+                }
+            ),
+        }
+    )
     stream = DecodedStreamObject()
     stream.set_data(
         b"BT /F1 12 Tf 40 700 Td "

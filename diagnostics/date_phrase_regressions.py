@@ -7,8 +7,8 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
+from freya_hackathon.development.practice.brief_a import suite
 from freya_hackathon.offline import run_suite
-from freya_hackathon.practice_regressions import suite
 
 
 def main() -> None:

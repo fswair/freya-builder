@@ -1,0 +1,26 @@
+{
+  "source": "/Users/mert/Desktop/freya-hackathon/datasets/freya-v2/live",
+  "selection": "Original dataset manifest priority_training_ids; not chosen by scores",
+  "training_ids": [
+    "DEV-TR-A-001",
+    "DEV-TR-A-003",
+    "DEV-TR-A-005",
+    "DEV-TR-A-007",
+    "DEV-TR-A-009",
+    "DEV-TR-A-011",
+    "DEV-TR-A-013",
+    "DEV-TR-A-015",
+    "DEV-TR-B-001",
+    "DEV-TR-B-003",
+    "DEV-TR-B-005",
+    "DEV-TR-B-007",
+    "DEV-TR-B-009",
+    "DEV-TR-B-011",
+    "DEV-TR-B-013",
+    "DEV-TR-B-015"
+  ],
+  "source_train_sha256": "98512a9bc04ee85ab25e75cbf2d58781c57c393b183d8c56fa6859d5516e2695",
+  "source_manifest_sha256": "f12cfc7d3f5eaf08465478e6536ba0bb962ab6353bd844d1e553a48ab0b3b233",
+  "validation_sha256": "3b14f3049512c399c8082f6a40297a800b004194c7e5b879a1bd3c75b0adba72",
+  "holdout_opened": false
+}

@@ -1,0 +1,439 @@
+{
+  "format_version": "1.0",
+  "policy_origin": "synthetic",
+  "execution_target": "local_mock_only",
+  "executable_adapter_included": false,
+  "specification_notice": "This is a declarative mock SPECIFICATION. A local tool adapter must implement it; no Freya endpoint/customer registration is implied. The supplied verifier only evaluates authored proof witnesses, not a phone workflow or a mock server.",
+  "clock_timezone": "UTC",
+  "clock_rule": "Each independent case starts from its own initial_state.now. Only an explicit listed transition may advance it; never use the host wall clock.",
+  "expression_language": "Restricted side-effect-free Python expression subset documented by validation_support.py. q=request, s=pre-state, op=operation. Decimal-safe money and calendar helpers are pure. Effects are simultaneous; receipts hold deep copies.",
+  "case_isolation": {
+    "reset": "deep-copy the selected case initial_state before every repetition",
+    "shared_mutable_state": false,
+    "case_order_dependency": false
+  },
+  "identifier_mapping": "All usable entity IDs are keys/IDs of the selected initial_state and must be grounded in the relevant read response. Caller aliases appear in customer_private_facts. No external lookup is allowed.",
+  "operation_models": {
+    "verify_policy_access": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "verify_policy_access.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "verify_policy_access.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "access.blocked",
+          "when": "s['wrong_access']>=2",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'ACCESS_BLOCKED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "access.ok",
+          "when": "q['access_word']==s['access_word']",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified':True,'wrong_left':2-s['wrong_access']}}",
+          "effects": [
+            {
+              "path_expression": "['verified']",
+              "value_expression": "True"
+            }
+          ]
+        },
+        {
+          "id": "access.wrong",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'verified':False,'wrong_left':1-s['wrong_access']}}",
+          "effects": [
+            {
+              "path_expression": "['wrong_access']",
+              "value_expression": "s['wrong_access']+1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "get_cover_snapshot": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P1"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P2"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "get_cover_snapshot.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "get_cover_snapshot.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "cover.auth",
+          "when": "not s['verified']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'VERIFY_FIRST', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "cover.read",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': s['cover']}",
+          "effects": []
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    },
+    "register_notice": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P2"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P3"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P4"
+        },
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P5"
+        },
+        {
+          "file": "documents/amendment.txt",
+          "rule_id": "TI.M1"
+        },
+        {
+          "file": "documents/codes.json",
+          "rule_id": "TI.C1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "register_notice.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "register_notice.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "register_notice.key_conflict",
+          "when": "q['request_key'] in s['receipts'] and (s['receipts'][q['request_key']]['request'] != q or s['receipts'][q['request_key']]['operation'] != op)",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'KEY_REUSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "register_notice.idempotent_replay",
+          "when": "q['request_key'] in s['receipts']",
+          "status": 200,
+          "response_expression": "s['receipts'][q['request_key']]['response']",
+          "effects": []
+        },
+        {
+          "id": "notice.auth",
+          "when": "not s['verified']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'VERIFY_FIRST', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "notice.policy",
+          "when": "q['policy_id'] != s['cover']['policy_id']",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'UNKNOWN_POLICY', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "notice.duplicate",
+          "when": "s['notice'] is not None",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'ALREADY_LODGED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "notice.future",
+          "when": "age_days(s['now'],q['occurred_on'])<0",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'FUTURE_EVENT', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "notice.old",
+          "when": "age_days(s['now'],q['occurred_on']) > (10 if q['event_code']=='WATER_ESCAPE' else 7)",
+          "status": 422,
+          "response_expression": "{'ok': False, 'error': {'code': 'WINDOW_EXCEEDED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "notice.failure",
+          "when": "s['write_failures_left']>0",
+          "status": 503,
+          "response_expression": "{'ok': False, 'error': {'code': 'TEMPORARY_UNAVAILABLE', 'commit_state': 'none'}}",
+          "effects": [
+            {
+              "path_expression": "['write_failures_left']",
+              "value_expression": "s['write_failures_left']-1"
+            },
+            {
+              "path_expression": "['write_failures_seen']",
+              "value_expression": "s['write_failures_seen']+1"
+            }
+          ]
+        },
+        {
+          "id": "notice.create",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'notice_id':'NOTICE-1','policy_id':q['policy_id'],'event_code':q['event_code'],'occurred_on':q['occurred_on'],'location_code':q['location_code'],'status':'received_for_review'}}",
+          "effects": [
+            {
+              "path_expression": "['notice']",
+              "value_expression": "{'notice_id':'NOTICE-1','policy_id':q['policy_id'],'event_code':q['event_code'],'occurred_on':q['occurred_on'],'location_code':q['location_code'],'status':'received_for_review'}"
+            },
+            {
+              "path_expression": "['receipts', q['request_key']]",
+              "value_expression": "{'operation': op, 'request': q, 'response': {'ok': True, 'data': {'notice_id':'NOTICE-1','policy_id':q['policy_id'],'event_code':q['event_code'],'occurred_on':q['occurred_on'],'location_code':q['location_code'],'status':'received_for_review'}}}"
+            },
+            {
+              "path_expression": "['mutation_count']",
+              "value_expression": "s['mutation_count'] + 1"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Exact same request_key+operation+payload replays the successful receipt without a new business mutation; a changed payload on the same key yields KEY_REUSE. Post-close operations are rejected. Additional product-state guards reject a second independent irreversible action."
+    },
+    "close_intake": {
+      "policy_refs": [
+        {
+          "file": "documents/policy.txt",
+          "rule_id": "TI.P6"
+        },
+        {
+          "file": "documents/codes.json",
+          "rule_id": "TI.C1"
+        }
+      ],
+      "rules_are_ordered": true,
+      "rule_semantics": "Choose the first true guard, evaluate response and every effect against the same PRE-state, then apply all effects atomically. No matching rule is a specification error.",
+      "rules": [
+        {
+          "id": "close_intake.closed",
+          "when": "s['closed']",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'CLOSED', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close_intake.session",
+          "when": "q['session_id'] != s['session_id']",
+          "status": 403,
+          "response_expression": "{'ok': False, 'error': {'code': 'SESSION_MISMATCH', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.logged",
+          "when": "(s['notice'] is not None) != (q['code']=='notice_logged')",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.identity",
+          "when": "q['code']=='identity_failed' and s['wrong_access']<2",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.failure",
+          "when": "q['code']=='service_unavailable' and s['write_failures_seen']<2",
+          "status": 409,
+          "response_expression": "{'ok': False, 'error': {'code': 'BAD_CLOSE', 'commit_state': 'none'}}",
+          "effects": []
+        },
+        {
+          "id": "close.ok",
+          "when": "True",
+          "status": 200,
+          "response_expression": "{'ok': True, 'data': {'code':q['code']}}",
+          "effects": [
+            {
+              "path_expression": "['closed']",
+              "value_expression": "True"
+            },
+            {
+              "path_expression": "['final_code']",
+              "value_expression": "q['code']"
+            }
+          ]
+        }
+      ],
+      "repeat_behavior": "Read operations are repeatable while open; verification attempts and close behavior follow their explicit guards. Nothing is accepted after closure."
+    }
+  },
+  "cases": {
+    "GEN-TR-IN-01-C01": {
+      "initial_state": {
+        "session_id": "session-ti-1",
+        "now": "2027-01-20T14:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cover": {
+          "policy_id": "PROP-71",
+          "holder_alias": "Policyholder",
+          "event_codes": [
+            "WATER_ESCAPE",
+            "THEFT"
+          ],
+          "location_codes": [
+            "HOME",
+            "STORE"
+          ]
+        },
+        "access_word": "Cedar",
+        "verified": false,
+        "wrong_access": 0,
+        "notice": null,
+        "write_failures_left": 0,
+        "write_failures_seen": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-IN-01-C02": {
+      "initial_state": {
+        "session_id": "session-ti-2",
+        "now": "2027-01-20T14:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cover": {
+          "policy_id": "PROP-71",
+          "holder_alias": "Policyholder",
+          "event_codes": [
+            "WATER_ESCAPE",
+            "THEFT"
+          ],
+          "location_codes": [
+            "HOME",
+            "STORE"
+          ]
+        },
+        "access_word": "Cedar",
+        "verified": false,
+        "wrong_access": 0,
+        "notice": null,
+        "write_failures_left": 1,
+        "write_failures_seen": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-IN-01-C03": {
+      "initial_state": {
+        "session_id": "session-ti-3",
+        "now": "2027-01-20T14:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cover": {
+          "policy_id": "PROP-71",
+          "holder_alias": "Policyholder",
+          "event_codes": [
+            "WATER_ESCAPE",
+            "THEFT"
+          ],
+          "location_codes": [
+            "HOME",
+            "STORE"
+          ]
+        },
+        "access_word": "Cedar",
+        "verified": false,
+        "wrong_access": 0,
+        "notice": null,
+        "write_failures_left": 0,
+        "write_failures_seen": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    },
+    "GEN-TR-IN-01-C04": {
+      "initial_state": {
+        "session_id": "session-ti-4",
+        "now": "2027-01-20T14:00:00+00:00",
+        "closed": false,
+        "final_code": null,
+        "receipts": {},
+        "mutation_count": 0,
+        "cover": {
+          "policy_id": "PROP-71",
+          "holder_alias": "Policyholder",
+          "event_codes": [
+            "WATER_ESCAPE",
+            "THEFT"
+          ],
+          "location_codes": [
+            "HOME",
+            "STORE"
+          ]
+        },
+        "access_word": "Cedar",
+        "verified": false,
+        "wrong_access": 0,
+        "notice": null,
+        "write_failures_left": 0,
+        "write_failures_seen": 0
+      },
+      "scripted_failures": "Any fail/timeout controls are explicit fields of this initial_state and ordered transitions below; no undeclared failure injection."
+    }
+  }
+}

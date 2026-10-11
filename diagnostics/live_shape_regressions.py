@@ -8,8 +8,8 @@ import json
 from copy import deepcopy
 from pathlib import Path
 
+from freya_hackathon.development.practice.brief_b import suite
 from freya_hackathon.offline import Replay, check, run_suite
-from freya_hackathon.practice_b_regressions import suite
 
 
 def main() -> None:

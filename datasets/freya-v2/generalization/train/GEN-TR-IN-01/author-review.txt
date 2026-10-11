@@ -1,0 +1,11 @@
+SYNTHETIC LOCAL TESTS. Author review only; no workflow, builder, Freya call or mock server has run.
+
+GEN-TR-IN-01-C01: The event is nine calendar days old. The scoped TI.M1 replacement permits WATER_ESCAPE through day 10, despite the superseded seven-day base limit. Authority, current facts and explicit confirmation support one notice, not a coverage decision.
+
+GEN-TR-IN-01-C02: Today’s theft is within the unchanged seven-day window. The payment question supplies no coverage authorization. The fixture’s first register_notice fails with no commitment, so TI.P5 allows one identical retry; its success creates one received-for-review notice.
+
+GEN-TR-IN-01-C03: The corrected event date is one calendar day before the supplied clock, and the corrected location is HOME. A future-date fragment is not a final event. TI.P3 requires final confirmed terms; TI.M1 applies to water but no calendar roll is performed.
+
+GEN-TR-IN-01-C04: Theft on 11 January is nine calendar days old on 20 January. TI.M1 extends only WATER_ESCAPE; the theft limit remains seven days inclusive. No notice operation is permitted. outside_window is achievable with reads/verification plus close, without inventing an intake action.
+
+The generic validation report records automated checks separately. The prose rules and reactive scripts remain subject to empirical three-repetition testing after a local adapter is implemented.

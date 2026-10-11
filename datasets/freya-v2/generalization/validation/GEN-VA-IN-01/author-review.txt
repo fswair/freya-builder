@@ -1,0 +1,11 @@
+SYNTHETIC LOCAL TESTS. Author review only; no workflow, builder, Freya call or mock server has run.
+
+GEN-VA-IN-01-C01: The supplied now exactly equals the offer’s expiry; VI.2 makes that boundary inclusive. A clear confirmation authorizes Home renewal at the returned premium and coverage date, without charging money or adding identity questions.
+
+GEN-VA-IN-01-C02: The explicit non-renewal intention becomes an actionable let_expire choice only after VI.4’s separate confirmation and current-coverage explanation. VI.3 prohibits treating it as payment authorization or immediate cancellation.
+
+GEN-VA-IN-01-C03: The old two-renew list is unconfirmed and has no effects. VI.4 requires a revised list, preserving the unchanged Bicycle terms while changing Home’s decision. Two separately scoped successful choices produce mixed under VI.7.
+
+GEN-VA-IN-01-C04: The clock is one second after expires_at, not equal to it. VI.2 and VI.6 prohibit a write even for a small delay. No requote operation exists, so an expired close without a decision is the declared achievable outcome.
+
+The generic validation report records automated checks separately. The prose rules and reactive scripts remain subject to empirical three-repetition testing after a local adapter is implemented.

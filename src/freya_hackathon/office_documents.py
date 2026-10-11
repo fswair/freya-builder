@@ -52,15 +52,16 @@ def _docx(data: bytes) -> str:
                 for box in root.iter(W + "txbxContent"):
                     texts = ["".join(p.itertext()) for p in box.iter(W + "p")]
                     lines.append("[Text box]\n" + "\n".join(texts))
-            elif name.startswith("word/") and name.endswith(".xml") and (
-                Path(name).name.startswith(("header", "footer"))
-                or Path(name).name in {"footnotes.xml", "endnotes.xml", "comments.xml"}
+            elif (
+                name.startswith("word/")
+                and name.endswith(".xml")
+                and (
+                    Path(name).name.startswith(("header", "footer"))
+                    or Path(name).name in {"footnotes.xml", "endnotes.xml", "comments.xml"}
+                )
             ):
                 root = ElementTree.fromstring(archive.read(name))
-                texts = [
-                    "".join(t.text or "" for t in p.iter(W + "t"))
-                    for p in root.iter(W + "p")
-                ]
+                texts = ["".join(t.text or "" for t in p.iter(W + "t")) for p in root.iter(W + "p")]
                 if any(text.strip() for text in texts):
                     lines.append(f"[{name}]\n" + "\n".join(texts))
     return "\n".join(lines)
@@ -136,9 +137,7 @@ def extract_office_document(path: Path, data: bytes) -> str:
     try:
         text = extractor[path.suffix.lower()](data)
     except Exception as exc:
-        raise ValueError(
-            f"Cannot extract {path.name}: {exc}. No document was skipped."
-        ) from exc
+        raise ValueError(f"Cannot extract {path.name}: {exc}. No document was skipped.") from exc
     if not text.strip():
         raise ValueError(f"No text extracted from {path.name}. No document was skipped.")
     if len(text) > MAX_EXTRACTED_CHARS:

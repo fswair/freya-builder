@@ -1,0 +1,961 @@
+{
+  "GEN-TR-IN-01-C01": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "TI.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "TI.C1"
+      }
+    ],
+    "rationale": "The event is nine calendar days old. The scoped TI.M1 replacement permits WATER_ESCAPE through day 10, despite the superseded seven-day base limit. Authority, current facts and explicit confirmation support one notice, not a coverage decision.",
+    "required_actions": [
+      {
+        "operation": "register_notice",
+        "payload_contains": {
+          "policy_id": "PROP-71",
+          "event_code": "WATER_ESCAPE",
+          "occurred_on": "2027-01-11",
+          "location_code": "HOME",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Coverage approval, payment guarantee, invented compensation or settlement date",
+      "Changing the customer’s event date to a business day",
+      "A second committed notice"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain that registering a notice does not decide coverage or pay a claim"
+      ],
+      "forbidden": [
+        "Policy detail before verification",
+        "Stored access word",
+        "A claim that the failed attempt registered a notice"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_policy_access.verified_true",
+        "after": "get_cover_snapshot"
+      },
+      {
+        "before": "final_corrected_terms.clear_confirmation",
+        "after": "register_notice.attempt"
+      },
+      {
+        "before": "register_notice.ok_true",
+        "after": "claim_notice_registered"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_intake"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_policy_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_cover_snapshot": {
+        "min": 1,
+        "max": null
+      },
+      "register_notice": {
+        "min": 1,
+        "max": 1
+      },
+      "close_intake": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "notice": {
+        "policy_id": "PROP-71",
+        "event_code": "WATER_ESCAPE",
+        "occurred_on": "2027-01-11",
+        "location_code": "HOME",
+        "status": "received_for_review"
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "notice_logged"
+    },
+    "conversation_assertions": [
+      "A question about payment is not coverage approval or a change to the registration request.",
+      "Only an affirmative read-back of the final facts authorizes a write.",
+      "A scoped amendment does not replace unrelated rules."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_policy_access",
+        "request": {
+          "session_id": "session-ti-1",
+          "access_word": "Cedar"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "access.ok"
+      },
+      {
+        "operation": "get_cover_snapshot",
+        "request": {
+          "session_id": "session-ti-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "PROP-71",
+            "holder_alias": "Policyholder",
+            "event_codes": [
+              "WATER_ESCAPE",
+              "THEFT"
+            ],
+            "location_codes": [
+              "HOME",
+              "STORE"
+            ]
+          }
+        },
+        "transition_rule_id": "cover.read"
+      },
+      {
+        "operation": "register_notice",
+        "request": {
+          "session_id": "session-ti-1",
+          "policy_id": "PROP-71",
+          "event_code": "WATER_ESCAPE",
+          "occurred_on": "2027-01-11",
+          "location_code": "HOME",
+          "confirmed": true,
+          "request_key": "ti-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "notice_id": "NOTICE-1",
+            "policy_id": "PROP-71",
+            "event_code": "WATER_ESCAPE",
+            "occurred_on": "2027-01-11",
+            "location_code": "HOME",
+            "status": "received_for_review"
+          }
+        },
+        "transition_rule_id": "notice.create"
+      },
+      {
+        "operation": "close_intake",
+        "request": {
+          "session_id": "session-ti-1",
+          "code": "notice_logged"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "notice_logged"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Calendar age of the selected occurrence",
+        "expression": "age_days(s['now'],'2027-01-11')",
+        "expected": 9,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      },
+      {
+        "description": "Applicable inclusive age limit",
+        "expression": "10 if 'WATER_ESCAPE'=='WATER_ESCAPE' else 7",
+        "expected": 10,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-IN-01-C02": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "TI.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "TI.C1"
+      }
+    ],
+    "rationale": "Today’s theft is within the unchanged seven-day window. The payment question supplies no coverage authorization. The fixture’s first register_notice fails with no commitment, so TI.P5 allows one identical retry; its success creates one received-for-review notice.",
+    "required_actions": [
+      {
+        "operation": "register_notice",
+        "payload_contains": {
+          "policy_id": "PROP-71",
+          "event_code": "THEFT",
+          "occurred_on": "2027-01-20",
+          "location_code": "HOME",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Coverage approval, payment guarantee, invented compensation or settlement date",
+      "Changing the customer’s event date to a business day",
+      "A second committed notice"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain that registering a notice does not decide coverage or pay a claim"
+      ],
+      "forbidden": [
+        "Policy detail before verification",
+        "Stored access word",
+        "A claim that the failed attempt registered a notice"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_policy_access.verified_true",
+        "after": "get_cover_snapshot"
+      },
+      {
+        "before": "final_corrected_terms.clear_confirmation",
+        "after": "register_notice.attempt"
+      },
+      {
+        "before": "register_notice.ok_true",
+        "after": "claim_notice_registered"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_intake"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_policy_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_cover_snapshot": {
+        "min": 1,
+        "max": null
+      },
+      "register_notice": {
+        "min": 2,
+        "max": 2
+      },
+      "close_intake": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "notice": {
+        "policy_id": "PROP-71",
+        "event_code": "THEFT",
+        "occurred_on": "2027-01-20",
+        "location_code": "HOME",
+        "status": "received_for_review"
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "notice_logged"
+    },
+    "conversation_assertions": [
+      "A question about payment is not coverage approval or a change to the registration request.",
+      "Only an affirmative read-back of the final facts authorizes a write.",
+      "A scoped amendment does not replace unrelated rules."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_policy_access",
+        "request": {
+          "session_id": "session-ti-2",
+          "access_word": "Cedar"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "access.ok"
+      },
+      {
+        "operation": "get_cover_snapshot",
+        "request": {
+          "session_id": "session-ti-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "PROP-71",
+            "holder_alias": "Policyholder",
+            "event_codes": [
+              "WATER_ESCAPE",
+              "THEFT"
+            ],
+            "location_codes": [
+              "HOME",
+              "STORE"
+            ]
+          }
+        },
+        "transition_rule_id": "cover.read"
+      },
+      {
+        "operation": "register_notice",
+        "request": {
+          "session_id": "session-ti-2",
+          "policy_id": "PROP-71",
+          "event_code": "THEFT",
+          "occurred_on": "2027-01-20",
+          "location_code": "HOME",
+          "confirmed": true,
+          "request_key": "ti-2"
+        },
+        "response_status": 503,
+        "response_example": {
+          "ok": false,
+          "error": {
+            "code": "TEMPORARY_UNAVAILABLE",
+            "commit_state": "none"
+          }
+        },
+        "transition_rule_id": "notice.failure"
+      },
+      {
+        "operation": "register_notice",
+        "request": {
+          "session_id": "session-ti-2",
+          "policy_id": "PROP-71",
+          "event_code": "THEFT",
+          "occurred_on": "2027-01-20",
+          "location_code": "HOME",
+          "confirmed": true,
+          "request_key": "ti-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "notice_id": "NOTICE-1",
+            "policy_id": "PROP-71",
+            "event_code": "THEFT",
+            "occurred_on": "2027-01-20",
+            "location_code": "HOME",
+            "status": "received_for_review"
+          }
+        },
+        "transition_rule_id": "notice.create"
+      },
+      {
+        "operation": "close_intake",
+        "request": {
+          "session_id": "session-ti-2",
+          "code": "notice_logged"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "notice_logged"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Calendar age of the selected occurrence",
+        "expression": "age_days(s['now'],'2027-01-20')",
+        "expected": 0,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      },
+      {
+        "description": "Applicable inclusive age limit",
+        "expression": "10 if 'THEFT'=='WATER_ESCAPE' else 7",
+        "expected": 7,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-IN-01-C03": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "TI.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "TI.C1"
+      }
+    ],
+    "rationale": "The corrected event date is one calendar day before the supplied clock, and the corrected location is HOME. A future-date fragment is not a final event. TI.P3 requires final confirmed terms; TI.M1 applies to water but no calendar roll is performed.",
+    "required_actions": [
+      {
+        "operation": "register_notice",
+        "payload_contains": {
+          "policy_id": "PROP-71",
+          "event_code": "WATER_ESCAPE",
+          "occurred_on": "2027-01-19",
+          "location_code": "HOME",
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Coverage approval, payment guarantee, invented compensation or settlement date",
+      "Changing the customer’s event date to a business day",
+      "A second committed notice"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain that registering a notice does not decide coverage or pay a claim"
+      ],
+      "forbidden": [
+        "Policy detail before verification",
+        "Stored access word",
+        "A claim that the failed attempt registered a notice"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_policy_access.verified_true",
+        "after": "get_cover_snapshot"
+      },
+      {
+        "before": "final_corrected_terms.clear_confirmation",
+        "after": "register_notice.attempt"
+      },
+      {
+        "before": "register_notice.ok_true",
+        "after": "claim_notice_registered"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_intake"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_policy_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_cover_snapshot": {
+        "min": 1,
+        "max": null
+      },
+      "register_notice": {
+        "min": 1,
+        "max": 1
+      },
+      "close_intake": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "notice": {
+        "policy_id": "PROP-71",
+        "event_code": "WATER_ESCAPE",
+        "occurred_on": "2027-01-19",
+        "location_code": "HOME",
+        "status": "received_for_review"
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "notice_logged"
+    },
+    "conversation_assertions": [
+      "A question about payment is not coverage approval or a change to the registration request.",
+      "Only an affirmative read-back of the final facts authorizes a write.",
+      "A scoped amendment does not replace unrelated rules."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_policy_access",
+        "request": {
+          "session_id": "session-ti-3",
+          "access_word": "Cedar"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "access.ok"
+      },
+      {
+        "operation": "get_cover_snapshot",
+        "request": {
+          "session_id": "session-ti-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "PROP-71",
+            "holder_alias": "Policyholder",
+            "event_codes": [
+              "WATER_ESCAPE",
+              "THEFT"
+            ],
+            "location_codes": [
+              "HOME",
+              "STORE"
+            ]
+          }
+        },
+        "transition_rule_id": "cover.read"
+      },
+      {
+        "operation": "register_notice",
+        "request": {
+          "session_id": "session-ti-3",
+          "policy_id": "PROP-71",
+          "event_code": "WATER_ESCAPE",
+          "occurred_on": "2027-01-19",
+          "location_code": "HOME",
+          "confirmed": true,
+          "request_key": "ti-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "notice_id": "NOTICE-1",
+            "policy_id": "PROP-71",
+            "event_code": "WATER_ESCAPE",
+            "occurred_on": "2027-01-19",
+            "location_code": "HOME",
+            "status": "received_for_review"
+          }
+        },
+        "transition_rule_id": "notice.create"
+      },
+      {
+        "operation": "close_intake",
+        "request": {
+          "session_id": "session-ti-3",
+          "code": "notice_logged"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "notice_logged"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Calendar age of the selected occurrence",
+        "expression": "age_days(s['now'],'2027-01-19')",
+        "expected": 1,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      },
+      {
+        "description": "Applicable inclusive age limit",
+        "expression": "10 if 'WATER_ESCAPE'=='WATER_ESCAPE' else 7",
+        "expected": 10,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-IN-01-C04": {
+    "policy_rule_refs": [
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P1"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P2"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P3"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P4"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P5"
+      },
+      {
+        "file": "documents/policy.txt",
+        "rule_id": "TI.P6"
+      },
+      {
+        "file": "documents/amendment.txt",
+        "rule_id": "TI.M1"
+      },
+      {
+        "file": "documents/codes.json",
+        "rule_id": "TI.C1"
+      }
+    ],
+    "rationale": "Theft on 11 January is nine calendar days old on 20 January. TI.M1 extends only WATER_ESCAPE; the theft limit remains seven days inclusive. No notice operation is permitted. outside_window is achievable with reads/verification plus close, without inventing an intake action.",
+    "required_actions": [],
+    "forbidden_actions": [
+      "Coverage approval, payment guarantee, invented compensation or settlement date",
+      "Changing the customer’s event date to a business day",
+      "Any register_notice call for this outside-window event"
+    ],
+    "disclosures": {
+      "required": [
+        "Explain that this event is outside the applicable intake window"
+      ],
+      "forbidden": [
+        "Policy detail before verification",
+        "Stored access word",
+        "A claim that the failed attempt registered a notice"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "verify_policy_access.verified_true",
+        "after": "get_cover_snapshot"
+      },
+      {
+        "before": "final_corrected_terms.clear_confirmation",
+        "after": "register_notice.attempt"
+      },
+      {
+        "before": "register_notice.ok_true",
+        "after": "claim_notice_registered"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "close_intake"
+      }
+    ],
+    "call_count_bounds": {
+      "verify_policy_access": {
+        "min": 1,
+        "max": 1
+      },
+      "get_cover_snapshot": {
+        "min": 1,
+        "max": null
+      },
+      "register_notice": {
+        "min": 0,
+        "max": 0
+      },
+      "close_intake": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "notice": null,
+      "mutation_count": 0,
+      "closed": true,
+      "final_code": "outside_window"
+    },
+    "conversation_assertions": [
+      "A question about payment is not coverage approval or a change to the registration request.",
+      "Only an affirmative read-back of the final facts authorizes a write.",
+      "A scoped amendment does not replace unrelated rules."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "verify_policy_access",
+        "request": {
+          "session_id": "session-ti-4",
+          "access_word": "Cedar"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "access.ok"
+      },
+      {
+        "operation": "get_cover_snapshot",
+        "request": {
+          "session_id": "session-ti-4"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "policy_id": "PROP-71",
+            "holder_alias": "Policyholder",
+            "event_codes": [
+              "WATER_ESCAPE",
+              "THEFT"
+            ],
+            "location_codes": [
+              "HOME",
+              "STORE"
+            ]
+          }
+        },
+        "transition_rule_id": "cover.read"
+      },
+      {
+        "operation": "close_intake",
+        "request": {
+          "session_id": "session-ti-4",
+          "code": "outside_window"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "outside_window"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [
+      {
+        "description": "Calendar age of the selected occurrence",
+        "expression": "age_days(s['now'],'2027-01-11')",
+        "expected": 9,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      },
+      {
+        "description": "Applicable inclusive age limit",
+        "expression": "10 if 'THEFT'=='WATER_ESCAPE' else 7",
+        "expected": 7,
+        "policy_rule_refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "TI.P4"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "TI.M1"
+          }
+        ]
+      }
+    ],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  }
+}

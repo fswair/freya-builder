@@ -1,0 +1,137 @@
+[
+  {
+    "id": "GEN-TR-IN-01-C01",
+    "customer_private_facts": {
+      "holder_authority": true,
+      "access_word": "Cedar",
+      "event_code": "WATER_ESCAPE",
+      "occurred_on": "2027-01-11",
+      "location": "HOME"
+    },
+    "script": "You are the policyholder and willingly provide the access word Cedar when asked. Ask to report water escaping at the insured home on 11 January 2027. You know the exact day and location. Accept that intake does not decide coverage, and clearly confirm those facts at a correct read-back. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "ordinary_success",
+        "precise_facts"
+      ],
+      "coverage_roles": [
+        "ordinary_success"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-IN-01-C01-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-ti-1",
+      "now": "2027-01-20T14:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-IN-01-C01/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-IN-01-C02",
+    "customer_private_facts": {
+      "holder_authority": true,
+      "access_word": "Cedar",
+      "event_code": "THEFT",
+      "occurred_on": "2027-01-20",
+      "location": "HOME"
+    },
+    "script": "You are the policyholder; give Cedar when asked for the access word. Say, \"There was a theft at my insured home today, 20 January. Can you tell me how much will be paid, and please log the event?\" Accept an honest explanation that the amount and coverage decision are unavailable. Confirm a correct theft/today/home read-back. If told a temporary problem prevented registration, keep the same facts and remain willing to proceed. Do not change terms during that problem. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "mixed_intent",
+        "supported_tool_failure",
+        "uncertain"
+      ],
+      "coverage_roles": [
+        "mixed_intent"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-IN-01-C02-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-ti-2",
+      "now": "2027-01-20T14:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-IN-01-C02/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-IN-01-C03",
+    "customer_private_facts": {
+      "holder_authority": true,
+      "access_word": "Cedar",
+      "event_code": "WATER_ESCAPE",
+      "occurred_on": "2027-01-19",
+      "location": "HOME"
+    },
+    "script": "You are the policyholder; give the access word Cedar when asked. Start by saying, \"Water escaped tomorrow—sorry, yesterday, the nineteenth of January, at home, not the storage space.\" If asked to clarify, repeat 19 January 2027 and insured home. Do not confirm a future occurrence date or the storage location. Confirm only the corrected water/home/19 January read-back. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "self_correction",
+        "negation_plus_alternative",
+        "date_words"
+      ],
+      "coverage_roles": [
+        "information_correction_scope"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-IN-01-C03-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-ti-3",
+      "now": "2027-01-20T14:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-IN-01-C03/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-IN-01-C04",
+    "customer_private_facts": {
+      "holder_authority": true,
+      "access_word": "Cedar",
+      "event_code": "THEFT",
+      "occurred_on": "2027-01-11",
+      "location": "HOME"
+    },
+    "script": "You are the policyholder; provide Cedar when asked. Ask to report a theft at the insured home on 11 January 2027. You are sure about the date and event type. You heard that some incident reports have a longer window; ask whether yours can use it. Do not rename the theft as water damage. Accept an explanation that this phone intake cannot register it and finish without another request. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "policy_boundary",
+        "scoped_amendment",
+        "benign_policy_question"
+      ],
+      "coverage_roles": [
+        "policy_boundary_or_supported_failure"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-IN-01-C04-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-ti-4",
+      "now": "2027-01-20T14:00:00+00:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-IN-01-C04/initial_state"
+    }
+  }
+]

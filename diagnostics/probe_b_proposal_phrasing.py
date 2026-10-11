@@ -60,9 +60,7 @@ def main() -> None:
                 notices=[],
             )
             values.update({key: "" for key in values if key.startswith("turn_")})
-            extractor = workflow["nodes"].get(
-                "dialogue_financial", workflow["nodes"]["dialogue"]
-            )
+            extractor = workflow["nodes"].get("dialogue_financial", workflow["nodes"]["dialogue"])
             for field in extractor["extraction_schema"]:
                 options = field.get("enum_values", [])
                 values[field["name"]] = next(

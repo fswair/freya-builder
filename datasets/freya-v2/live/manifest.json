@@ -1,0 +1,324 @@
+{
+  "id": "freya-live-v2",
+  "policy_origin": "supplied_official_synthetic_kit_v3",
+  "execution_target": "freya_practice_candidate",
+  "execution_status": "not_executed",
+  "source_files": [
+    "sources/README.md",
+    "sources/brief-a.md",
+    "sources/brief-b.md",
+    "sources/openapi.json",
+    "sources/public-test-set.json",
+    "sources/freya-scope-notes.txt"
+  ],
+  "split_files": {
+    "train": "live/train.json",
+    "validation": "live/validation.json",
+    "holdout": "live/holdout.json"
+  },
+  "counts": {
+    "train": {
+      "cases": 32,
+      "groups": 16,
+      "A": 16,
+      "B": 16
+    },
+    "validation": {
+      "cases": 8,
+      "groups": 4,
+      "A": 4,
+      "B": 4
+    },
+    "holdout": {
+      "cases": 8,
+      "groups": 4,
+      "A": 4,
+      "B": 4
+    }
+  },
+  "groups": [
+    {
+      "group_id": "LIVE-TR-A-01",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-001",
+        "DEV-TR-A-002"
+      ],
+      "practice_session_case": "PUB-01"
+    },
+    {
+      "group_id": "LIVE-TR-A-02",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-003",
+        "DEV-TR-A-004"
+      ],
+      "practice_session_case": "PUB-02"
+    },
+    {
+      "group_id": "LIVE-TR-A-03",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-005",
+        "DEV-TR-A-006"
+      ],
+      "practice_session_case": "PUB-03"
+    },
+    {
+      "group_id": "LIVE-TR-A-04",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-007",
+        "DEV-TR-A-008"
+      ],
+      "practice_session_case": "PUB-04"
+    },
+    {
+      "group_id": "LIVE-TR-A-05",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-009",
+        "DEV-TR-A-010"
+      ],
+      "practice_session_case": "PUB-05"
+    },
+    {
+      "group_id": "LIVE-TR-A-06",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-011",
+        "DEV-TR-A-012"
+      ],
+      "practice_session_case": "PUB-06"
+    },
+    {
+      "group_id": "LIVE-TR-A-07",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-013",
+        "DEV-TR-A-014"
+      ],
+      "practice_session_case": "PUB-08"
+    },
+    {
+      "group_id": "LIVE-TR-A-08",
+      "split": "train",
+      "brief": "A",
+      "case_ids": [
+        "DEV-TR-A-015",
+        "DEV-TR-A-016"
+      ],
+      "practice_session_case": "PUB-10"
+    },
+    {
+      "group_id": "LIVE-TR-B-01",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-001",
+        "DEV-TR-B-002"
+      ],
+      "practice_session_case": "PUB-11"
+    },
+    {
+      "group_id": "LIVE-TR-B-02",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-003",
+        "DEV-TR-B-004"
+      ],
+      "practice_session_case": "PUB-12"
+    },
+    {
+      "group_id": "LIVE-TR-B-03",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-005",
+        "DEV-TR-B-006"
+      ],
+      "practice_session_case": "PUB-13"
+    },
+    {
+      "group_id": "LIVE-TR-B-04",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-007",
+        "DEV-TR-B-008"
+      ],
+      "practice_session_case": "PUB-11"
+    },
+    {
+      "group_id": "LIVE-TR-B-05",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-009",
+        "DEV-TR-B-010"
+      ],
+      "practice_session_case": "PUB-12"
+    },
+    {
+      "group_id": "LIVE-TR-B-06",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-011",
+        "DEV-TR-B-012"
+      ],
+      "practice_session_case": "PUB-12"
+    },
+    {
+      "group_id": "LIVE-TR-B-07",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-013",
+        "DEV-TR-B-014"
+      ],
+      "practice_session_case": "PUB-11"
+    },
+    {
+      "group_id": "LIVE-TR-B-08",
+      "split": "train",
+      "brief": "B",
+      "case_ids": [
+        "DEV-TR-B-015",
+        "DEV-TR-B-016"
+      ],
+      "practice_session_case": "PUB-13"
+    },
+    {
+      "group_id": "LIVE-VA-A-01",
+      "split": "validation",
+      "brief": "A",
+      "case_ids": [
+        "DEV-VA-A-001",
+        "DEV-VA-A-002"
+      ],
+      "practice_session_case": "PUB-07"
+    },
+    {
+      "group_id": "LIVE-VA-A-02",
+      "split": "validation",
+      "brief": "A",
+      "case_ids": [
+        "DEV-VA-A-003",
+        "DEV-VA-A-004"
+      ],
+      "practice_session_case": "PUB-09"
+    },
+    {
+      "group_id": "LIVE-VA-B-01",
+      "split": "validation",
+      "brief": "B",
+      "case_ids": [
+        "DEV-VA-B-001",
+        "DEV-VA-B-002"
+      ],
+      "practice_session_case": "PUB-13"
+    },
+    {
+      "group_id": "LIVE-VA-B-02",
+      "split": "validation",
+      "brief": "B",
+      "case_ids": [
+        "DEV-VA-B-003",
+        "DEV-VA-B-004"
+      ],
+      "practice_session_case": "PUB-11"
+    },
+    {
+      "group_id": "LIVE-HO-A-01",
+      "split": "holdout",
+      "brief": "A",
+      "case_ids": [
+        "DEV-HO-A-001",
+        "DEV-HO-A-002"
+      ],
+      "practice_session_case": "PUB-01"
+    },
+    {
+      "group_id": "LIVE-HO-A-02",
+      "split": "holdout",
+      "brief": "A",
+      "case_ids": [
+        "DEV-HO-A-003",
+        "DEV-HO-A-004"
+      ],
+      "practice_session_case": "PUB-04"
+    },
+    {
+      "group_id": "LIVE-HO-B-01",
+      "split": "holdout",
+      "brief": "B",
+      "case_ids": [
+        "DEV-HO-B-001",
+        "DEV-HO-B-002"
+      ],
+      "practice_session_case": "PUB-12"
+    },
+    {
+      "group_id": "LIVE-HO-B-02",
+      "split": "holdout",
+      "brief": "B",
+      "case_ids": [
+        "DEV-HO-B-003",
+        "DEV-HO-B-004"
+      ],
+      "practice_session_case": "PUB-13"
+    }
+  ],
+  "priority_training_ids": [
+    "DEV-TR-A-001",
+    "DEV-TR-A-003",
+    "DEV-TR-A-005",
+    "DEV-TR-A-007",
+    "DEV-TR-A-009",
+    "DEV-TR-A-011",
+    "DEV-TR-A-013",
+    "DEV-TR-A-015",
+    "DEV-TR-B-001",
+    "DEV-TR-B-003",
+    "DEV-TR-B-005",
+    "DEV-TR-B-007",
+    "DEV-TR-B-009",
+    "DEV-TR-B-011",
+    "DEV-TR-B-013",
+    "DEV-TR-B-015"
+  ],
+  "priority_counts": {
+    "A": 8,
+    "B": 8
+  },
+  "live_adapter_contract": {
+    "session_creation": "Use practice_session_case exactly, not the DEV id. Only PUB-01 through PUB-13 are registered.",
+    "customer_simulation": "Requires a harness that can run the supplied English customer script while preserving the registered seed. This capability has NOT been verified against a Freya runner; no custom-customer upload endpoint is assumed.",
+    "runtime_variables": "Preserve seed variables verbatim. customer_id is supplied by the new bank session, not invented here. Pass no evaluator metadata, expected ledger, checks or faults as test_variables.",
+    "faults": "Existing seed-specific faults are copied as evidence; do not inject new failures into the live backend.",
+    "product_mapping": "p1,p2,... refer to the actual get_account order documented in the public seed expectations; never invent an ID absent from get_account.",
+    "holdout": "Only IDs, paths, counts and split membership are exposed by this shared manifest. Holdout content is in live/holdout.json."
+  },
+  "split_protocol": {
+    "train": "optimizer/reflection input",
+    "validation": "candidate selection only",
+    "holdout": "open after candidate selection; never reflection or repair"
+  },
+  "source_sha256": {
+    "sources/README.md": "45034ae6079693b8c5eb6e6cc3857d47fdf3629b8b1d2a84fd73fb2f51415d58",
+    "sources/brief-a.md": "d57c049c89aec4615f5b939c5a96ee9bd194142d17045bc4036615cfbdf0f1c7",
+    "sources/brief-b.md": "c59c70099148b91c13e9c5e40246a63b58638f09469d735f8eb65771bb63d550",
+    "sources/openapi.json": "982aa380d022656b41804fcd2db9d4fb0b7a010044afa8526ecefd57d38c6312",
+    "sources/public-test-set.json": "fb7f4c0082eecb724a6faab771b4339bc62655627e49251e6bb2a0cf59a72fcb",
+    "sources/freya-scope-notes.txt": "4f53b0d431d416a90499eb513f1f49c33e21d9195b17546b6099e50f008ca4b4"
+  }
+}

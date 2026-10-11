@@ -28,28 +28,37 @@ def call_latency(path: Path) -> dict:
         if role == "user":
             pending.append(seconds)
         elif pending:
-            turns.append({
-                "first_user_seconds": pending[0], "last_user_seconds": pending[-1],
-                "assistant_seconds": seconds, "user_messages": len(pending),
-                "gap_from_first_seconds": seconds - pending[0],
-                "gap_from_last_seconds": seconds - pending[-1],
-            })
+            turns.append(
+                {
+                    "first_user_seconds": pending[0],
+                    "last_user_seconds": pending[-1],
+                    "assistant_seconds": seconds,
+                    "user_messages": len(pending),
+                    "gap_from_first_seconds": seconds - pending[0],
+                    "gap_from_last_seconds": seconds - pending[-1],
+                }
+            )
             pending = []
     gaps = [turn["gap_from_last_seconds"] for turn in turns]
     duration = call.get("duration")
-    trailing_gap = (duration - pending[-1]
-                    if pending and isinstance(duration, (int, float)) else None)
+    trailing_gap = (
+        duration - pending[-1] if pending and isinstance(duration, (int, float)) else None
+    )
     return {
-        "call_id": call["id"], "source": str(path),
+        "call_id": call["id"],
+        "source": str(path),
         "source_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
-        "duration_seconds": duration, "ended_reason": call.get("endedReason"),
-        "responded_user_groups": len(turns), "trailing_user_messages": len(pending),
+        "duration_seconds": duration,
+        "ended_reason": call.get("endedReason"),
+        "responded_user_groups": len(turns),
+        "trailing_user_messages": len(pending),
         "trailing_gap_seconds": trailing_gap,
         "median_reply_gap_seconds": statistics.median(gaps) if gaps else None,
         "max_reply_gap_seconds": max(gaps) if gaps else None,
         "replies_over_20_seconds": sum(gap > 20 for gap in gaps),
         "missing_timestamps": missing_timestamps,
-        "nonmonotonic_reply_gaps": sum(gap < 0 for gap in gaps), "turns": turns,
+        "nonmonotonic_reply_gaps": sum(gap < 0 for gap in gaps),
+        "turns": turns,
     }
 
 
@@ -72,20 +81,27 @@ def main():
                     calls.append({"call_id": row["callId"], "missing_call": True})
                     continue
                 result = call_latency(path)
-                result.update(case_id=row["personaName"].split()[0],
-                              official_outcome=row["outcome"])
+                result.update(
+                    case_id=row["personaName"].split()[0], official_outcome=row["outcome"]
+                )
                 calls.append(result)
-            results.append({
-                "run": str(run), "calls": calls,
-                "iteration_sha256": hashlib.sha256(iteration_path.read_bytes()).hexdigest(),
-                "workflow_sha256": hashlib.sha256((run / "workflow.json").read_bytes()).hexdigest(),
-            })
+            results.append(
+                {
+                    "run": str(run),
+                    "calls": calls,
+                    "iteration_sha256": hashlib.sha256(iteration_path.read_bytes()).hexdigest(),
+                    "workflow_sha256": hashlib.sha256(
+                        (run / "workflow.json").read_bytes()
+                    ).hexdigest(),
+                }
+            )
         report = {
-            "results": results, "network_requests": False,
+            "results": results,
+            "network_requests": False,
             "limits": "Visible transcript timing only, not model latency attribution. "
-                      "No adjusted score. A trailing customer message may be an ordinary "
-                      "goodbye; inspect context before calling it a timeout. "
-                      "Consecutive customer messages form one reply group.",
+            "No adjusted score. A trailing customer message may be an ordinary "
+            "goodbye; inspect context before calling it a timeout. "
+            "Consecutive customer messages form one reply group.",
         }
         write_json(args.out / "report.json", report)
         return report

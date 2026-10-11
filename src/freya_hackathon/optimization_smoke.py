@@ -125,9 +125,7 @@ def prepare(directory: Path) -> StudyConfig:
     dataset = directory / "dataset"
     dataset.mkdir()
     seed = json.loads(
-        (
-            KIT.parent.parent / "documents/dataset-request-v2/sources/public-test-set.json"
-        ).read_text()
+        (KIT.parent.parent / "datasets/freya-v2/sources/public-test-set.json").read_text()
     )[0]
     write_json(directory / "seeds.json", [seed])
     for split in ("train", "validation"):

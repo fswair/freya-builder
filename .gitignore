@@ -24,11 +24,15 @@ env.sh
 .personas.json
 .freya-team-key
 .freya-optimization.lock
-datasets/
+# Only the reviewed development dataset is versioned; new datasets stay local.
+datasets/*
+!datasets/README.md
+!datasets/freya-v2/
 node_modules/
 .wrangler/
-documents/
+/documents/
 diagnostics/*
 !diagnostics/*.py
+!diagnostics/README.md
 !diagnostics/final-submission-template.json
 !diagnostics/final-submission-instructions.txt

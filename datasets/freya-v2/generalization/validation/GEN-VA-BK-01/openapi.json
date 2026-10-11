@@ -1,0 +1,1229 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "GEN-VA-BK-01 — synthetic local contract",
+    "version": "1.0.0",
+    "description": "SYNTHETIC test policy; NOT official Freya policy, legal advice, a live endpoint or a production banking/insurance API."
+  },
+  "servers": [
+    {
+      "url": "https://mock-bank.invalid/v1"
+    }
+  ],
+  "paths": {
+    "/verify_delivery_access": {
+      "post": {
+        "operationId": "verify_delivery_access",
+        "summary": "Check one complete delivery-access challenge; two wrong attempts exhaust the budget",
+        "description": "Check one complete delivery-access challenge; two wrong attempts exhaust the budget Policy references: documents/policy.txt#VB.P1.",
+        "x-policy-refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "challenge_response": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9]{4}$"
+                  }
+                },
+                "required": [
+                  "session_id",
+                  "challenge_response"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation; only the stated data is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "verified": {
+                          "type": "boolean"
+                        },
+                        "wrong_left": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 2
+                        }
+                      },
+                      "required": [
+                        "verified",
+                        "wrong_left"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session or authority failure. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CHALLENGE_BLOCKED",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/policy conflict. Consult commit_state and policy; it is not success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CHALLENGE_BLOCKED",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valid JSON but ineligible or invalid business terms. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CHALLENGE_BLOCKED",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Scripted service failure where declared. commit_state distinguishes none from unknown; follow the brief rather than assuming a retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CHALLENGE_BLOCKED",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/get_delivery_accounts": {
+      "post": {
+        "operationId": "get_delivery_accounts",
+        "summary": "Read authorized per-account modes, contact verification state and cycle labels",
+        "description": "Read authorized per-account modes, contact verification state and cycle labels Policy references: documents/policy.txt#VB.P1, documents/policy.txt#VB.P2, documents/policy.txt#VB.P3, documents/amendment.txt#VB.M1.",
+        "x-policy-refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P1"
+          },
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P2"
+          },
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "session_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation; only the stated data is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "accounts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "account_id": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "kind": {
+                                "type": "string",
+                                "enum": [
+                                  "CURRENT",
+                                  "SAVINGS"
+                                ]
+                              },
+                              "mode": {
+                                "type": "string",
+                                "enum": [
+                                  "PAPER",
+                                  "E_DELIVERY"
+                                ]
+                              },
+                              "email_state": {
+                                "type": "string",
+                                "enum": [
+                                  "VERIFIED",
+                                  "UNVERIFIED"
+                                ]
+                              },
+                              "current_cycle": {
+                                "type": "string",
+                                "pattern": "^[0-9]{4}-[0-9]{2}$"
+                              },
+                              "next_cycle": {
+                                "type": "string",
+                                "pattern": "^[0-9]{4}-[0-9]{2}$"
+                              },
+                              "effective_cycle": {
+                                "type": [
+                                  "string",
+                                  "null"
+                                ]
+                              },
+                              "changed_this_call": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "account_id",
+                              "label",
+                              "kind",
+                              "mode",
+                              "email_state",
+                              "current_cycle",
+                              "next_cycle",
+                              "effective_cycle",
+                              "changed_this_call"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "accounts"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session or authority failure. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "SESSION_MISMATCH",
+                            "VERIFY_FIRST"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/policy conflict. Consult commit_state and policy; it is not success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "SESSION_MISMATCH",
+                            "VERIFY_FIRST"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valid JSON but ineligible or invalid business terms. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "SESSION_MISMATCH",
+                            "VERIFY_FIRST"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Scripted service failure where declared. commit_state distinguishes none from unknown; follow the brief rather than assuming a retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "CLOSED",
+                            "SESSION_MISMATCH",
+                            "VERIFY_FIRST"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/set_delivery_preference": {
+      "post": {
+        "operationId": "set_delivery_preference",
+        "summary": "Commit one confirmed mode/cycle change for one eligible account",
+        "description": "Commit one confirmed mode/cycle change for one eligible account Policy references: documents/policy.txt#VB.P2, documents/policy.txt#VB.P3, documents/policy.txt#VB.P4, documents/policy.txt#VB.P5, documents/amendment.txt#VB.M1, documents/codes.json#VB.C1.",
+        "x-policy-refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P2"
+          },
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P3"
+          },
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P4"
+          },
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P5"
+          },
+          {
+            "file": "documents/amendment.txt",
+            "rule_id": "VB.M1"
+          },
+          {
+            "file": "documents/codes.json",
+            "rule_id": "VB.C1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "account_id": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "PAPER",
+                      "E_DELIVERY"
+                    ]
+                  },
+                  "effective_cycle": {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}-[0-9]{2}$"
+                  },
+                  "confirmed": {
+                    "const": true,
+                    "type": "boolean"
+                  },
+                  "request_key": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "session_id",
+                  "account_id",
+                  "mode",
+                  "effective_cycle",
+                  "confirmed",
+                  "request_key"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation; only the stated data is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "account_id": {
+                          "type": "string"
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "PAPER",
+                            "E_DELIVERY"
+                          ]
+                        },
+                        "effective_cycle": {
+                          "type": "string",
+                          "pattern": "^[0-9]{4}-[0-9]{2}$"
+                        }
+                      },
+                      "required": [
+                        "account_id",
+                        "mode",
+                        "effective_cycle"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session or authority failure. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "ALREADY_CHANGED",
+                            "ALREADY_SET",
+                            "CLOSED",
+                            "CONTACT_UNVERIFIED",
+                            "KEY_REUSE",
+                            "SESSION_MISMATCH",
+                            "UNKNOWN_ACCOUNT",
+                            "VERIFY_FIRST",
+                            "WRONG_CYCLE"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/policy conflict. Consult commit_state and policy; it is not success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "ALREADY_CHANGED",
+                            "ALREADY_SET",
+                            "CLOSED",
+                            "CONTACT_UNVERIFIED",
+                            "KEY_REUSE",
+                            "SESSION_MISMATCH",
+                            "UNKNOWN_ACCOUNT",
+                            "VERIFY_FIRST",
+                            "WRONG_CYCLE"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valid JSON but ineligible or invalid business terms. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "ALREADY_CHANGED",
+                            "ALREADY_SET",
+                            "CLOSED",
+                            "CONTACT_UNVERIFIED",
+                            "KEY_REUSE",
+                            "SESSION_MISMATCH",
+                            "UNKNOWN_ACCOUNT",
+                            "VERIFY_FIRST",
+                            "WRONG_CYCLE"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Scripted service failure where declared. commit_state distinguishes none from unknown; follow the brief rather than assuming a retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "ALREADY_CHANGED",
+                            "ALREADY_SET",
+                            "CLOSED",
+                            "CONTACT_UNVERIFIED",
+                            "KEY_REUSE",
+                            "SESSION_MISMATCH",
+                            "UNKNOWN_ACCOUNT",
+                            "VERIFY_FIRST",
+                            "WRONG_CYCLE"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/finish_delivery": {
+      "post": {
+        "operationId": "finish_delivery",
+        "summary": "Close once after all selected accounts are resolved",
+        "description": "Close once after all selected accounts are resolved Policy references: documents/policy.txt#VB.P6, documents/codes.json#VB.C1.",
+        "x-policy-refs": [
+          {
+            "file": "documents/policy.txt",
+            "rule_id": "VB.P6"
+          },
+          {
+            "file": "documents/codes.json",
+            "rule_id": "VB.C1"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "session_id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "code": {
+                    "type": "string",
+                    "enum": [
+                      "changed",
+                      "blocked_contact",
+                      "verification_failed",
+                      "unchanged"
+                    ]
+                  }
+                },
+                "required": [
+                  "session_id",
+                  "code"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation; only the stated data is disclosed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": true,
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "changed",
+                            "blocked_contact",
+                            "verification_failed",
+                            "unchanged"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Session or authority failure. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "BAD_CLOSE",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "State/policy conflict. Consult commit_state and policy; it is not success.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "BAD_CLOSE",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Valid JSON but ineligible or invalid business terms. No business effect.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "BAD_CLOSE",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Scripted service failure where declared. commit_state distinguishes none from unknown; follow the brief rather than assuming a retry.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "const": false,
+                      "type": "boolean"
+                    },
+                    "error": {
+                      "type": "object",
+                      "properties": {
+                        "code": {
+                          "type": "string",
+                          "enum": [
+                            "BAD_CLOSE",
+                            "CLOSED",
+                            "SESSION_MISMATCH"
+                          ]
+                        },
+                        "commit_state": {
+                          "type": "string",
+                          "enum": [
+                            "none",
+                            "committed",
+                            "unknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "code",
+                        "commit_state"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "error"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "x-execution-target": "local_mock_only",
+  "x-policy-origin": "synthetic"
+}

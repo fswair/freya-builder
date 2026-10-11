@@ -1,0 +1,22 @@
+{
+  "policy_origin": "synthetic",
+  "rule_id": "VB.C1",
+  "account_kinds": {
+    "CURRENT": "current account",
+    "SAVINGS": "savings account"
+  },
+  "delivery_modes": {
+    "PAPER": "paper statements",
+    "E_DELIVERY": "electronic statements"
+  },
+  "email_states": [
+    "VERIFIED",
+    "UNVERIFIED"
+  ],
+  "close_codes": [
+    "changed",
+    "blocked_contact",
+    "verification_failed",
+    "unchanged"
+  ]
+}

@@ -1,0 +1,141 @@
+[
+  {
+    "id": "GEN-TR-BK-01-C01",
+    "customer_private_facts": {
+      "target_nickname": "Everyday",
+      "target_last4": "1207",
+      "desired_locked": true
+    },
+    "script": "You are a calm cardholder. Ask to temporarily lock your Everyday card ending 1207. You are not asking to cancel it. When that card and locking are read back, clearly confirm. You have no other request and are willing to finish without a security-code question. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "ordinary_success",
+        "calm"
+      ],
+      "coverage_roles": [
+        "ordinary_success"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-BK-01-C01-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-tb-1",
+      "now": "2027-01-12T09:30:00+03:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-BK-01-C01/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-BK-01-C02",
+    "customer_private_facts": {
+      "target_nickname": "Travel",
+      "target_last4": "9031",
+      "desired_locked": true,
+      "question": "Does locking refund an earlier purchase?"
+    },
+    "script": "You are anxious after misplacing the Travel card ending 9031. Say, \"Lock that card, but do not cancel it. Does that undo a purchase from yesterday?\" Accept an explanation that a temporary lock does not reverse purchases and that the caller has no transaction details. Then clearly confirm locking only Travel when the terms are read back. Your purchase question is not a refund request or permission to act on another card. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "mixed_intent",
+        "legitimate_question",
+        "anxious_to_reassured"
+      ],
+      "coverage_roles": [
+        "mixed_intent"
+      ],
+      "state_tone_transitions": [
+        {
+          "from": "anxious",
+          "to": "reassured",
+          "trigger": "separating a temporary lock from cancellation/refunds"
+        }
+      ],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-BK-01-C02-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-tb-2",
+      "now": "2027-01-12T09:30:00+03:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-BK-01-C02/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-BK-01-C03",
+    "customer_private_facts": {
+      "initially_named": "Everyday",
+      "corrected_target": "Travel",
+      "corrected_last4": "9031",
+      "desired_locked": false,
+      "code": "582614"
+    },
+    "script": "You want to unlock Travel but initially say \"Unlock Everyday—no, the other one, Travel ending 9031.\" If asked which one, repeat Travel. When asked for a code, say \"five eight two\", pause, then \"six one four\"; if clarification is needed, give the complete 582614. Do not confirm unlocking Everyday. Clearly confirm only the final read-back naming Travel and unlocking. Keep Everyday locked. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "information_fragments",
+        "self_correction",
+        "per_entity_scope"
+      ],
+      "coverage_roles": [
+        "information_correction_scope"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-BK-01-C03-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-tb-3",
+      "now": "2027-01-12T09:30:00+03:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-BK-01-C03/initial_state"
+    }
+  },
+  {
+    "id": "GEN-TR-BK-01-C04",
+    "customer_private_facts": {
+      "target": "Everyday",
+      "desired_locked": false,
+      "remembered_codes": [
+        "112233",
+        "332211"
+      ]
+    },
+    "script": "You want to unlock the Everyday card and are certain you remember its code, but you do not know the correct one. Give 112233 first and 332211 if asked again. After two rejected codes, stop guessing and accept being told it cannot be unlocked on this call. You may sound disappointed, but do not ask for a human, a new card or another action. Respond to a genuine clarification using only these facts. Correct a summary that changes your chosen object, terms or decision; never agree just to end the conversation. Do not invent another request. Once your request is handled, or the caller explains a final inability and says goodbye, acknowledge the ending and stop.",
+    "behavior_metadata": {
+      "labels": [
+        "policy_boundary",
+        "wrong_answers",
+        "disappointed"
+      ],
+      "coverage_roles": [
+        "policy_boundary_or_supported_failure"
+      ],
+      "state_tone_transitions": [],
+      "policy_origin": "synthetic",
+      "dimensions_are_open_ended": true
+    },
+    "group_id": "GEN-TR-BK-01-C04-FAMILY",
+    "split": "train",
+    "variables": {
+      "session_id": "session-tb-4",
+      "now": "2027-01-12T09:30:00+03:00"
+    },
+    "fixture_reference": {
+      "file": "mock-fixture.json",
+      "pointer": "/cases/GEN-TR-BK-01-C04/initial_state"
+    }
+  }
+]

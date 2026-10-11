@@ -1,0 +1,53 @@
+{
+  "bundle_id": "GEN-VA-IN-01",
+  "split": "validation",
+  "status": "passed",
+  "case_count": 4,
+  "checks": {
+    "schema_nodes_checked": 18,
+    "request_examples": 12,
+    "response_examples": 12,
+    "derivation_checks": 4,
+    "successful_duplicate_replay_probes": 4,
+    "changed_key_payload_conflict_probes": 4,
+    "new_key_duplicate_rejection_probes": 4,
+    "post_close_rejection_probes": 12,
+    "scripted_error_responses": 0,
+    "fresh_initial_states": 4
+  },
+  "cases": [
+    {
+      "case_id": "GEN-VA-IN-01-C01",
+      "status": "passed",
+      "witness_steps": 3,
+      "scripted_error_responses": 0,
+      "final_projection_matches": true
+    },
+    {
+      "case_id": "GEN-VA-IN-01-C02",
+      "status": "passed",
+      "witness_steps": 3,
+      "scripted_error_responses": 0,
+      "final_projection_matches": true
+    },
+    {
+      "case_id": "GEN-VA-IN-01-C03",
+      "status": "passed",
+      "witness_steps": 4,
+      "scripted_error_responses": 0,
+      "final_projection_matches": true
+    },
+    {
+      "case_id": "GEN-VA-IN-01-C04",
+      "status": "passed",
+      "witness_steps": 2,
+      "scripted_error_responses": 0,
+      "final_projection_matches": true
+    }
+  ],
+  "limitations": [
+    "This is evaluation of authored symbolic witnesses, not a builder, conversation, Freya call or running mock adapter.",
+    "Conversation consent, tone and semantic correctness have author review, not measured three-repetition success.",
+    "OpenAPI checking is structural plus JSON Schema validation, not full conformance certification."
+  ]
+}

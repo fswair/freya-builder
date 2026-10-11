@@ -34,8 +34,16 @@ fixtures. The subsequent policy and workflow stages implement the source require
 
 def validate_mock_url(url: str) -> str:
     parsed = urlsplit(url)
-    if (parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password
-            or parsed.query or parsed.fragment or "{" in url or "}" in url):
+    if (
+        parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username
+        or parsed.password
+        or parsed.query
+        or parsed.fragment
+        or "{" in url
+        or "}" in url
+    ):
         raise ValueError("Mock URL must be an explicit HTTPS base URL without credentials or query")
     return url.rstrip("/")
 

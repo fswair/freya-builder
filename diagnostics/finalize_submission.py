@@ -268,8 +268,12 @@ def main() -> None:
     started = (monotonic(), utc_now())
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("brief", type=Path)
-    parser.add_argument("tool_api", type=Path, nargs="?",
-                        help="Optional OpenAPI file; otherwise extract the supplied contract")
+    parser.add_argument(
+        "tool_api",
+        type=Path,
+        nargs="?",
+        help="Optional OpenAPI file; otherwise extract the supplied contract",
+    )
     parser.add_argument("--mock-url", help="Explicit deployed mock HTTPS base URL")
     parser.add_argument("--additional-brief", type=Path, action="append", default=[])
     parser.add_argument("--workflow-reference", type=Path, action="append", default=[])

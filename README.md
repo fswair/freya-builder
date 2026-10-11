@@ -1,425 +1,225 @@
 # Freya — Build the Builder
 
-Python 3.13 / uv. Ana ortam PyPI'daki **Autobench 0.4.0**, **pydantic-gepa 0.1.1** ve
-standart **GEPA 0.1.4** kullanır. Ana kurulum kardeş checkout veya Git bağımlılığı gerektirmez.
+A source-backed builder that turns a case folder and a deployed bank-service mock
+URL into a Freya phone-agent workflow. Pydantic AI extracts policy and generates
+the workflow; a compiler and validators check the result. Autobench records model
+calls, HTTP activity and evaluation evidence. Pydantic GEPA optimizes general
+builder guidance during development.
 
-11 Ekim güncel final formatı: tek vaka klasörü ve takımın Cloudflare Workers üzerinde
-çalıştırdığı mock servis. Klasör 17:00 UTC'de açılır, teslim 20:00 UTC'de kapanır.
-Kurallar: https://www.freyavoice.ai/hackathon#submit . Final içeriği builder kaynak
-koduna veya sabit promptlarına eklenmez; klasör ve mock adresi çalışma girdisidir.
-Mock uygulaması ayrı `mock-worker/` dizininde, yayımlanan servis sözleşmesinden hazırlanır.
-Bu dizindeki mevcut kod yalnız yerel kurulum iskeletidir; henüz banka servisi değildir.
+Python 3.13 and [uv](https://docs.astral.sh/uv/) are required. The main environment
+uses published packages: Autobench 0.4.0, pydantic-gepa 0.1.1 and GEPA 0.1.4.
+It does not require sibling repositories or editable package installations.
+
+## Setup
 
 ```bash
-make sync
-make check
+uv sync --locked
+uv run --locked pytest
 make smoke RECORD=runs/stack-check
 ```
 
-`make check` ve `make smoke` çevrimdışıdır. `environments/local` ve `*-local` Make hedefleri
-paket geliştirmesi için isteğe bağlı eski editable ortamı korur; builder için gerekmez.
-Önceki hazırlık ve canlı smoke kayıtları `documents/environment-history.md` içinde anlatılır.
+Tests and the stack smoke test do not call external APIs. Historical regression
+tests may skip when their private run artifacts are absent. `make check` also runs
+Ruff and type checks. Each example output directory must be new.
 
-## İlk builder: yerel workflow üretimi
+The builder uses `codex-auth-helper==1.10.1` with an existing authenticated
+`~/.codex/auth.json` session. Its default model is `gpt-6-astra`, reasoning `high`.
+Configure generation with `--model`, `--reasoning`, `--seconds`, `--call-seconds`
+and `--attempts`. Local generation calls the builder model; offline tests do not.
 
-`vendor/freya-v3`, kitin brief, API, doküman, örnek agent ve yardımcı istemci dosyalarının
-yerel kopyasıdır. Örnek Claude builder/skill ve env dosyaları kopyalanmadı.
-`--practice-cases` verilmezse builder yalnızca yerel çıktı üretir; Freya veya banka API'sini çağırmaz.
+For Freya validation, publication, export or synthetic practice, copy
+[.env.example](.env.example) to `.env` and set `FREYA_API_KEY`. Set a persistent
+`FREYA_BANK_TEAM_KEY` or let the practice client create and reuse the ignored
+`.freya-team-key` file. Do not commit credentials.
 
-```bash
-uv run --locked freya-builder \
-  vendor/freya-v3/briefs/brief-a.md \
-  vendor/freya-v3/tools/openapi.json \
-  --out runs/brief-a-001
-```
+`environments/local/` and the `*-local` Make targets are optional package-development
+tools. They require the sibling checkouts listed in their requirements file and
+are not used by the standard installation or final builder command.
 
-Bu komut gerçek builder modeline istek gönderir. Önceden kullanılan
-`codex-auth-helper==1.10.1` ve `~/.codex/auth.json` oturumuyla çalışır; Freya anahtarı gerekmez.
-Varsayılan model `gpt-6-astra`, reasoning `high`; `--model`, `--reasoning`, `--seconds`,
-`--call-seconds` ve `--attempts` ayarlanabilir.
-Varsayılan üretim süresi 1200 saniye, aşama başına iki deneme, model çağrısı başına en fazla
-600 saniyedir ve kalan toplam süreyle sınırlanır. Süre bütçesi asyncio ile aktif model bekleyişini iptal eder; işletim sistemi
-düzeyinde süreç izolasyonu değildir. Freya testleri ayrı bir komutla çalışır.
+## Final case: folder + mock URL
 
-Brief B, A'nın üstüne eklenir:
+The [official hackathon page](https://www.freyavoice.ai/hackathon#submit) is the
+source of current rules and supersedes older format descriptions in the starter
+kit. The October 11 final format has one Turkish credit-card-statement case,
+released at 17:00 UTC, with submissions closing at 20:00 UTC. The team implements
+the supplied bank-service contract as a separate Cloudflare Worker and deploys it
+before running the builder. Final case rules, values and names remain runtime
+inputs rather than additions to builder source or fixed prompts.
 
-```bash
-uv run --locked freya-builder \
-  vendor/freya-v3/briefs/brief-a.md \
-  vendor/freya-v3/tools/openapi.json \
-  --additional-brief vendor/freya-v3/briefs/brief-b.md \
-  --out runs/brief-b-001
-```
-
-Her koşu yeni bir çıktı dizini ister. OpenAPI dosyası açıkça verilebilir. Klasör ve
-`--mock-url` verilirse builder servis sözleşmesini kaynak alıntılarıyla kendisi çıkarır;
-alan ve enum değerleri public API'den kopyalanmaz. Konuşma dili belgelerden belirlenir.
-MD/metin, DOCX, XLSX/XLSM ve metin içeren PDF belgeleri okunur. Word tabloları ve notlar,
-Excel sekmeleri, formüller ve önbellek değerleri, PDF sayfa sınırları korunur. Belgelerin
-özgün byte hash'leri kaydedilir. Taranmış PDF için OCR, eski DOC/XLS için dönüşüm gerekir;
-okunamayan bir dosya sessizce atlanmaz.
-
-1. Pydantic AI, kuralları kaynak alıntıları ve değişiklik ilişkileriyle çıkarır.
-2. Kaynak alıntıları, kural kimlikleri ve çelişkiler yerelde kontrol edilir.
-3. İkinci Pydantic AI aşaması orijinal brief, çıkarılan kurallar ve Freya referanslarından
-   workflow üretir. Geçersiz adaylar sınırlı sayıda geri bildirimle düzeltilir.
-4. Geçiş hedefleri, düğüm/araç yerleşimi, API adresleri, zorunlu alanlar ve belirtilen enum
-   değerleri kontrol edilir. Python parçaları yalnızca sözdizimi açısından incelenir.
-
-Başarılı koşu: `policy.json`, `workflow.json`, `rule-nodes.json`, `validation.json`,
-`inputs.json`, `trace.jsonl` ve model mesaj kayıtlarını üretir. Hatalı adaylar inceleme için
-saklanır; son `workflow.json` yalnızca yerel kontroller geçerse yazılır. Trace, model çağrılarının
-amaçlarını, başlangıç/bitişlerini, kullanımlarını ve hata durumlarını kaydeder.
-
-**`locally_validated` yarışma başarısı değildir.** Kural-düğüm eşlemesi modelin beyanıdır;
-tüm kuralların doğru uygulanmasını, üretilen Python'ın davranışını veya platformun workflow'u
-kabul edeceğini kanıtlamaz. Bu CLI henüz nihai teslim komutu değildir.
-
-## Freya metin pratiği
-
-Üretilmiş workflow için platform doğrulaması, publish ve resmi kitin sentetik testleri:
-
-```bash
-uv run --locked python -m freya_hackathon.practice runs/brief-a-001 \
-  --cases /Users/mert/Downloads/build-the-builder-1/public-test-set.json --brief A
-```
-
-Bu komut Freya'ya workflow kaydeder ve yalnızca `mode=chat` simülasyonu başlatır.
-`.env` içindeki `FREYA_API_KEY` kullanılır. Takım anahtarı verilmediyse yerelde
-`.freya-team-key` dosyasında bir kere oluşturulur; git'e girmez. Aynı slot güncellenerek
-workflow kotası korunur. `--only` virgülle ayrılmış case kimlikleri kabul eder.
-Platform export'u, sonuçlar, konuşmalar ve banka kayıtları koşunun `practice/` dizinine;
-workflow/simülasyon kimlikleri aynı `trace.jsonl` dosyasına yazılır. Tek tekrar bir baseline'dır.
-Üretim ve pratik tek komutta, ortak 30 dakikalık bütçeyle de çalışır:
-
-```bash
-uv run --locked freya-builder \
-  vendor/freya-v3/briefs/brief-a.md vendor/freya-v3/tools/openapi.json \
-  --out runs/brief-a-full-001 \
-  --practice-cases /Users/mert/Downloads/build-the-builder-1/public-test-set.json \
-  --practice-brief A --total-seconds 1800
-```
-
-Model üretimi varsayılan olarak en fazla 1200 saniye sürer; pratik yalnızca toplam bütçede
-kalan süreyi alır. `pipeline.json` bütün komutun süresini ve durumunu kaydeder. Yerel süre
-dolması, Freya'daki simülasyonu iptal etmez. Mevcut sonuçlar yeni test başlatmadan alınabilir:
-`uv run --locked python -m freya_hackathon.practice runs/brief-a-full-001 --collect`.
-Sonradan alınan sonuçlar ilk koşunun süre sınırını geçmiş olmasını değiştirmez.
-Varsayılan 1800 saniyelik toplam bütçede, üretim tavanı pratik için yaklaşık 600 saniye bırakır.
-Bu, simülasyonun mutlaka biteceği anlamına gelmez; yerel timeout uzak çalışmayı durdurmaz.
-
-Her değerlendirme `practice/runtime-health.json` üretir. Snekbox bağlantı hatası içeren
-konuşmalar, geçenler dahil, altyapıdan etkilenmiş olarak işaretlenir; resmi puan değiştirilmez.
-Bu koşular temiz model karşılaştırması veya doğrudan optimizasyon geri bildirimi sayılmaz.
-Kayıtlı koşuya sonradan denetim: `uv run --locked python -m freya_hackathon.runtime_audit runs/brief-a-full-001`.
-
-Builder, model adayını Freya'ya uygun bir derleme aşamasından geçirir: bütün `data`
-nesnesinin eşlenmesini JSON metniyle taşır ve tüketilen `vars` değerlerini açıkça temizler.
-İlk canlı metin testinde nesne eşlemesinin boş kalması ve `vars.pop` sonrasında eski
-değerlerin kalması gözlendi. Dönüşümler `compiled.json` ve trace içinde kayıtlıdır.
-Derleyici, açık boş metin sıfırlamalarına karşılık gelen string extraction enum'larının
-bu değeri kabul etmesini de sağlar. Freya uyumsuz sıfırlamayı reddedip eski değeri
-koruduğundan, yalnızca kodda sıfırlama yapmak yeterli değildir. Banka API enum'ları
-değiştirilmez; boş değerle çelişen bir doğrulama deseni varsa derleme hata verir.
-`python -m freya_hackathon.recompile` kayıtlı bir adayı yeni compiler ile tekrar üretir;
-bu geliştirme denemesi ana model üretim trace'ine referans verir, kendi başına nihai
-teslim veya baştan üretilmiş bağımsız bir koşu sayılmaz.
-
-Builder, `practice`, `--collect` ve birleşik pipeline artık otomatik Autobench kaydı üretir.
-Her çağrı `runs/<koşu>/autobench/<aşama>-<benzersiz-kimlik>/` altında yeni ve değişmez
-kayıt oluşturur. Birleşik pipeline, builder ve pratik adımlarını aynı execution trace'inde
-tutar; iç içe kayıtlarla model/HTTP tüketimini iki kez saymaz. Hata ve zaman aşımında
-o ana kadarki kanıtlar kaydedilir ve özgün istisna çağırana geri iletilir.
-
-Pydantic AI/OpenAI model çağrıları, kullanım bilgileri ve davranış varlıkları; HTTPX istek
-süreleri, durum kodları ve hataları native instrumentation ile yakalanır. HTTP gövdeleri
-ve kimlik doğrulama başlıkları yakalanmaz. Kaydedilen kanıt kopyalarından bilinen API/takım
-anahtarları temizlenir; mevcut ham dosyalar değişmez. Model mesajları, workflow, trace,
-konuşmalar ve banka kayıtları Autobench artifact'larına kopyalanır. Kaynak dosya hash'leri
-saklanır. Freya'nın uzaktaki model çağrıları native yerel span değildir: API'nin verdiği
-konuşma/tool olayları artifact olarak korunur; verilmeyen token/maliyet bilgisi uydurulmaz.
-
-Tamamlanan her pratik koşusu ayrıca `cases-<kimlik>` kaydı üretir: her müşteri ayrı case,
-workflow adayı ayrı variant olur. `official_pass` resmi banka+görüşme sonucudur; Snekbox
-hataları, extraction uyarıları ve reddedilen değişken güncellemeleri ayrı diagnostic
-metric'lerdir. Extraction sayacı hem `extraction_error` hem `extraction_failed` olaylarını
-sayar; `freya.variable_validation_errors`, tamamlanan fonksiyon sonuçlarındaki
-`validation_errors` sayısını tutar. Bunlar tek başına altyapı hatası kanıtı değildir.
-Altyapı hatası puanı
-değiştirmez. İcra kaydı ile case kayıtlarının amaçları ayrıdır; süreleri toplanmamalıdır.
-Case raporundaki `official_pass_rate` ve correctness matrisi resmi başarıyı gösterir;
-`official-case-passed` politikası başarısız vakaları değerlendirme hatası olarak işaretler.
-Çalıştırmanın hatasız tamamlanması, vakanın başarılı olduğu anlamına gelmez.
-
-Eski kanıtları ağ isteği veya model çağrısı yapmadan aktarmak:
-
-```bash
-uv run --locked python -m freya_hackathon.recording import \
-  runs/astra-a-004-repair runs/astra-b-002 \
-  runs/astra-a-006-full runs/astra-b-003-full
-```
-
-Eski kayıtlar `evidence.origin=imported` taşır; geçmişte native span yakalanmış gibi
-gösterilmez. Yeni case kayıtları da `postprocessed-live` işaretlidir: uzaktaki konuşmanın
-zamanı ile yerelde kanıt işleme zamanı farklıdır. Aynı senaryo setini kullanan iki adayı
-yeniden simüle etmeden karşılaştırma kaydına almak:
-
-```bash
-uv run --locked python -m freya_hackathon.recording cases \
-  runs/astra-a-003 runs/astra-a-006-full --out runs/autobench-a-comparison
-uv run --locked autobench report runs/autobench-a-comparison
-uv run --locked autobench compare runs/autobench-a-comparison \
-  --baseline astra-a-003 --candidate astra-a-006-full
-```
-
-`autobench replay <kayıt-dizini>` ve `autobench report <kayıt-dizini>` subject'i çalıştırmaz.
-Taşınmış/eski ham dosyalara ihtiyaç duymadan kayıtlı kanıtlar üzerinden çalışırlar.
-Tanımlar `benchmarks/freya-execution.yaml` ve `benchmarks/freya-cases.yaml` içindedir;
-gerçek çalışma girdilerini uygulama komutları sağlar. `smoke.yaml` ve `live.yaml` ise
-ayrı paket entegrasyon kontrolleridir. GEPA'nın builder rehber metni üzerindeki optimizasyon
-döngüsü aşağıda açıklanan `freya-optimize` komutuna bağlıdır.
-`runs/` gitignore kapsamındadır; final teslim izleri ayrıca seçilip sürümlenmelidir.
-
-Güncel FAQ, pratik bankanın yalnız PUB-01–PUB-13 müşterilerini sunduğunu belirtiyor.
-Yeni banka müşterisi oluşturmayın. Aşağıdaki geliştirme mekanizması mevcut public
-müşterinin konuşma varyasyonları içindir; final mock'u ve final değerlendirmesi ayrıdır.
-Ek konuşma varyasyonları, farklı `id` ve `script` ile `practice_session_case: "PUB-02"`
-gibi bir alan kullanabilir. Böylece banka API'sindeki kayıtlı sentetik müşteri verisi
-kullanılırken persona, değerlendirme ve Autobench vaka kimliği ayrı kalır. Banka API'si
-keyfi yeni vaka kimliği kabul etmez; seçilen seed ile hesap bilgileri ve beklentiler
-uyumlu olmalıdır. Örnek: `diagnostics/callback-probes.json`.
-
-## Builder optimizasyonu
-
-`--workflow-reference PATH` tekrarlanarak public geliştirme workflow'ları örnek
-olarak verilebilir. Bu mod her yeni brief için politikayı yeniden çıkarır; model
-bir referans seçip tam workflow yerine kesin metin değişiklikleri, gereken JSON
-alan değişiklikleri ve yeni kural/node eşlemesini üretir. Bütün çıktı yeniden
-derlenip aynı doğrulamalardan geçer. Referanslar politika kaynağı sayılmaz;
-brief ve verilen OpenAPI belirleyicidir. Referans dosyaları, hash'leri, seçimi
-ve değişiklikleri trace/artefaktlarda tutulur. Public vakalarda geliştirilmiş
-referanslarla alınan public puanlar bağımsız genelleme kanıtı değildir.
-
-`--review` seçeneği taze üretimden sonra deneysel bir model incelemesi çalıştırır;
-varsayılan kapalıdır. İlk canlı denemede kapsam hatası ve süre aşımı görüldüğünden
-henüz başarı artışı kanıtlanmış değildir. İnceleme, brief/API kaynaklarına göre durum geçişlerini, doğrulama ve teklif
-sınırlarını, onaylanan araç yükünü ve kapanış sırasını kontrol edip gerekirse düzeltir.
-`before-review.json`, `review.json` ve ilgili model mesajları aynı koşuda saklanır;
-inceleme de builder'ın mevcut süre/çağrı sınırlarına tabidir. Çözülemeyen bulgular veya
-yerel doğrulamadan geçmeyen düzeltmeler final workflow üretimini durdurur. Bu statik
-model incelemesi davranış testi değildir; Freya practice hâlâ gerekir. Önceki adayları
-kullanan geliştirme onarımları bu ek aşamayı çalıştırmaz.
-
-Derleyici her `code_exec` parçasına kendi fonksiyon kapsamını verir. Yardımcıların
-yerel değişkenleri host kapsamından bağımsız kalır; yalnızca anlamı açık olan global
-bağlantılar yerel kapsama dönüştürülür. Belirsiz bağlar reddedilir. Python derleme
-kontrolü kapsam hatalarını da yakalar; bu kontrol kodu çalıştırmaz.
-
-`freya-optimize` standart pydantic-gepa/GEPA döngüsünü kullanır. Arama yalnızca builder'ın
-workflow üretim talimatlarına eklenen, en fazla 12.000 karakterlik genel rehber metnini
-değiştirir. Briefler, API şeması, kaynak doğrulaması, derleyici, Freya modeli ve puanlama
-sabit kalır. Politika çıkarımı değişmez. Rehberin brief/API kurallarına üstünlüğü yoktur.
-Vaka kimliği ve ISO tarihleri içeren adaylar reddedilir; bu basit kontrol, başka biçimde
-kodlanmış vaka ezberini tamamen engellediğini iddia etmez. Ayrılmış verilerle sınama gerekir.
-
-Bir GEPA örneği tek müşteriyi değil, **bir briefin bir veri bölümündeki bütün vakalarını**
-temsil eder. Aynı rehber/brief için workflow bir kez üretilir; train ve validation bu
-workflow'u kullanır. `metric_calls` müşteri görüşmesi değil brief-batch değerlendirmesi
-sayısıdır. Amaç brief başına geçen vaka oranlarının ortalamasıdır. Her vaka ancak o
-değerlendirmenin bütün tekrarları başarılıysa geçer. Varsayılan train 1, validation 3
-tekrardır. Final holdout komutu her zaman 3 tekrar kullanır.
-
-Dataseti `datasets/freya-v2/live/{train,validation,holdout}.json` altına koyun.
-Bu dizin gitignore kapsamındadır. Her vakada `practice_session_case` ve
-`metadata: {split, group_id, ...}` bulunmalıdır. Kimlik, saat ve hesap alanları kayıtlı
-PUB seed ile birebir uyuşmalıdır. Gerçek vaka beklentileri ayrıca brief üzerinden
-incelenmelidir; JSON kontrolü onların anlamsal doğruluğunu kanıtlamaz.
-
-```bash
-uv run --locked freya-optimize validate optimization.example.json
-uv run --locked freya-optimize run optimization.example.json --out runs/gepa-study-001
-```
-
-Yollar config dosyasına göre çözülür. Validate ve run sadece train/validation dosyalarını
-açar; holdout dosyasını okumaz, hash'lemez veya trace içine almaz. Vaka kimliği, scenario
-group ve normalize edilmiş aynı scriptin veri bölümleri arasında paylaşılması reddedilir.
-Yakın anlamlı kopyalar için ayrıca veri incelemesi gerekir.
-
-İlk sınırlı arama için `optimization.bounded.json`, kaynak dataset manifestindeki
-önceden belirlenmiş 16 öncelikli train vakasını ve değişmemiş 8 validation vakasını
-kullanır. `diagnostics/prepare_priority_dataset.py` bu bölümü yeni dizine yazar ve
-kaynak hash'lerini kaydeder; holdout'a erişmez. Sınırlar 8 brief-batch ölçümü, 4 üretim,
-1 reflection ve 2 saattir. Reflection bütün briefleri birlikte görür; kusursuz bir
-brief yüzünden atlanmaz. Yeni rehber ancak train skorunu iyileştirirse validation'a
-girer. Kabul edilen öneri yolu, validation'ın üç tekrarı dahil 80 planlanmış sentetik
-müşteri değerlendirmesi ve 16 simülasyon grubudur; Freya'nın otomatik tekrarları
-buna eklenebilir. İki saat tamamlanma garantisi değildir.
-
-```bash
-uv run --locked freya-optimize run optimization.bounded.json --out runs/gepa-bounded-001
-```
-
-Timeout halinde önce kayıtlı uzak simülasyonun tamamlanıp toplanması gerekir; yeni
-bir çalışma onun üstüne başlatılmaz. GEPA çalışma dizininden devam etme desteği yoktur.
-
-Örnek config iki açık geliştirme workflow'unu `workflow_references` ile her iki briefe
-birlikte verir. Builder yeni politikasını yalnızca brief/API'den çıkarır, sonra uygun
-referansı seçip uyarlar. Referansların içerik hash'leri girdi manifestine ve seçim
-kaydına girer; dosyaları değiştirmek dondurulmuş holdout kontrolünü geçersiz kılar.
-Referanssız üretim için bu alanı kaldırın veya boş liste verin. Referanslı açık-vaka
-skoru, bağımsız genelleme kanıtı değildir.
-
-Varsayılan sınırlar 8 brief-batch değerlendirmesi, 6 farklı ajan üretimi, 2 reflection
-ve toplam 2 saattir. Builder ve reflection Codex auth üzerinden Astra kullanır;
-örnek config'te builder ve reflection high ayarındadır. Bunlar geliştirme araması sınırlarıdır;
-tek final builder koşusunun 30 dakika kuralının yerine geçmez. Çalışma eşzamanlılığı 1'dir
-ve ikinci optimizer aynı workspace kilidini alamaz. Altyapı, çözümlenmemiş
-sandbox çıktısı, simülatör değerlendirme hatası veya eksik/çelişkili kanıt seçim
-sürecini durdurur; bunlar adayın başarısız müşteri vakası olarak puanlanmaz.
-Sağlık raporundaki tüm hata listeleri ve açık temiz-karşılaştırma bayrağı
-zorunludur; eski veya eksik raporla seçim yapılmaz. Ham simülatör sonucu,
-gerekçesi ve run kimliği hem normal koşuda hem `--collect` yolunda korunur.
-
-Kayıtlar seçilen rehberi, bütün üretilmiş workflow'ları, simülasyon tekrarlarını,
-başarısız konuşma kanıtlarını ve model mesajlarını korur. Autobench native
-`pydantic_gepa`, `pydantic_ai`, `openai` ve `httpx` span'lerini kaydeder. Yerel struktür
-doğrulama hataları aday kalitesi için sıfır puandır; altyapı hatasıysa seçim yapılmaz.
-
-`selection.json` ve `selected-guidance.txt` seçim sonucudur; mevcut seçilmiş adayları
-veya builder varsayılanını otomatik değiştirmez. Adayı seçtikten sonra ayrı holdout:
-
-```bash
-uv run --locked freya-optimize holdout runs/gepa-study-001/selection.json \
-  --out runs/gepa-study-001-holdout
-```
-
-Bu komut dondurulmuş workflow'ları yeniden üretmeden değerlendirir, GEPA reflection
-çalıştırmaz. Rehber, workflow, builder kaynak kodu veya brief/API değişmişse reddeder.
-Holdout aynı senaryo gruplarını içeriyorsa çalıştırmaz. Sonuçlar ayrı yeni dizine
-yazılır; önceki kayıtlar değiştirilmez. Holdout sonucunu aramaya geri beslemeyin.
-Gizli final briefi için seçilen genel rehberle **taze** üretim, yayınlama ve
-resmî Freya export'u aynı koşuda yapılır:
+The [mock-worker scaffold](mock-worker/README.txt) is not a working bank mock yet.
+Implement the released contract, test its customer records, deploy it, and keep
+the service available through the organizers' evaluation.
 
 ```bash
 uv run --locked python diagnostics/finalize_submission.py \
-  path/to/case-folder --mock-url https://YOUR-MOCK.workers.dev \
-  --guidance runs/gepa-study-001/selected-guidance.txt \
-  --slot final-brief-name --out runs/fresh-final
+  path/to/case-folder \
+  --mock-url https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev \
+  --guidance benchmarks/builder-guidance-v3.txt \
+  --slot final --out runs/final-001
 ```
 
-Önce mock servisini sözleşmesine göre uygulayıp yayımlayın. OpenAPI dosyası klasördeki
-sözleşmeden çıkarılır; istenirse ikinci konumsal argümanla açıkça da verilebilir.
-Rehber yolunu tamamlanmış ve incelenmiş çalışmanın seçimine bağlayın. Her koşu
-için yeni çıktı dizini kullanın; gerektiğinde `--additional-brief` ekleyin.
-Komut mevcut ajan/policy onarımını kabul etmez; simülasyon veya telefon çağrısı
-başlatmaz. `submission.workflow.json` resmî export, `trace.jsonl` aynı koşunun
-izi, `submission.json` ise export/trace hash'leri, platform kimlikleri ve süreyi
-eşleştiren manifesttir. `submission_ready` yalnız bu paketin geçerliliğini
-belirtir; müşteri vakalarında başarılı olduğu anlamına gelmez. Toplam bütçe
-varsayılan olarak 1800 saniyedir; bu, yerel koşu bütçesidir. Süre aşımı veya doğrulama
-hatası export paketini hazır saymaz. Resmî submission ayrıca takım/üyeler, GitHub repo
-ve commit, yeniden çalıştırma komutu, workflow/trace yolları ve mock_url ister. Bu
-komut submission e-postası göndermez.
+This performs fresh generation, platform validation, publication and official
+workflow export. It does not start a simulation, place a phone call or send an
+entry. A second positional OpenAPI path is optional; otherwise, the builder
+extracts the service contract from the input documents with supporting source
+evidence. The explicit mock URL binds service operations to the deployed mock.
 
-Şimdiki üretim değerlendirme adaptörü kayıtlı A/B canlı vakaları içindir. Dataset
-paketindeki yeni sigorta/bankacılık brieflerinin `local_mock_only` araç sözleşmeleri,
-veri geldikten sonra ayrı bir sahte araç adaptörüne bağlanmalıdır; bu komut onları
-canlı banka seed'i gibi çalıştırmaz. Gizli brief genellemesi henüz ölçülmüş değildir.
+Successful output includes `submission.workflow.json`, the matching `trace.jsonl`,
+and an internal `submission.json` provenance report. Export parity, file hashes,
+platform IDs and elapsed time are checked. `submission_ready` means the export
+package is valid, not that it has passed customer scenarios.
 
-Ağ kullanmadan gerçek GEPA motoru, Pydantic AI builder/reflection ve Autobench zinciri:
+**The generated `runs/.../submission.json` is not the official entry form.** Use
+[the template](diagnostics/final-submission-template.json) and
+[entry instructions](diagnostics/final-submission-instructions.txt) to prepare the
+eight-field form. Commit the builder, mock source, exact exported workflow and
+matching credential-free trace. Organizers must be able to read the declared
+repository and commit. Do not hand-edit the workflow. Official submission is a
+separate action. The default 1,800-second finalizer budget is a local engineering
+limit, not an additional official time-limit rule.
 
-```bash
-uv run --locked python -m freya_hackathon.optimization_smoke \
-  --out runs/gepa-environment-smoke-new
-```
+## Local generation with the public brief
 
-Bu test FunctionModel ve HTTPX MockTransport kullanır. Üretilen workflow'daki test
-alanını kontrol ederek optimizasyon/veri akışını sınar; gerçek Freya başarısı değildir.
-GEPA, Pydantic AI ve HTTPX izlerinin kaydı ve çevrimdışı replay/report da doğrulanır.
-
-## Freya beklerken yerel davranış testi
-
-`offline` incelenmiş workflow kodunu ayrı Python sürecinde, sahte banka yanıtlarıyla
-çalıştırır. Ağ çağrısı yapmaz. Freya'nın kalıcı değişken birleştirmesini, deterministik
-geçişleri ve API yanıt eşlemelerini uygular; desteklemediği geçiş operatörünü hata sayar.
-Kod çalıştırma CPU ve süre sınırına tabidir; güvenilmeyen kod için güvenlik sandbox'ı değildir.
-
-```bash
-uv run --locked python -m freya_hackathon.practice_regressions \
-  --out runs/offline-a/suite.json
-uv run --locked python -m freya_hackathon.offline \
-  runs/astra-a-003/workflow.json runs/offline-a/suite.json \
-  --out runs/offline-a/results.json
-```
-
-Bu senaryolar mevcut Astra A adayının `speak/advance/call_state` yapısını kullanır.
-Kabul/ret + soru, yeni tutar/tarih için tekrar onay, tatil düzeltmesi, tutar/tarih sınırları,
-kaydedilmiş sözün değişmezliği, banka hatasında tek tekrar ve son işlem olarak tek kapanış
-kontrol edilir. Başka workflow yapıları için fixture uyarlamak gerekir. Rapor workflow ve
-senaryo SHA256'larını kaydeder; mevcut raporun üzerine yazmaz.
-
-**Çıkarımlar test girdisidir.** Bu testler Freya'nın müşterinin cümlesinden doğru niyeti
-çıkaracağını, doğru konuşacağını veya resmi puanı kanıtlamaz. GEPA'ya resmi skor gibi verilmez.
-
-Brief B için `initialize/dialogue/decide/state` yapısını kullanan ayrı set:
-
-```bash
-uv run --locked python -m freya_hackathon.practice_b_regressions \
-  runs/astra-b-002/workflow.json --out runs/offline-b/suite.json
-uv run --locked python -m freya_hackathon.offline \
-  runs/astra-b-002/workflow.json runs/offline-b/suite.json \
-  --out runs/offline-b/results.json
-```
-
-B seti kimliği doğrulanmış müşteri durumundan başlar. Üç ürüne tek onay, ürün başına tarih
-sınırı, kısmi kayıt hatası, aktarımda hiç not yazılmaması, kaydedilmemiş anlaşmaların aktarımda
-iptali ve ilk ödenmemiş ürünün kapanış önceliğini sınar. B'nin kimlik konuşmasını sınamaz.
-
-Canlıda gözlenen consent-only clauses, ürün adları, yanlış yıl ve reddedilmiş tarih
-ifadeleri için `diagnostics/live_shape_regressions.py` kullanılır. `--stale-call` ile
-kaydedilmiş PUB-12 görüşmesindeki eski tarih + açık ret durumu da doğrudan yeniden
-oynatılır. Yeni extraction şemalarının istediği konuşma kanıtları fixture'lara eklenir;
-beklenen banka davranışı değiştirilmez. Bu da deterministik yerel testtir, Freya skoru değildir.
-
-10 Ekim son seçilen adaylar: A `runs/astra-a-015-repair`, B `runs/astra-b-008-repair`.
-Tam resmi practice koşularında sırasıyla 10/10 ve 3/3 geçti; altyapı hatası gözlenmedi.
-Bu sonuçlar aday başına tek başarılı tam koşudur; gizli brief skoru veya tekrarlanabilirlik
-kanıtı değildir. Hash'ler ve kanıt yolları `diagnostics/current-candidates.json` içindedir.
-
-Yerel deterministik testler A için 26/26, B için 13/13 geçti. Raporlar
-`runs/offline-a-015-spoken/results.json` ve `runs/offline-b-008-repaired/results.json`
-içindedir. Bunlar resmi Freya skorları değildir. A'nın ek konuşma tarihi örnekleri
-`diagnostics/date_phrase_regressions.py` ile yeniden oynatılabilir.
-
-## Mevcut politika ile hedefli onarım
-
-Mevcut kod veya prompt içindeki küçük düzeltmelerde `--text-repair` eklenebilir.
-Model yalnızca yol + eski/yeni metin üretir; eski metnin hedefte tam bir kez eşleşmesi
-zorunludur. Builder değişiklikleri kaynak adayın kopyasına uygular, workflow'un tamamını
-derler ve aynı yapısal doğrulamadan geçirir. Model çıktısı, düzenlemeler, tam workflow,
-provenance ve Autobench izi saklanır. Yeni node/alan gibi yapısal değişiklikler için
-normal tam üretim kullanılır. Bu seçenek de önceki üretimi kullanan geliştirme onarımıdır.
+The selected general guidance is
+[builder-guidance-v3.txt](benchmarks/builder-guidance-v3.txt). The vendored starter
+kit supplies public briefs, API definitions, documentation and examples.
 
 ```bash
 uv run --locked freya-builder \
-  vendor/freya-v3/briefs/brief-a.md vendor/freya-v3/tools/openapi.json \
-  --out runs/brief-a-repair \
-  --reuse-policy-from runs/astra-a-002 \
-  --repair-from runs/astra-a-002 --feedback diagnostics/brief-a-repair.txt
+  vendor/freya-v3/briefs/brief-a.md \
+  vendor/freya-v3/tools/openapi.json \
+  --guidance benchmarks/builder-guidance-v3.txt \
+  --out runs/brief-a-001
 ```
 
-Brief, API veya kit referanslarından biri değişirse yeniden kullanım reddedilir. Politika
-kaynak alıntıları tekrar doğrulanır. Önceki aday, kaynak trace ve model mesajları provenance
-dizinine alınır; geri bildirim ve yeni model çağrıları kaydedilir. `instructions.json` bu koşunun
-builder talimatlarını saklar. Bu seçenekler geliştirme içindir: önceki üretimin süresi yeni
-süreye dahil değildir ve `execution-scope.json` bunu taze teslim koşusu olarak işaretlemez.
-Nihai zamanlı teslimde bu yeniden kullanım seçenekleri verilmeden tam üretim yapılmalıdır.
+Brief B extends A: add
+`--additional-brief vendor/freya-v3/briefs/brief-b.md`. Without practice options,
+this command does not call Freya or the bank API.
 
-Aynı kaynak adayın geçmişi bir kez kopyalanır. Autobench kaydında aynı içeriğe sahip
-dosyalar tek artifact kullanır; `evidence-manifest` her özgün yolun hangi artifact'a
-karşılık geldiğini ve kaynak SHA-256 değerini korur.
-`diagnostics/audit_recordings.py RECORD...` kayıtları ağ çağrısı yapmadan yeniden açar,
-rapor üretimini ve artifact/manifest referanslarının varlığını doğrular.
+Supported inputs are text/Markdown, DOCX, XLSX/XLSM and text-bearing PDF. The reader
+preserves tables and notes, worksheet boundaries, formulas and cached values,
+PDF page boundaries and original-byte hashes. Scanned PDFs need OCR; legacy
+DOC/XLS files need conversion. Unreadable input fails explicitly.
 
-`diagnostics/extraction-probes.json` ek müşteri cümlelerini ve korunması gereken bilgileri
-içerir. Bunlar henüz Freya'da çalıştırılmamış değerlendirme girdileridir.
+Policy extraction records source quotations and rule relationships. Local checks
+reject invalid evidence and unresolved conflicts. Workflow generation then uses
+the source documents, policy and Freya references. Service-contract extraction
+runs first when needed. Invalid candidates receive bounded feedback within the
+remaining time budget.
+
+The compiler handles Freya variable persistence, response mappings, extraction
+resets and Python function scope. Checks cover transitions, tools, API addresses,
+required fields and enums. Syntax checks do not execute generated Python. Local
+validation does not prove runtime correctness or platform acceptance.
+
+Artifacts include `policy.json`, `workflow.json`, `rule-nodes.json`, `validation.json`,
+`inputs.json`, `trace.jsonl` and model-message records. Failed candidates remain
+available for inspection; the final workflow is written only after local checks.
+Default generation limits are 1,200 seconds overall, two attempts per stage and
+600 seconds per model call, bounded by the remaining total budget.
+
+## Datasets and reproducibility
+
+[datasets/](datasets/README.md) contains development cases, public source documents,
+schemas, validation tools, provenance and the original dataset archive. Train and
+validation files are checked in. Holdout payloads remain unextracted inside
+`source.zip`; optimizer search and validation commands do not read them.
+
+Optimizer configurations and the offline integration fixture use
+`datasets/freya-v2/sources/public-test-set.json`. They do not depend on the local
+`documents/` directory, which contains private notes and raw dashboard captures.
+`runs/` also stays local; chosen submission artifacts must be committed separately.
+
+Synthetic generalization bundles require their own local mock adapter and cannot
+run against the public practice bank. Their oracles and customer-private facts
+are evaluator inputs, never builder inputs. Follow each manifest's source-file
+allowlist and preserve the train/validation/holdout separation.
+
+## Synthetic Freya practice
+
+```bash
+uv run --locked python -m freya_hackathon.practice runs/brief-a-001 \
+  --cases datasets/freya-v2/sources/public-test-set.json --brief A
+```
+
+This publishes the generated workflow and starts a synthetic `mode=chat`
+simulation. It does not place a real phone call. Run only one simulation per
+workspace. `--only PUB-01,PUB-02` selects public cases. The public bank supplies
+PUB-01 through PUB-13; arbitrary new bank customers are unsupported.
+
+Results, conversations, bank logs and exports are written to `practice/`. Platform
+IDs enter the run trace. To collect an existing simulation without starting another:
+
+```bash
+uv run --locked python -m freya_hackathon.practice runs/brief-a-001 --collect
+```
+
+A local timeout does not cancel remote work: collect its results before starting
+another run. `practice/runtime-health.json` preserves official scores separately
+from infrastructure errors, unresolved runtime errors, simulator errors and
+incomplete evidence. Affected runs cannot support clean model comparisons.
+Public-case success is not evidence of hidden-case generalization.
+
+## Optimization and offline checks
+
+```bash
+uv run --locked freya-optimize validate configs/optimization/example.json
+uv run --locked python -m freya_hackathon.optimization_smoke \
+  --out runs/gepa-environment-smoke-001
+```
+
+Both commands are offline. The integration smoke uses a Pydantic AI `FunctionModel`
+and HTTPX `MockTransport` to exercise GEPA, recording and replay. It is not a Freya
+behavioral evaluation. To start an actual development search:
+
+```bash
+uv run --locked freya-optimize run configs/optimization/example.json --out runs/gepa-study-001
+```
+
+GEPA changes general workflow-generation guidance, capped at 12,000 characters.
+Briefs, service contracts, policy extraction, compiler, runtime model and scoring
+stay fixed. References are development examples, not policy sources. Each metric
+call evaluates one brief's batch, not one customer. The example uses one training
+and three validation repetitions, with one simulation at a time. Infrastructure
+or incomplete-evidence failures stop selection instead of reducing quality scores.
+
+[Optimization configurations](configs/optimization/README.md) live in
+`configs/optimization/`. Bounded configurations use the predefined priority training subset.
+Config variants preserve experiments; they do not imply every search completed or
+improved performance. Selected guidance does not automatically replace the default.
+Holdout runs require frozen selection artifacts and explicitly provisioned holdout
+data after selection. Never feed holdout results back into search or repair.
+
+The `offline` module runs reviewed generated Python in a separate process with
+mock bank responses and resource limits. Regression fixtures cover consent, dates,
+partial failures and closing behavior. They do not prove spoken intent extraction
+and are not a security sandbox for untrusted code. Repair/recompile commands are
+development tools; final entries require a fresh builder run.
+
+Brief-specific fixtures live in `freya_hackathon.development.practice.brief_a` and
+`brief_b`, separate from the generic builder. Run their CLIs with `python -m`.
+The top-level `practice` module is the shared Freya client and simulation runner;
+it is not a Brief A/B policy implementation. Historical helpers in `diagnostics/`
+may require local experiment artifacts; see [the tool notes](diagnostics/README.md).
+
+## Traces and evidence
+
+Builder, practice, collection and optimization commands create immutable Autobench
+records. Native Pydantic AI, OpenAI, HTTPX and pydantic-gepa instrumentation captures
+local operations, model usage, timing and errors. HTTP bodies and authentication
+headers are not captured. Known credentials are removed from evidence copies;
+original local files remain unchanged.
+
+Freya's remote conversation/tool events are retained as artifacts, not represented
+as locally instrumented model calls. Missing token or cost data is not invented.
+Case records preserve official outcomes separately from runtime diagnostics.
+Imported historical evidence is labeled as imported.
+
+```bash
+uv run --locked autobench replay PATH_TO_AUTOBENCH_RECORD
+uv run --locked autobench report PATH_TO_AUTOBENCH_RECORD
+uv run --locked python diagnostics/audit_recordings.py PATH_TO_AUTOBENCH_RECORD
+```
+
+Replay and reporting use recorded evidence without rerunning the subject or making
+model/API calls. File hashes and evidence manifests preserve provenance.

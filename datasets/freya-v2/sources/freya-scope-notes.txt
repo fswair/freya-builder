@@ -1,0 +1,38 @@
+SCOPE EVIDENCE FOR DATASET v2
+
+The supplied kickoff transcript is automatic speech transcription. Timestamps below
+identify the START OF THE SPEAKER BLOCK, not an exact timestamp for each sentence.
+Only statements attributed to Yavuz Ozturk (Freya) are treated as organizer evidence.
+Other attendees' questions/opinions are not rules. No hidden final data is included.
+
+33:09 block, Yavuz Ozturk (Freya), direct excerpt:
+"Not collection, but like for banking and insurance, but let's try to make it like
+a little bit generalizable, not too specific."
+
+The same block describes instructions that prohibit revealing information before
+a prerequisite or performing an action after another action. It emphasizes correct
+interpretation and routing. When unrelated domains such as file management are
+raised, the organizer's response is "No."
+
+13:48 block, Yavuz Ozturk (Freya), paraphrase:
+Customer examples include angry and satisfied customers, scammers and attempts at
+prompt injection. They are examples of varied customer behavior, not an exhaustive
+sentiment taxonomy. The builder must read unfamiliar, potentially unstructured
+briefs and create agents for unseen scenarios.
+
+36:48 block, Yavuz Ozturk (Freya), paraphrase:
+The builder can simulate personas locally; local testing is suggested as useful
+preparation alongside platform testing.
+
+WRITTEN FINAL CONTRACT
+The included official README.md, kit version 3, describes hidden briefs for the same
+kind of call with different rules and documents; the seven tool names remain the
+same while fields and allowed values may change. It describes 3 repetitions per
+final customer, with all 3 required to pass.
+
+Do not turn the kickoff's broader banking/insurance discussion into a claim that
+arbitrary sectors or arbitrary new tools are allowed in the official final.
+In this request, additional banking/insurance briefs are deliberately labeled LOCAL
+MOCK generalization tests. Only cases preserving registered PUB fixtures are proposed
+for live practice. Runtime permissions and submission rules come from the official
+documents, not from synthetic test specifications.

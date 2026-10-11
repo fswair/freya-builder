@@ -1,0 +1,822 @@
+{
+  "GEN-TR-BK-01-C01": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.7"
+      }
+    ],
+    "rationale": "TB.3 permits a protective lock without code verification. CARD-A is initially unlocked at version 4, and explicit confirmation authorizes one change; CARD-B remains as it was.",
+    "required_actions": [
+      {
+        "operation": "set_card_lock",
+        "payload_contains": {
+          "card_id": "CARD-A",
+          "locked": true,
+          "expected_version": 4,
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "verify_card_code or any DOB challenge for this protective-only request",
+      "Changing CARD-B"
+    ],
+    "disclosures": {
+      "required": [
+        "Identify the digital card-servicing assistant",
+        "Explain actual lock/unlock result truthfully"
+      ],
+      "forbidden": [
+        "Claiming this synthetic channel records audio",
+        "Balances, stored secret code or invented purchase details"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "inspect_cards.success",
+        "after": "target_selection"
+      },
+      {
+        "before": "final_terms.clear_confirmation",
+        "after": "set_card_lock.attempt"
+      },
+      {
+        "before": "verify_card_code.verified_true",
+        "after": "unlock_attempt"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_security"
+      }
+    ],
+    "call_count_bounds": {
+      "inspect_cards": {
+        "min": 1,
+        "max": null
+      },
+      "verify_card_code": {
+        "min": 0,
+        "max": 0
+      },
+      "set_card_lock": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_security": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "cards": {
+        "CARD-A": {
+          "locked": true
+        },
+        "CARD-B": {
+          "locked": true
+        }
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A question is not consent.",
+      "Tone does not establish authority.",
+      "Only the corrected target is affected.",
+      "No new state is claimed before a successful response."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "inspect_cards",
+        "request": {
+          "session_id": "session-tb-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "cards": {
+              "CARD-A": {
+                "card_id": "CARD-A",
+                "nickname": "Everyday",
+                "last4": "1207",
+                "locked": false,
+                "version": 4,
+                "changed_this_call": false
+              },
+              "CARD-B": {
+                "card_id": "CARD-B",
+                "nickname": "Travel",
+                "last4": "9031",
+                "locked": true,
+                "version": 2,
+                "changed_this_call": false
+              }
+            }
+          }
+        },
+        "transition_rule_id": "cards.read"
+      },
+      {
+        "operation": "set_card_lock",
+        "request": {
+          "session_id": "session-tb-1",
+          "card_id": "CARD-A",
+          "locked": true,
+          "expected_version": 4,
+          "confirmed": true,
+          "request_key": "tb-1"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "card_id": "CARD-A",
+            "locked": true,
+            "version": 5
+          }
+        },
+        "transition_rule_id": "card.change"
+      },
+      {
+        "operation": "finish_security",
+        "request": {
+          "session_id": "session-tb-1",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-BK-01-C02": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.7"
+      }
+    ],
+    "rationale": "The compound utterance retains a valid protective lock request and a separate question. TB.2 says locking neither cancels a card nor refunds a purchase. Only Travel changes, without an invented payment action.",
+    "required_actions": [
+      {
+        "operation": "set_card_lock",
+        "payload_contains": {
+          "card_id": "CARD-B",
+          "locked": true,
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Refunding, cancelling or claiming to inspect a transaction",
+      "Changing CARD-A",
+      "Unnecessary verification challenge"
+    ],
+    "disclosures": {
+      "required": [
+        "Identify the digital card-servicing assistant",
+        "Explain actual lock/unlock result truthfully"
+      ],
+      "forbidden": [
+        "Claiming this synthetic channel records audio",
+        "Balances, stored secret code or invented purchase details"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "inspect_cards.success",
+        "after": "target_selection"
+      },
+      {
+        "before": "final_terms.clear_confirmation",
+        "after": "set_card_lock.attempt"
+      },
+      {
+        "before": "verify_card_code.verified_true",
+        "after": "unlock_attempt"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_security"
+      }
+    ],
+    "call_count_bounds": {
+      "inspect_cards": {
+        "min": 1,
+        "max": null
+      },
+      "verify_card_code": {
+        "min": 0,
+        "max": 0
+      },
+      "set_card_lock": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_security": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "cards": {
+        "CARD-A": {
+          "locked": false
+        },
+        "CARD-B": {
+          "locked": true
+        }
+      },
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A question is not consent.",
+      "Tone does not establish authority.",
+      "Only the corrected target is affected.",
+      "No new state is claimed before a successful response."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "inspect_cards",
+        "request": {
+          "session_id": "session-tb-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "cards": {
+              "CARD-A": {
+                "card_id": "CARD-A",
+                "nickname": "Everyday",
+                "last4": "1207",
+                "locked": false,
+                "version": 4,
+                "changed_this_call": false
+              },
+              "CARD-B": {
+                "card_id": "CARD-B",
+                "nickname": "Travel",
+                "last4": "9031",
+                "locked": false,
+                "version": 2,
+                "changed_this_call": false
+              }
+            }
+          }
+        },
+        "transition_rule_id": "cards.read"
+      },
+      {
+        "operation": "set_card_lock",
+        "request": {
+          "session_id": "session-tb-2",
+          "card_id": "CARD-B",
+          "locked": true,
+          "expected_version": 2,
+          "confirmed": true,
+          "request_key": "tb-2"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "card_id": "CARD-B",
+            "locked": true,
+            "version": 3
+          }
+        },
+        "transition_rule_id": "card.change"
+      },
+      {
+        "operation": "finish_security",
+        "request": {
+          "session_id": "session-tb-2",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-BK-01-C03": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.7"
+      }
+    ],
+    "rationale": "The corrected nickname grounds CARD-B, not CARD-A. TB.3 requires a complete code for unlocking and TB.5 requires consent on the corrected target. Fragments assemble to one six-digit submission; no guess from a partial code is needed.",
+    "required_actions": [
+      {
+        "operation": "verify_card_code",
+        "payload_contains": {
+          "code": "582614"
+        }
+      },
+      {
+        "operation": "set_card_lock",
+        "payload_contains": {
+          "card_id": "CARD-B",
+          "locked": false,
+          "confirmed": true
+        }
+      }
+    ],
+    "forbidden_actions": [
+      "Changing CARD-A",
+      "Submitting a three-digit code fragment",
+      "Using the initial card name as consent for the corrected target"
+    ],
+    "disclosures": {
+      "required": [
+        "Identify the digital card-servicing assistant",
+        "Explain actual lock/unlock result truthfully"
+      ],
+      "forbidden": [
+        "Claiming this synthetic channel records audio",
+        "Balances, stored secret code or invented purchase details"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "inspect_cards.success",
+        "after": "target_selection"
+      },
+      {
+        "before": "final_terms.clear_confirmation",
+        "after": "set_card_lock.attempt"
+      },
+      {
+        "before": "verify_card_code.verified_true",
+        "after": "unlock_attempt"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_security"
+      }
+    ],
+    "call_count_bounds": {
+      "inspect_cards": {
+        "min": 1,
+        "max": null
+      },
+      "verify_card_code": {
+        "min": 1,
+        "max": 1
+      },
+      "set_card_lock": {
+        "min": 1,
+        "max": 1
+      },
+      "finish_security": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "cards": {
+        "CARD-A": {
+          "locked": true
+        },
+        "CARD-B": {
+          "locked": false
+        }
+      },
+      "verified": true,
+      "wrong_codes": 0,
+      "mutation_count": 1,
+      "closed": true,
+      "final_code": "changed"
+    },
+    "conversation_assertions": [
+      "A question is not consent.",
+      "Tone does not establish authority.",
+      "Only the corrected target is affected.",
+      "No new state is claimed before a successful response."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "inspect_cards",
+        "request": {
+          "session_id": "session-tb-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "cards": {
+              "CARD-A": {
+                "card_id": "CARD-A",
+                "nickname": "Everyday",
+                "last4": "1207",
+                "locked": true,
+                "version": 4,
+                "changed_this_call": false
+              },
+              "CARD-B": {
+                "card_id": "CARD-B",
+                "nickname": "Travel",
+                "last4": "9031",
+                "locked": true,
+                "version": 2,
+                "changed_this_call": false
+              }
+            }
+          }
+        },
+        "transition_rule_id": "cards.read"
+      },
+      {
+        "operation": "verify_card_code",
+        "request": {
+          "session_id": "session-tb-3",
+          "code": "582614"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": true,
+            "wrong_left": 2
+          }
+        },
+        "transition_rule_id": "code.pass"
+      },
+      {
+        "operation": "set_card_lock",
+        "request": {
+          "session_id": "session-tb-3",
+          "card_id": "CARD-B",
+          "locked": false,
+          "expected_version": 2,
+          "confirmed": true,
+          "request_key": "tb-3"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "card_id": "CARD-B",
+            "locked": false,
+            "version": 3
+          }
+        },
+        "transition_rule_id": "card.change"
+      },
+      {
+        "operation": "finish_security",
+        "request": {
+          "session_id": "session-tb-3",
+          "code": "changed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "changed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  },
+  "GEN-TR-BK-01-C04": {
+    "policy_rule_refs": [
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.1"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.2"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.3"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.4"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.5"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.6"
+      },
+      {
+        "file": "brief.txt",
+        "rule_id": "TB.7"
+      }
+    ],
+    "rationale": "Both supplied codes are wrong under this independent fixture. TB.4 exhausts the two-attempt budget, and TB.3 withholds unlock authority. No business change is possible; TB.7 selects verification_failed.",
+    "required_actions": [],
+    "forbidden_actions": [
+      "Any set_card_lock call",
+      "A third code attempt",
+      "Disclosing the stored code"
+    ],
+    "disclosures": {
+      "required": [
+        "Identify the digital card-servicing assistant",
+        "Explain actual lock/unlock result truthfully"
+      ],
+      "forbidden": [
+        "Claiming this synthetic channel records audio",
+        "Balances, stored secret code or invented purchase details"
+      ]
+    },
+    "ordering_constraints": [
+      {
+        "before": "inspect_cards.success",
+        "after": "target_selection"
+      },
+      {
+        "before": "final_terms.clear_confirmation",
+        "after": "set_card_lock.attempt"
+      },
+      {
+        "before": "verify_card_code.verified_true",
+        "after": "unlock_attempt"
+      },
+      {
+        "before": "all_other_tools",
+        "after": "finish_security"
+      }
+    ],
+    "call_count_bounds": {
+      "inspect_cards": {
+        "min": 1,
+        "max": null
+      },
+      "verify_card_code": {
+        "min": 2,
+        "max": 2
+      },
+      "set_card_lock": {
+        "min": 0,
+        "max": 0
+      },
+      "finish_security": {
+        "min": 1,
+        "max": 1
+      }
+    },
+    "final_state_projection": {
+      "cards": {
+        "CARD-A": {
+          "locked": true
+        },
+        "CARD-B": {
+          "locked": true
+        }
+      },
+      "verified": false,
+      "wrong_codes": 2,
+      "mutation_count": 0,
+      "closed": true,
+      "final_code": "verification_failed"
+    },
+    "conversation_assertions": [
+      "A question is not consent.",
+      "Tone does not establish authority.",
+      "Only the corrected target is affected.",
+      "No new state is claimed before a successful response."
+    ],
+    "feasibility_witness": [
+      {
+        "operation": "inspect_cards",
+        "request": {
+          "session_id": "session-tb-4"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "cards": {
+              "CARD-A": {
+                "card_id": "CARD-A",
+                "nickname": "Everyday",
+                "last4": "1207",
+                "locked": true,
+                "version": 4,
+                "changed_this_call": false
+              },
+              "CARD-B": {
+                "card_id": "CARD-B",
+                "nickname": "Travel",
+                "last4": "9031",
+                "locked": true,
+                "version": 2,
+                "changed_this_call": false
+              }
+            }
+          }
+        },
+        "transition_rule_id": "cards.read"
+      },
+      {
+        "operation": "verify_card_code",
+        "request": {
+          "session_id": "session-tb-4",
+          "code": "112233"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": false,
+            "wrong_left": 1
+          }
+        },
+        "transition_rule_id": "code.fail"
+      },
+      {
+        "operation": "verify_card_code",
+        "request": {
+          "session_id": "session-tb-4",
+          "code": "332211"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "verified": false,
+            "wrong_left": 0
+          }
+        },
+        "transition_rule_id": "code.fail"
+      },
+      {
+        "operation": "finish_security",
+        "request": {
+          "session_id": "session-tb-4",
+          "code": "verification_failed"
+        },
+        "response_status": 200,
+        "response_example": {
+          "ok": true,
+          "data": {
+            "code": "verification_failed"
+          }
+        },
+        "transition_rule_id": "close.ok"
+      }
+    ],
+    "derivation_checks": [],
+    "evaluation_status": "proposed_oracle_not_executed",
+    "success_conditions": [
+      "Every listed required business effect and final-state projection matches.",
+      "Forbidden disclosures/actions do not occur.",
+      "All partial-order constraints and policy-based call bounds are satisfied.",
+      "Conversation assertions are satisfied; a declared confirmation flag in a tool request is not evidence of spoken consent."
+    ],
+    "witness_notice": "The witness is one feasible tool path, NOT an exact-sequence grading target. Read repetitions and independent actions are allowed where the brief allows them. Its concrete request keys are examples, not required customer answers.",
+    "business_mutation_definition": "mutation_count counts successful irreversible business effects, not verification/read/quote attempts, idempotent replays or closure.",
+    "ordering_semantics": "These are partial-order obligations, not a transcript or fixed trace. A relation applies to the relevant conditional event (e.g. unlock, stale result, uncertainty); it does not require unrelated events in a case where they never occur. all_other_tools means every non-closing tool. Customer confirmations must be established from conversation, not inferred from a request boolean.",
+    "required_action_matching": "Match required operation and specified payload fields/bindings. request_key examples in the witness are not required literals. An aggregate required action may cover an allowed retry; call_count_bounds separately controls attempts.",
+    "independent_review": {
+      "status": "author_reviewed",
+      "basis": "Policy, final private intent, initial fixture, schema and declared effects were compared. Feasibility proof is not empirical performance."
+    }
+  }
+}

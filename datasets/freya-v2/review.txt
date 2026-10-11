@@ -1,0 +1,113 @@
+FREYA DATASET v2 — DOĞRULAMA VE SINIRLAR
+Bu rapor bir benchmark skoru veya çalıştırılmış ajan değerlendirmesi değildir.
+
+1. TESLİM EDİLEN VERİ
+Canlı adaylar: 48 vaka, 24 senaryo grubu, her grupta aynı kararları veren iki doğal
+konuşma varyantı. Train 32 (16 A + 16 B); validation 8 (4 A + 4 B); holdout 8
+(4 A + 4 B). Manifestte ilk deneme için 16 yalnızca-training kimliği var: 8 A + 8 B.
+Toplam 13 kayıtlı PUB kaynağının tamamı en az bir adayda kullanılıyor. Bunlar 48 yeni
+banka kaydı değildir: farklı müşteri davranışları mevcut kayıtların üzerinde denenir.
+
+Yerel genelleme: 6 bağımsız sentetik brief ailesi; 3 bankacılık + 3 sigortacılık.
+Her splitte bir bankacılık ve bir sigortacılık paketi, her pakette 4 vaka var.
+Toplam 24 yerel vaka. Üç paket temiz şartname, üç paket e-posta/politika/değişiklik
+notu/kod listesi biçiminde. Her paket kendi OpenAPI, başlangıç fixture'ları, vaka
+scriptleri ve oracle'ını içeriyor. Altı sözleşmenin tamamı extended_local_contract;
+hiçbiri duyurulmuş resmi final araç sözleşmesi olarak sunulmuyor.
+
+2. ÖNCE İNCELENEN KAYNAKLAR
+request/PROMPT.txt, LIVE_CASES_SPEC.txt, GENERALIZATION_SPEC.txt ve START_HERE.txt.
+sources/README.md (kit v3), brief-a.md (A.1–A.47), brief-b.md (B.1–B.11 ve Closing),
+openapi.json, public-test-set.json ve freya-scope-notes.txt tamamen okundu.
+Kaynak kopyaları değiştirilmedi; kaynak SHA-256 değerleri live/manifest.json içinde.
+Kickoff'taki kapsam ifadeleri ile yazılı final sözleşmesi birbirine karıştırılmadı.
+Harici müşteri verisi, web'den toplanmış veri, gerçek kimlik bilgisi veya gizli brief
+kullanılmadı. Sentetik politika, resmi kaynakların yerine geçirilmedi.
+
+3. GERÇEKTEN ÇALIŞTIRILAN OTOMATİK KONTROLLER
+Araçlar: Python 3.13.5, jsonschema 4.26.0,
+FastAPI 0.128.2 OpenAPI Pydantic modeli ve standart kütüphane.
+
+- 40 kaynak/veri JSON belgesi katı ayrıştırmadan geçti. Yinelenmiş JSON anahtarları
+  ve NaN/Infinity kabul edilmiyor. Üç ek yerel JSON Schema dosyasının kendisi de
+  denetlendi. Üretilen kontrol raporları ayrı dosyalardır.
+- 72 üretilmiş vaka kimliğinin tamamı benzersiz. Split/grup üyelikleri ve çiftlerin
+  beklenen sonuç eşitliği doğrulandı. Aynı aile başka splite taşınmadı. 16 öncelikli
+  kimliğin tamamı train içindedir ve A/B dağılımı kontrol edildi.
+- 48 canlı adayın brief, variables, identity, products ve varsa faults dahil
+  seed'e özgü alanları tipleriyle birlikte derin eşitlik kontrolünden geçti.
+  Her practice_session_case gerçekten PUB-01…PUB-13 kaynaklarından biridir.
+- Canlı beklenen kayıtlardan türetilen 126 araç payload örneği kaynak OpenAPI
+  şemalarıyla kontrol edildi. customer_id için yalnızca şema denetiminde kullanılan
+  bir yer tutucu vardır; bu, dataset'te gerçek oturum kimliği olarak saklanmaz.
+- 48 vaat kaydında tutar, verilen floor/full sınırları içinde Decimal ile
+  karşılaştırıldı. Tarihlerin bugünden önce olmadığı, ürünün kendi son tarihini
+  aşmadığı ve kaynak tatil takvimine uygun iş günü olduğu doğrulandı. Bugün ve son
+  gün dahildir; son tarih sayımı bugünü dışarıda bırakır. İki callback kaydının
+  tarih/saat penceresi ve kaynak now'dan ileride olma şartı kontrol edildi.
+- Brief A'da not yazılmaması; Brief B'de ürün kapsamı, paid/not sırası, transferde
+  sıfır not ve doğru terminal sonuç gibi ledger değişmezleri kontrol edildi.
+- Her kural atfının dosyası ve numarası/işaretçisi, JSON pointer'ları, bundle kaynak
+  ve evaluator dosyaları, vaka–fixture eşleşmeleri ve tüm kullanılan operationId'ler
+  kontrol edildi. Kullanılmayan yerel API operasyonu bulunmadı.
+- Altı yerel OpenAPI 3.1 belgesi temel yapı, operationId, request/response şemaları,
+  required alanlar, enum'lar ve reserved .invalid sunucuları bakımından denetlendi.
+  Ek olarak FastAPI OpenAPI modeli altısını da kabul etti. 144 request/response
+  şema kökü JSON Schema meta-doğrulamasından geçti.
+- Yerel oracledaki 24 elle hazırlanmış erişilebilirlik örneğinin 93 isteği ve
+  93 yanıtı şemaya karşı doğrulandı. Bu örnekler, deklaratif guard/effect
+  tanımları üzerinden değerlendirildi; 24 beklenen son durum projeksiyonu eşleşti.
+  32 açık tarih, pencere veya parasal hesap ayrıca kontrol edildi.
+- 24 başlangıç durumu bağımsızdır; değerlendirme başlangıç JSON'unu değiştirmedi.
+  Aynı başarılı isteğin yeniden verilmesi için 21 yan etkisiz tekrar kontrolü,
+  aynı anahtar + farklı payload için 21 çatışma kontrolü, yeni anahtar ile ikinci
+  işleme giriş için 21 tekrar-ret kontrolü ve kapanış sonrası 93 değişmezlik/ret
+  kontrolü geçti. Bunlar kopya durumlar üzerinde statik testlerdir; ajan çağrısı
+  veya simülatör yürütmesi değildir.
+- Kısmi-sıra kısıtlarının grafikleri döngüsüz. Konuşmada gerçekten onay alındığı
+  otomatik olarak ispatlanmadı: confirmed=true bunu tek başına ispatlamaz.
+
+4. TEKRARLAR, ANLAM VE HOLDOUT AYRIMI
+Canlı scriptlerde birebir tekrar yok; aynı grubun iki varyantı kasıtlı eşdeğerdir.
+Ortak simulator son eki ve normal kimlik scaffolding'i çıkarılıp sayılar normalize
+edildikten sonra splitler arası dört sözcüklü shingle Jaccard üst değeri
+0.056738; 0.35 eşiğinde yakın-tekrar uyarısı yok.
+Bu bir anlamsal bağımsızlık kanıtı değildir. Aile sınırları ve oracle/script uyumu
+ayrıca yazar incelemesiyle değerlendirildi. Ton, gerçek niyet, bilgi verme biçimi,
+işbirliği ve yetki aşma isteği tek bir sentiment sınıfına indirgenmedi.
+
+Holdout scriptleri, başlıkları, kuralları, gerekçeleri ve vaka bazlı sonuçlar ortak
+raporda özetlenmiyor. Paylaşılan manifestler yalnızca gerekli kimlik, dosya yolu,
+split ve sayım bilgilerini verir. Vaka bazlı yerel QA çıktıları kendi bundle'ında;
+canlı holdout QA çıktısı live/holdout/ altında tutulur. Üretilmiş holdout içeriğinin
+ortak manifest/README/review dosyalarına birebir kopyalanmadığı da taranır.
+Bu kopya taraması yeniden ifade edilmiş her olası sızıntıyı matematiksel olarak
+kanıtlayamaz; builder'a tüm arşivi vermek yerine source_files beyaz listesi kullanılmalı.
+
+5. ÇALIŞTIRILMAYANLAR VE AÇIK SINIRLAR
+Freya'ya hiçbir çağrı yapılmadı. Builder veya GEPA çalıştırılmadı. Telefon workflow'u,
+müşteri simülasyonu, gerçek yerel mock adapter/server ve üç-tekrar performans deneyi
+çalıştırılmadı. Hiçbir başarı oranı, resmi skor veya hidden-test içeriği iddiası yok.
+
+openapi-spec-validator yüklü değildi; paket indeksinin DNS çözümlemesi yapılamadığı
+için kurulamadı. Yapılan kontroller JSON Schema + OpenAPI yapısı + FastAPI modeli
+ile sınırlıdır; bağımsız tam OpenAPI standardı sertifikasyonu diye sunulmuyor.
+
+Canlı kaynak paketi özel scriptlerin hangi runner arayüzüyle çalıştırılacağını tam
+olarak belirtmiyor. PUB seed korunurken müşteri personasını değiştirebilen bir
+practice harness entegrasyonu gerekir; bu kabiliyet canlı ortamda doğrulanmadı.
+Genelleme paketlerinde ise mock-fixture.json bir araç sunucusu değil, deklaratif
+mock şartnamesidir. Gerçek tool adapter'ı ayrıca uygulanmalıdır.
+
+Her vaka için kaynak → müşteri kararı → beklenen kayıt ilişkisi yazar tarafından
+incelendi. Bunlar otomatik doğal dil ispatı veya bağımsız ikinci hakem incelemesi
+değildir. Scriptlerin üç tekrarda aynı sonucu vermesi tasarlandı, ölçülmedi. Holdout
+üzerindeki dosya-yazarlığı QA'sı, optimizer'ın holdout'a erişmesi anlamına gelmez;
+aday seçimi öncesi eğitim/yansıtma için holdout açılmamalıdır.
+
+6. YENİDEN DOĞRULAMA
+python validate.py                        # yalnızca train + validation içeriği
+python validate.py --include-holdout      # yalnızca yazar QA'sı veya seçim sonrası
+İki kip de bu ortamda çalıştırıldı ve geçti. Ayrıntılı sayaçlar en son tam koşumun
+validation-report.json dosyasında. Bu komutlar dış servislere bağlanmaz ve bir
+konuşma üretmez. Sonuç, statik olarak denetlenmiş önerilen bir test dataset'idir.

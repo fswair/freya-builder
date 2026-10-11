@@ -1,0 +1,2 @@
+SYNTHETIC insurer operations email — not Freya policy or real regulation.
+[TI.E1] Build a notice-intake assistant, not a claims adjudicator. Read policy.txt and codes.json. amendment.txt is an authorized replacement only for the event class it explicitly names, effective before all fixture clocks. It does not replace the other policy clauses. Use the supplied clock. Customer answers and expected results are not in this email.

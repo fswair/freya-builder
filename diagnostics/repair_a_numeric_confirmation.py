@@ -15,8 +15,9 @@ from freya_hackathon.compiler import compile_workflow
 from freya_hackathon.recording import capture_sync
 from freya_hackathon.workflow import WorkflowBuild
 
-CALL = Path("diagnostics/v15-a001-live-read-001/practice/"
-            "call-6440b7d7-42a7-401d-a52a-42ea61797cbe.json")
+CALL = Path(
+    "diagnostics/v15-a001-live-read-001/practice/call-6440b7d7-42a7-401d-a52a-42ea61797cbe.json"
+)
 
 
 def seed():
@@ -28,8 +29,11 @@ def seed():
         if not isinstance(event, dict):
             continue
         values = event.get("variable_table", {})
-        if (event.get("event") == "route_evaluated" and event.get("target") == "advance"
-                and values.get("turn_raw") == "Yes, I confirm the payment of 420."):
+        if (
+            event.get("event") == "route_evaluated"
+            and event.get("target") == "advance"
+            and values.get("turn_raw") == "Yes, I confirm the payment of 420."
+        ):
             return values
     raise ValueError("Native numeric confirmation input missing")
 
@@ -38,7 +42,9 @@ def repair(code):
     anchor = """     if not any((re.search(pattern, normalized(x)) for x in positive_clauses)):
       amount_reference = 'none'
       if not amount or amount == 'conflict':"""
-    replacement = anchor.splitlines()[0] + r"""
+    replacement = (
+        anchor.splitlines()[0]
+        + r"""
       reference_value = p['past_due'] if amount_reference == 'full' else p['floor']
       numeric_confirmation = re.fullmatch(
        r'(?:(?:yes|yeah|okay|ok)[,\s]+)?i (?:do )?confirm '
@@ -56,6 +62,7 @@ def repair(code):
        amount = str(reference_value)
       amount_reference = 'none'
       if not amount or amount == 'conflict':"""
+    )
     assert code.count(anchor) == 1
     return code.replace(anchor, replacement, 1)
 
@@ -72,33 +79,62 @@ def main():
         workflow = json.loads(source.read_text())
         baseline = code_field(workflow)["default"]
         code_field(workflow)["default"] = repair(baseline)
-        compiled, changes = compile_workflow(WorkflowBuild(
-            workflow=workflow,
-            rule_nodes=json.loads((args.parent / "rule-nodes.json").read_text())))
+        compiled, changes = compile_workflow(
+            WorkflowBuild(
+                workflow=workflow,
+                rule_nodes=json.loads((args.parent / "rule-nodes.json").read_text()),
+            )
+        )
         code = code_field(compiled.workflow)["default"]
         write_json(args.out / "workflow.json", compiled.workflow)
         write_json(args.out / "rule-nodes.json", compiled.rule_nodes)
         template = seed()
         rows = []
-        positives = [template["turn_raw"], "I confirm the payment of 420",
-                     "Yes, I confirm my payment of 420.00!",
-                     "I do confirm the amount of $420.",
-                     "Okay, I confirm the payment of 420 dollars."]
+        positives = [
+            template["turn_raw"],
+            "I confirm the payment of 420",
+            "Yes, I confirm my payment of 420.00!",
+            "I do confirm the amount of $420.",
+            "Okay, I confirm the payment of 420 dollars.",
+        ]
         for raw in positives:
             values = {**template, "turn_raw": raw, "turn_consent_words": raw}
             old, new = probe(baseline, values), probe(code, values)
             state = json.loads(new["call_state"])
             product = state["products"]["p1"]
-            passed = (new["next"] == "create" and old["next"] != "create"
-                      and product["amount"] == 420 and product["date"] == "2026-10-14"
-                      and product["confirmed"] == "420.0|2026-10-14"
-                      and not product["recorded"])
-            rows.append({"id": raw, "passed": passed,
-                         "baseline_next": old["next"], "candidate_next": new["next"],
-                         "candidate_product": product})
-        for name in ("different_amount", "explicit_new_date", "question", "quotation",
-                     "reported", "withdrawal", "incomplete", "no_readback", "stale_readback",
-                     "unresolved", "negotiate", "unverified", "third_party", "date_only"):
+            passed = (
+                new["next"] == "create"
+                and old["next"] != "create"
+                and product["amount"] == 420
+                and product["date"] == "2026-10-14"
+                and product["confirmed"] == "420.0|2026-10-14"
+                and not product["recorded"]
+            )
+            rows.append(
+                {
+                    "id": raw,
+                    "passed": passed,
+                    "baseline_next": old["next"],
+                    "candidate_next": new["next"],
+                    "candidate_product": product,
+                }
+            )
+        for name in (
+            "different_amount",
+            "explicit_new_date",
+            "question",
+            "quotation",
+            "reported",
+            "withdrawal",
+            "incomplete",
+            "no_readback",
+            "stale_readback",
+            "unresolved",
+            "negotiate",
+            "unverified",
+            "third_party",
+            "date_only",
+        ):
             values = copy.deepcopy(template)
             state = json.loads(values["call_state"])
             product = state["products"]["p1"]
@@ -133,8 +169,13 @@ def main():
             values["turn_consent_words"] = values["turn_raw"]
             values["call_state"] = json.dumps(state)
             old, new = probe(baseline, values), probe(code, values)
-            rows.append({"id": name, "passed": old == new and new["next"] != "create",
-                         "candidate_next": new["next"]})
+            rows.append(
+                {
+                    "id": name,
+                    "passed": old == new and new["next"] != "create",
+                    "candidate_next": new["next"],
+                }
+            )
         for reference, amount in (("floor", 126.0), ("full", 1260.5)):
             values = copy.deepcopy(template)
             state = json.loads(values["call_state"])
@@ -142,22 +183,38 @@ def main():
             product.update(amount=amount, readback=f"{amount}|2026-10-14")
             if reference == "full":
                 product["past_due"] = amount
-            values.update(turn_raw=f"I confirm the amount of {amount}.",
-                          turn_amount_reference=reference, turn_consent_words="")
+            values.update(
+                turn_raw=f"I confirm the amount of {amount}.",
+                turn_amount_reference=reference,
+                turn_consent_words="",
+            )
             values["call_state"] = json.dumps(state)
             new = probe(code, values)
             after = json.loads(new["call_state"])["products"]["p1"]
-            rows.append({"id": f"generic_{reference}_{amount}",
-                         "passed": new["next"] == "create" and after["amount"] == amount
-                         and after["confirmed"] == f"{amount}|2026-10-14"
-                         and not after["recorded"]})
-        report = {"passed": sum(r["passed"] for r in rows), "total": len(rows), "rows": rows,
-                  "source": str(source), "source_call": str(CALL),
-                  "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
-                  "workflow_sha256": hashlib.sha256(
-                      (args.out / "workflow.json").read_bytes()).hexdigest(),
-                  "compiler_changes": changes, "native_simulation": False,
-                  "fresh_generation": False, "promoted": False}
+            rows.append(
+                {
+                    "id": f"generic_{reference}_{amount}",
+                    "passed": new["next"] == "create"
+                    and after["amount"] == amount
+                    and after["confirmed"] == f"{amount}|2026-10-14"
+                    and not after["recorded"],
+                }
+            )
+        report = {
+            "passed": sum(r["passed"] for r in rows),
+            "total": len(rows),
+            "rows": rows,
+            "source": str(source),
+            "source_call": str(CALL),
+            "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+            "workflow_sha256": hashlib.sha256(
+                (args.out / "workflow.json").read_bytes()
+            ).hexdigest(),
+            "compiler_changes": changes,
+            "native_simulation": False,
+            "fresh_generation": False,
+            "promoted": False,
+        }
         write_json(args.out / "report.json", report)
         return report
 

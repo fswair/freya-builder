@@ -1,0 +1,105 @@
+LIVE FREYA PRACTICE CASES — BANK COLLECTIONS ADAPTER
+Read PROMPT.txt first. Banking collections is the only live fixture implementation
+currently available. Do not invent live insurance customers or relabel a bank
+fixture as insurance. Insurance and new business-policy tasks belong in the local
+generalization dataset.
+
+COUNTS AND GROUPS
+Target 48 cases: 24 A and 24 B, made from 24 scenario groups with two natural
+speaking variants each. The pair has the same intended decisions and bank outcome.
+- train.json: 32 cases (16 A, 16 B), 16 groups.
+- validation.json: 8 cases (4 A, 4 B), 4 groups.
+- holdout.json: 8 cases (4 A, 4 B), 4 groups.
+Keep an entire scenario group in one split. Avoid near-duplicate behavioral paths
+across splits. Manifest: source filenames, case IDs, group IDs, split membership,
+and 16 priority TRAINING IDs (8 A, 8 B) for a quick first run. Keep detailed coverage
+and expectations for holdout within holdout.json, not in a shared report.
+
+BANK FIXTURE CONSTRAINTS
+The bank starts sessions only for registered PUB-01 through PUB-13 seeds. For each
+generated case, choose one seed and set practice_session_case to its exact ID.
+Copy brief, variables, identity, products, and any other fixture-specific fields
+EXACTLY from that seed. Preserve now, names, titles, security answers, balances,
+product types/count, days late and instalments. Do not invent product IDs or tool
+failure injection. Preserve documented seed-specific failures such as a failed
+first write. Omitted seed data is not proof of an unstated backend condition.
+
+Only vary the customer script, descriptive metadata, and policy-justified expected
+behavior. A unique DEV case ID is distinct from its PUB session seed. A scenario
+requiring another clock, balance, identity or backend fault is not live-compatible;
+exclude it from the arrays and describe it as a local-mock proposal if useful.
+
+CASE CONTRACT
+Each split is a plain JSON array. Match the official public case types and nested
+shapes. Required top-level fields:
+- id: unique string such as DEV-TR-A-001, DEV-VA-B-001, DEV-HO-A-001.
+- practice_session_case: exact registered PUB seed ID.
+- brief, variables, identity, products: exact deep copies from the seed.
+- family: short behavioral category; level: easy, medium or hard; title: short text.
+- script: English instructions to the simulated CUSTOMER.
+- expected: outcome, reason, promises, notes, callbacks, transfers, with the exact
+  shapes and optional-field conventions used by the public examples and valid
+  policy/tool values. Do not invent wildcard or union syntax.
+- checks: array of independent, narrowly scoped conversation/tool assertions.
+- metadata: group_id, split, non-exclusive behavior labels, optional state/tone
+  transitions, rule_refs, oracle_reasoning, and the specific risk being tested.
+rule_refs must cite exact source files and rule identifiers for each expected
+behavior. oracle_reasoning explains the derived amounts/dates, scope, action order
+and final outcome. Metadata is evaluator-only, never workflow test_variables.
+
+REACTIVE CUSTOMER SCRIPTS
+Give a persona and bounded response plan, not a fabricated assistant transcript.
+Describe what the customer knows, what they will say/correct/accept/refuse, and how
+they respond to valid clarification, incorrect terms or repeated questions.
+The customer must not agree to wrong terms solely to produce the expected result.
+Use exact customer phrases when they test a specific ambiguity; allow natural
+variation elsewhere. Specify a natural ending rather than endless refusals.
+The intended customer decisions and oracle must be stable over three repetitions.
+Do not include scoring criteria, expected API payloads or agent instructions in
+the customer script. Give the simulator customer knowledge, not evaluator secrets.
+
+BEHAVIORAL COVERAGE WITH POLICY REFERENCES
+Select combinations supported by the actual seed and brief:
+- Ordinary successful calls and legitimate questions with varied tone.
+- Identity information in pieces, self-correction, interruption or extra questions;
+  verification attempts and disclosure boundaries exactly as prescribed.
+- Third-party identity plus another request in one turn. Preserve authorized
+  availability handling without letting payment willingness authenticate a relative.
+- Suspicion of a scam plus a valid request; dissatisfaction or embarrassment without
+  falsely mapping it to refusal, hardship or an adversarial event.
+- Attempts to override verification or policy combined with a legitimate request;
+  benign questions about automation/instructions as negative controls.
+- Negated terms followed by a positive alternative; dates/numbers in words;
+  scope of a correction; calendar rules applied after resolving the intended date.
+- A response to a pending offer plus a separate question. Do not repeat an already
+  rejected offer unless the specific brief permits/requires it.
+- Timing refusal versus affordability; full amount versus permitted minimum; a
+  question versus consent; qualified yes with changed terms before confirmation.
+- Separate intent to act from an already-completed claim, a dispute, refusal of one
+  product and refusal to continue talking. Unknown classification is not any one
+  of these dispositions by default.
+- Multi-product scope and aliases from actual account data; different decisions or
+  dates for different products; unchanged consent without inventing new terms.
+- Stale extracted values after a correction or refusal; order-sensitive transfers,
+  recorded actions, post-action change requests and terminal bookkeeping.
+- Supported tool failure, retry limit and duplicate-write prevention.
+
+JUDGE/ORACLE SAFETY
+Derive behavior from the actual policy rather than generic expectations about a
+good customer-service agent. Do not prescribe a canned apology, blanket hang-up,
+automatic escalation for anger, or extra authorization rules absent from the brief.
+Separate ledger checks from conversational checks. Require exact wording only if
+the brief does. Distinguish the mandatory disclosure that a CALL is being recorded
+from claiming a PAYMENT PROMISE was successfully recorded. Never prohibit the
+former because the latter requires a successful create_promise response.
+For each date use variables.now and the documented calendar, never the authoring
+date. Use decimal arithmetic for amounts. Explain inclusive/exclusive boundaries.
+If several outcomes are allowed, design a bounded script that leads to one permitted
+outcome or flag the case for review. Do not penalize behavior explicitly allowed by
+the brief or silently invent an arbitrary interpretation of an ambiguous utterance.
+
+VALIDATION
+Parse JSON, verify unique IDs, all PUB references, fixture deep-equality, split/group
+disjointness, case field shapes, rule references, enum/payload validity, dates and
+amount arithmetic. Check duplicates and near-duplicates. Review every expected
+outcome against the actual rule and script. Report only validations really done.

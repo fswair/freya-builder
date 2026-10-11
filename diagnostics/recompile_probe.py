@@ -29,7 +29,7 @@ def digest(path: Path) -> str:
 def run(source: Path, cases: Path, brief: str, output: Path) -> dict:
     if output.exists():
         raise FileExistsError(output)
-    inputs = StudyConfig.read(ROOT / "optimization.example.json").inputs()[brief]
+    inputs = StudyConfig.read(ROOT / "configs/optimization/example.json").inputs()[brief]
     selected = read(cases)
     if not selected or any(case["brief"] != brief for case in selected):
         raise ValueError("Cases must all belong to the selected brief")

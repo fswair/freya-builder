@@ -27,8 +27,9 @@ def main():
 
     def action():
         original = json.loads(args.workflow.read_text())
-        compiled, changes = compile_workflow(WorkflowBuild(
-            workflow=original, rule_nodes=json.loads(args.rules.read_text())))
+        compiled, changes = compile_workflow(
+            WorkflowBuild(workflow=original, rule_nodes=json.loads(args.rules.read_text()))
+        )
         assert all(c["fix"] == "compact_code_exec_layout" for c in changes), changes
         fields = ("function", "parameters", "properties", "code", "default")
 
@@ -45,8 +46,9 @@ def main():
         write_json(args.out / "workflow.json", compiled.workflow)
         rows, sources = [], []
         for call in args.calls:
-            sources.append({"path": str(call), "sha256": hashlib.sha256(
-                call.read_bytes()).hexdigest()})
+            sources.append(
+                {"path": str(call), "sha256": hashlib.sha256(call.read_bytes()).hexdigest()}
+            )
             for index, message in enumerate(json.loads(call.read_text())["call"]["messages"]):
                 try:
                     event = json.loads(message.get("message", ""))
@@ -59,19 +61,28 @@ def main():
                 values = event["variable_table"]
                 before = execute_python(old, {"vars": copy.deepcopy(values)})["vars"]
                 after = execute_python(new, {"vars": copy.deepcopy(values)})["vars"]
-                rows.append({"call": call.name, "event_index": index,
-                             "identical_output": before == after})
+                rows.append(
+                    {"call": call.name, "event_index": index, "identical_output": before == after}
+                )
         report = {
             "source": str(args.workflow),
             "source_sha256": hashlib.sha256(args.workflow.read_bytes()).hexdigest(),
             "workflow_sha256": hashlib.sha256(
-                (args.out / "workflow.json").read_bytes()).hexdigest(),
-            "old_code_bytes": len(old.encode()), "new_code_bytes": len(new.encode()),
+                (args.out / "workflow.json").read_bytes()
+            ).hexdigest(),
+            "old_code_bytes": len(old.encode()),
+            "new_code_bytes": len(new.encode()),
             "saved_code_bytes": len(old.encode()) - len(new.encode()),
-            "identical_AST": True, "idempotent_compilation": True,
-            "passed": sum(r["identical_output"] for r in rows), "total": len(rows),
-            "rows": rows, "calls": sources, "compiler_changes": changes,
-            "native_simulation": False, "fresh_generation": False, "promoted": False,
+            "identical_AST": True,
+            "idempotent_compilation": True,
+            "passed": sum(r["identical_output"] for r in rows),
+            "total": len(rows),
+            "rows": rows,
+            "calls": sources,
+            "compiler_changes": changes,
+            "native_simulation": False,
+            "fresh_generation": False,
+            "promoted": False,
             "limits": "Local replay does not emulate the server's complete input envelope. "
             "Source savings reduce pressure but cannot guarantee all long calls fit.",
         }

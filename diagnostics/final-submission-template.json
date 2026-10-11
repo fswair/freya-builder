@@ -8,5 +8,5 @@
   "run_command": "uv run --locked python diagnostics/finalize_submission.py {case_folder} --mock-url {mock_url} --guidance benchmarks/builder-guidance-v3.txt --slot final --out runs/final-reproduction",
   "workflow": "submission/final.workflow.json",
   "trace": "submission/final.trace.jsonl",
-  "mock_url": "https://REPLACE_WORKER.umertsrky.workers.dev"
+  "mock_url": "https://REPLACE_WORKER.REPLACE_SUBDOMAIN.workers.dev"
 }
