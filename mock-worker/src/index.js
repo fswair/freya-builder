@@ -1,16 +1,10 @@
 import { DurableObject } from "cloudflare:workers";
+import { bankFetch, bankHeaders } from "./bank.js";
 
-const headers = { "cache-control": "no-store" };
-
-function unavailable() {
-  return Response.json(
-    { ready: false, error: "service_contract_not_configured" },
-    { status: 503, headers },
-  );
-}
+const headers = bankHeaders;
 
 // SQLite-backed storage is independent of any final-case fields or endpoints.
-// Bank operations will use scoped instances once the service contract is available.
+// The official bank responses are static; this object only probes infrastructure.
 export class BankState extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
@@ -31,7 +25,8 @@ export class BankState extends DurableObject {
 export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
-    if (path === "/health") {
+    if (request.method === "OPTIONS") return bankFetch(request);
+    if (path === "/health" || path === "/ready") {
       if (request.method !== "GET") {
         return Response.json(
           { error: "method_not_allowed" },
@@ -41,7 +36,7 @@ export default {
       try {
         await env.BANK_STATE.getByName("infrastructure").probe();
         return Response.json(
-          { service: "freya-bank-mock", storage: "ok", ready: false, status: "awaiting_contract" },
+          { service: "freya-bank-mock", storage: "ok", ready: true, status: "ready" },
           { headers },
         );
       } catch {
@@ -51,7 +46,6 @@ export default {
         );
       }
     }
-    // /ready and every bank operation fail closed until the exact contract lands.
-    return unavailable();
+    return bankFetch(request);
   },
 };
