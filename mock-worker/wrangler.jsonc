@@ -3,5 +3,11 @@
   "name": "freya-hackathon-mock",
   "account_id": "8ed6ef58231cd35ebdcff5b5ff0ba6dc",
   "main": "src/index.js",
-  "compatibility_date": "2026-10-11"
+  "compatibility_date": "2026-10-11",
+  "workers_dev": true,
+  "preview_urls": false,
+  "durable_objects": {
+    "bindings": [{ "name": "BANK_STATE", "class_name": "BankState" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["BankState"] }]
 }

@@ -44,6 +44,7 @@ def prepare(*, stage: bool, report: Path) -> dict:
         ("benchmarks", "**/*.txt"),
         ("diagnostics", "*.py"),
         ("mock-worker/src", "**/*.js"),
+        ("mock-worker/test", "**/*.js"),
         ("vendor/freya-v3", "README.md"),
         ("vendor/freya-v3", "VERSION"),
         ("vendor/freya-v3", "freya.py"),
