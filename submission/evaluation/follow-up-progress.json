@@ -1,0 +1,66 @@
+{
+  "simulation_id": "6d3502ef-0ed5-4ff8-bd39-65f7b690e94f",
+  "new_simulation": false,
+  "requests": 2,
+  "request_count_scope": "logical GET operations; retry attempts are recorded in trace",
+  "read_retries": true,
+  "budget_seconds": 30.0,
+  "iteration_id_source": "iteration-list",
+  "iteration_id": "71f91834-3e38-4550-b55e-0f7982b642cb",
+  "iteration_list_status": "running",
+  "returned_iteration_id": "71f91834-3e38-4550-b55e-0f7982b642cb",
+  "returned_simulation_id": "6d3502ef-0ed5-4ff8-bd39-65f7b690e94f",
+  "identity_matches": true,
+  "status": "running",
+  "runs_returned": 3,
+  "possibly_truncated": false,
+  "statuses": {
+    "None": 3
+  },
+  "outcomes": {
+    "pass": 2,
+    "running": 1
+  },
+  "runs": [
+    {
+      "case_id": "FINAL-FU-02",
+      "run_id": "0a95f670-3995-4037-ba0b-10042c70d530",
+      "persona_id": "0fc4c170-e43c-4356-957b-d172af0852b5",
+      "status": null,
+      "outcome": "pass",
+      "call_id": "63b4cc28-1ede-4eed-8db9-2e142163b16a",
+      "attempts": 0,
+      "max_attempts": 4,
+      "started_at": "2026-10-11T19:29:39.429Z",
+      "ended_at": "2026-10-11T19:30:00.187Z",
+      "error_detail": {}
+    },
+    {
+      "case_id": "FINAL-FU-01",
+      "run_id": "ffb01d3e-9a14-4414-8224-06a58c7e7e05",
+      "persona_id": "36db6cb2-6536-4bd7-a7bd-092376ed39cb",
+      "status": null,
+      "outcome": "pass",
+      "call_id": "a9d733b5-bbc2-4575-a2f9-686f7f620d7f",
+      "attempts": 0,
+      "max_attempts": 4,
+      "started_at": "2026-10-11T19:29:38.388Z",
+      "ended_at": "2026-10-11T19:30:08.901Z",
+      "error_detail": {}
+    },
+    {
+      "case_id": "FINAL-FU-03",
+      "run_id": "0f5bef20-72c7-45e6-8ba2-3d054ca4d4ad",
+      "persona_id": "e75a2b67-1ccb-40fb-952b-7f01a8885e9a",
+      "status": null,
+      "outcome": "running",
+      "call_id": "5d1eb253-4ce0-4f32-baa2-4eb518a8c3bd",
+      "attempts": 0,
+      "max_attempts": 4,
+      "started_at": "2026-10-11T19:29:37.984Z",
+      "ended_at": null,
+      "error_detail": {}
+    }
+  ],
+  "observed_at": "2026-10-11T19:32:26.914218+00:00"
+}

@@ -27,7 +27,7 @@ export was tested twice, with all results retained:
 | Total | 2/6 | 3/6 |
 
 Both result snapshots were stable within each run. All twelve call records
-were retrieved. The first run's runtime-health report found no observed
+were retrieved. Both runtime-health reports found no observed
 infrastructure, unresolved runtime, or simulator errors. The reported failures
 are therefore retained as failures; they are not excluded or attributed to an
 outage.
@@ -45,5 +45,7 @@ overall improvement or predict a hidden score.
 
 The final case's unresolved source and integration questions remain documented
 in `provenance/policy.json`; they have not been silently declared resolved.
-Separate checks of the three follow-up scenarios will be recorded alongside
-these results when complete.
+At the recorded 19:32:26 UTC snapshot, two additional follow-up scenarios had
+passed: a new card's future first statement date and cut-day total debt. The
+other-card-before-offer scenario was still running. This is partial evidence,
+not a completed 3-case score; see `evaluation/follow-up-progress.json`.
