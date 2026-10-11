@@ -14,7 +14,8 @@ from freya_hackathon.policy import Policy, StrictModel
 class WorkflowBuild(StrictModel):
     workflow: dict[str, Any]
     rule_nodes: dict[str, list[str]] = Field(
-        description="Every policy rule ID mapped to the nodes implementing it"
+        description="Every policy rule ID mapped to implementation nodes, plus unresolved-1, "
+        "unresolved-2, etc. mapped to safe dialogue/end boundaries for each policy limitation"
     )
 
 
@@ -106,11 +107,30 @@ def validate_workflow(draft: WorkflowBuild, policy: Policy, api: dict[str, Any])
         raise ValueError("initial_node must identify a normal node")
     if not isinstance(workflow.get("system_prompt", ""), str):
         raise ValueError("system_prompt must be a string when present")
-    if set(draft.rule_nodes) != {rule.id for rule in policy.rules}:
-        raise ValueError("rule_nodes must cover every policy rule, without extra IDs")
+    boundary_ids = policy.boundary_ids()
+    if boundary_ids & {rule.id for rule in policy.rules}:
+        raise ValueError("Policy rule IDs collide with reserved unresolved boundary IDs")
+    if set(draft.rule_nodes) != {rule.id for rule in policy.rules} | boundary_ids:
+        raise ValueError(
+            "rule_nodes must cover every policy rule and unresolved boundary, without extra IDs"
+        )
     for rule, targets in draft.rule_nodes.items():
         if not targets or set(targets) - set(all_nodes):
             raise ValueError(f"{rule}: missing or unknown implementation nodes")
+        if rule in boundary_ids:
+            boundary_nodes = [all_nodes[target] for target in targets]
+            if any(not isinstance(node, dict) for node in boundary_nodes):
+                raise ValueError(f"{rule}: boundary nodes must be objects")
+            if not any(
+                node.get("node_type") in {"conversation", "end_call"} for node in boundary_nodes
+            ):
+                raise ValueError(f"{rule}: limitation needs an explicit dialogue or end boundary")
+            if any(
+                isinstance(item, dict) and item.get("handler") == "__function__:api_call"
+                for node in boundary_nodes
+                for _, item in walk(node)
+            ) or any(node.get("node_type") == "api_request" for node in boundary_nodes):
+                raise ValueError(f"{rule}: unresolved boundary nodes cannot call a business API")
 
     edges: dict[str, set[str]] = {}
     for node_id, node in all_nodes.items():
@@ -225,11 +245,13 @@ def validate_workflow(draft: WorkflowBuild, policy: Policy, api: dict[str, Any])
         "node_count": len(all_nodes),
         "tool_count": tool_count,
         "rule_count": len(policy.rules),
+        "unresolved_policy_count": len(policy.unresolved),
         "freya_validation": "not_run",
         "behavioral_evaluation": "not_run",
         "limitations": [
             "Rule coverage is declared by the model; semantic completeness is not proven.",
             "Python snippets are syntax-checked, not executed or security-sandboxed here.",
             "Official platform validation and customer simulations are still required.",
+            "Unresolved policy boundaries are declared, not proof of complete business support.",
         ],
     }

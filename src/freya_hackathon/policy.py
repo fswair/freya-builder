@@ -36,7 +36,11 @@ class Policy(StrictModel):
         "their scope and the source-backed handling rule; notes cannot resolve missing policy.",
     )
 
-    def check_sources(self, sources: dict[str, str]) -> None:
+    def boundary_ids(self) -> set[str]:
+        """Stable references for limitations that a partial workflow must contain."""
+        return {f"unresolved-{index + 1}" for index in range(len(self.unresolved))}
+
+    def check_sources(self, sources: dict[str, str], *, allow_unresolved: bool = False) -> None:
         ids = [rule.id for rule in self.rules]
         if len(ids) != len(set(ids)):
             raise ValueError("Rule IDs must be unique")
@@ -67,5 +71,5 @@ class Policy(StrictModel):
         done: set[str] = set()
         for node in graph:
             visit(node, set(), done)
-        if self.unresolved:
+        if self.unresolved and not allow_unresolved:
             raise ValueError("Policy has unresolved requirements: " + "; ".join(self.unresolved))

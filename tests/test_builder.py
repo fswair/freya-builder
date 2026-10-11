@@ -109,6 +109,42 @@ def test_missing_authoritative_dependency_blocks_policy_and_adaptation(policy, d
     assert reference == draft.workflow
 
 
+def test_partial_policy_keeps_missing_authority_and_still_checks_evidence(policy):
+    policy.unresolved = ["The eligibility policy is missing."]
+    policy.check_sources({"brief-1": "Check identity."}, allow_unresolved=True)
+    assert policy.unresolved == ["The eligibility policy is missing."]
+    assert policy.boundary_ids() == {"unresolved-1"}
+    with pytest.raises(ValueError, match="does not occur"):
+        policy.check_sources({"brief-1": "Different source."}, allow_unresolved=True)
+
+
+def test_unresolved_policy_requires_explicit_non_api_boundary(policy, draft, api):
+    policy.unresolved = ["The eligibility policy is missing."]
+    with pytest.raises(ValueError, match="unresolved boundary"):
+        validate_workflow(draft, policy, api)
+    draft.rule_nodes["unresolved-1"] = ["identity"]
+    with pytest.raises(ValueError, match="cannot call a business API"):
+        validate_workflow(draft, policy, api)
+    draft.workflow["global_nodes"]["unsupported"] = {"node_type": "end_call"}
+    draft.rule_nodes["unresolved-1"] = ["unsupported"]
+    compiled, _ = compile_workflow(draft)
+    report = validate_workflow(compiled, policy, api)
+    assert report["unresolved_policy_count"] == 1
+    assert policy.unresolved == ["The eligibility policy is missing."]
+    assert "unresolved-1" not in compiled.workflow
+
+
+def test_boundary_must_be_dialogue_or_end_and_have_a_unique_id(policy, draft, api):
+    policy.unresolved = ["A required authorization is unknown."]
+    draft.workflow["global_nodes"]["boundary"] = {"node_type": "code"}
+    draft.rule_nodes["unresolved-1"] = ["boundary"]
+    with pytest.raises(ValueError, match="explicit dialogue or end"):
+        validate_workflow(draft, policy, api)
+    policy.rules[0].id = "unresolved-1"
+    with pytest.raises(ValueError, match="reserved unresolved boundary IDs"):
+        validate_workflow(draft, policy, api)
+
+
 def test_development_references_are_not_authoritative_policy_sources(tmp_path: Path, draft):
     reference = tmp_path / "reference.json"
     clean = {k: v for k, v in draft.workflow.items() if k not in {"test_variables", "agent_config"}}
