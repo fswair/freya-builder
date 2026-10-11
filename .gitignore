@@ -21,6 +21,7 @@ runs/
 env.sh
 .freya-agents.json
 .freya-submission-agents.json
+.freya-final-sol-agents.json
 .personas.json
 .freya-team-key
 .freya-optimization.lock

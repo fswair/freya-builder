@@ -91,6 +91,12 @@ paths while containing the affected operations behind explicit safe boundaries. 
 implementation question belongs in notes when the requirement itself is clear; the later stage
 has the platform reference and must use its documented capabilities. Do not turn an external
 process dependency into an invented customer-facing instruction.
+Scope each limitation to the smallest affected decision or operation. A missing prerequisite for
+a write does not automatically prohibit unrelated reads, explanation or a documented preview.
+Distinguish a production integration gap from the explicitly supplied target environment and
+its supported service contract. Source-provided acceptance scenarios are evidence of required
+capabilities, to reconcile with the governing requirements; do not silently discard either.
+Do not invent additional prohibitions or prerequisites beyond those required by the sources.
 The deployment-config document, when present, supplies explicit runtime configuration such as
 the mock service base URL. It resolves that configuration dependency, not bank business policy.
 """
@@ -115,11 +121,39 @@ or account state. Otherwise decline the unsupported action or use a documented e
 Do not invent a missing policy, credential, endpoint or successful operation. Use the supplied
 platform reference for implementation bindings. Unresolved deployment/process obligations must
 remain documented limitations, without blocking unrelated supported conversation paths.
+Intermediate policy observations are not new business prohibitions: verify their precise scope
+against the original sources and the declared target environment. Implement every source-backed
+capability supported by the supplied contract. A missing preflight integration must be recorded
+precisely; do not disable an entire feature family, its read-only operations or its documented
+preview merely because a later decision has an unresolved prerequisite. Never substitute a
+fixture value or a customer assertion for missing authoritative eligibility. Service responses
+are authoritative only for what their documented semantics actually establish.
+Keep deployment obligations in implementation notes and bounded boundary paths; do not explain
+internal integration deficiencies to every caller or demand new caller consent because of them.
+When a source requires a terminal handoff but no external handoff adapter is supplied, preserve
+the exact handoff intent/outcome and source-required wording, then end this agent's leg using the
+documented end handler. Do not claim an external connection completed without evidence. Do not
+add a recurring question about whether to end merely because the adapter is absent.
+All ordinary nodes, including limitation boundaries, must be reachable from the initial node.
 Take fields, enums and API URLs from the supplied OpenAPI. Do not copy the base agent's policy.
 
 Prefer small stages, deterministic code and routing for critical state, and dialogue for wording.
 Keep the workflow compact. Reuse a shared closing path with outcome/reason state when the brief
 permits it; avoid duplicating the same API schema and conversation stage for every outcome.
+Use Freya's native primitive extraction fields independently for the current stage. Never encode
+a multi-field object as JSON inside a string extractor: malformed or partial strings otherwise
+silently erase every intent and slot. Keep a separate verbatim latest-customer-utterance string
+and small independent semantic fields, with explicit confidence settings suitable for each.
+Copying speech is different from authorizing a transaction: do not discard the only raw evidence
+because it shares an overly strict confidence threshold with a financial decision. Ground any
+fallback parsing in that current utterance and the actual service-provided catalog, never stale
+fields. Distinguish internal extraction failure from an unclear customer answer; technical parse
+failure alone must not consume a business retry or imply the customer refused or chose nothing.
+Evaluate a valid answer before incrementing the customer's failed-attempt counter. In every
+terminal or offer-exhausted state, recognize the brief's stop/farewell/no-further-help condition
+independently of optional slot extraction. A terminal action must terminate; never return to the
+same closing question indefinitely. Bound clarification using the supplied policy, preserving
+the pending decision without turning a malformed internal payload into an unbounded loop.
 Identity and financial state change only on successful bank tool results, never customer claims.
 Keep confirmed identity evidence per field; an omitted optional response field does not revoke
 it. Preserve explicit zero retry budgets instead of replacing them with a default. Check stop
