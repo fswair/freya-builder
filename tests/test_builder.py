@@ -304,6 +304,10 @@ def test_offline_builder_uses_real_pydantic_ai_and_records_review(
         "workflow-review",
     ]
     assert all(e["usage"]["cost"] == "0.1" for e in events if e["event"] == "model_call_usage")
+    validation = next(e for e in events if e["event"] == "workflow_validated")
+    assert {key: validation[key] for key in result} == result
+    assert validation["node_count"] > 0
+    assert validation["tool_count"] > 0
     assert events[-1]["event"] == "builder_end"
     assert events[-1]["status"] == "locally_validated"
     with pytest.raises(FileExistsError):

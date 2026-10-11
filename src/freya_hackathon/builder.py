@@ -792,6 +792,7 @@ class Builder:
                 write_json(self.output / "workflow.json", draft.workflow)
                 write_json(self.output / "rule-nodes.json", draft.rule_nodes)
                 write_json(self.output / "validation.json", report)
+                self.trace("workflow_validated", **report)
                 status = "locally_validated"
                 return report
         except Exception as exc:

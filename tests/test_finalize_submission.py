@@ -140,6 +140,14 @@ def test_fresh_build_publishes_exports_and_pairs_trace_without_calls(tmp_path, s
     assert any(r.url.path.endswith("/publish") for r in mock.requests)
     assert "secret-for-mocked-tests" not in (tmp_path / "run" / "submission.json").read_text()
     assert (tmp_path / "run" / "submission-runner.txt").read_bytes() == MODULE_PATH.read_bytes()
+    events = [
+        json.loads(line) for line in (tmp_path / "run" / "trace.jsonl").read_text().splitlines()
+    ]
+    checks = next(event for event in events if event["event"] == "submission_self_tests")
+    assert checks["freya_workflow_validation"] == checks["export_parity"] == "passed"
+    assert checks["published_version"] == "confirmed"
+    assert checks["official_runtime_model"] == "passed"
+    assert checks["behavioral_evaluation"] == "not_run"
 
 
 @pytest.mark.parametrize("problem", ["invalid", "changed", "unpublished", "incomplete_trace"])

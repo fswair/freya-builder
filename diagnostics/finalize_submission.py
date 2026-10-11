@@ -198,6 +198,14 @@ def finalize_submission(
                 raise ValueError("Generated workflow changed during publication")
             publisher.remaining()
             builder.trace(
+                "submission_self_tests",
+                freya_workflow_validation="passed",
+                published_version="confirmed",
+                export_parity="passed",
+                official_runtime_model="passed",
+                behavioral_evaluation="not_run",
+            )
+            builder.trace(
                 "submission_exported",
                 **deployment,
                 export_file=export_path.name,
